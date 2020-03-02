@@ -175,8 +175,15 @@ for (i in 1:length(names(sth))){
   }
 }
 
-# binding anthro/diar/enrol/env and sth
-anthro_diar_enrol_env_sth<-bind_rows(anthro_diar_enrol_env,sth)%>%arrange(dataid,childid,agedays)
+# binding anthro/diar/enrol/env and sth, and sorting by child and age
+anthro_diar_enrol_env_sth<-bind_rows(anthro_diar_enrol_env,sth)%>%arrange(dataid_r,childid,agedays)
+
+# reorganizing columns to bring agedays variable to the left
+agedays_col<-c(28)
+cols1<-seq(from=1,to=3,by=1)
+cols2<-seq(from=4,to=27,by=1)
+cols3<-seq(from=29,to=length(names(anthro_diar_enrol_env_sth)),by=1)
+anthro_diar_enrol_env_sth<-anthro_diar_enrol_env_sth[,c(cols1,agedays_col,cols2,cols3)]
 
 
 #Calculate child age at every measure
