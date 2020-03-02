@@ -5,6 +5,7 @@
 library(tidyverse)
 library(here)
 library(haven)
+library(lubridate)
 
 #set data directories
 
@@ -14,6 +15,6 @@ if(dir.exists("C:/Users/andre/Dropbox/WASH-IPD-data/")){
   dropboxDir <- "C:/Users/andre/Dropbox/WASH-IPD-data/"
 }
 #Ruwan
-if(dir.exists("")){ 
-  dropboxDir <- ""
+if(dir.exists("C:/Users/ruwan/Dropbox/WASH-IPD-data/")){ 
+  dropboxDir <- "C:/Users/ruwan/Dropbox/WASH-IPD-data/"
 }
