@@ -207,20 +207,111 @@ a_cols<-c(dataid_col,childid_col,agedays_col,clusterid_col,block_col,tr_col)
 b_cols<-seq(1,length(colnames(anthro_diar_env_sth_enrol)))
 b_cols<-b_cols[! b_cols %in% a_cols]
 anthro_diar_env_sth_enrol<-anthro_diar_env_sth_enrol[,c(a_cols,b_cols)]
+
+# Converting character variables that should be factors into factors
+anthro_diar_env_sth_enrol$childid<-as.factor(anthro_diar_env_sth_enrol$childid)
+anthro_diar_env_sth_enrol$tchild<-as.factor(anthro_diar_env_sth_enrol$tchild)
+anthro_diar_env_sth_enrol$sex<-as.factor(anthro_diar_env_sth_enrol$sex)
+
+
+# Copying childid to motherid since they match (per A)
 anthro_diar_env_sth_enrol$motherid <- anthro_diar_env_sth_enrol$childid
 
 #Save dataset in dropbox directory
 saveRDS(d, paste0(dropboxDir,"WBB/clean/WBB-longform.RDS"))
 
-# Sanity checks
+#----------------------------------------------------------------------#
+#----------------Comparing long dataset to constituents----------------#
+#----------------------------------------------------------------------#
+
+# Checking missings in the ID/Age variables
 sum(is.na(anthro_diar_env_sth_enrol$dataid_r))
 sum(is.na(anthro_diar_env_sth_enrol$childid))
 sum(is.na(anthro_diar_env_sth_enrol$agedays))
-# Note: 2824 individuals are missing "agedays" in sth dataset
+
+# Note: 2824 missings come from 2824 individuals with missing "agedays" in sth dataset
+# these 2824 observations don't have data on any vars that might approximate age other than svyweek and svyyear
+# directly below is code that isolates these 2824 observations in case one wants to examine them
+sth2<-sth%>%filter(is.na(agedays))
+summary(sth2)
+ 
+# comparing long data to anthro
+# not interested in comparing ID and time-related variables as those will differ between the datasets
+id_time_vars <- c("dataid","childid","motherid","tchild","clusterid","block","svy","svydate","svyyear","svyweek","month","dob","agedays","agem","ageyrs")
+anthro_comp<-anthro%>%select(-id_time_vars)
+anthro_cols<-names(anthro_comp)
+comp_anthro_full_df <- data.frame(matrix(NA,nrow=length(anthro_cols),ncol=2))
+names(comp_anthro_full_df) <- c("Variable","Equal b/t Anthro and long?")
+for (i in 1:length(anthro_cols)){
+    var <- anthro_cols[i]
+    anthro_var<-anthro_comp[,anthro_cols[i]]
+    anthro_var<-sort(anthro_var[!is.na(anthro_var)])
+    fulldf_var <- anthro_diar_env_sth_enrol[,anthro_cols[i]]
+    fulldf_var <- sort(fulldf_var[!is.na(fulldf_var)])
+    equal <- all.equal(anthro_var,fulldf_var)
+    row <- c(var,equal)
+    comp_anthro_full_df[i,] <- row
+}
+
+# comparing long data to Diar
+# not interested in comparing ID and time-related variables as those will differ between the datasets
+id_time_vars <- c("dataid","clusterid","block","childid","agedays","tchild","svy","svydate","month","sex","dob","ageyrs")
+diar_comp<-diar%>%select(-id_time_vars)
+diar_cols<-names(diar_comp)
+comp_diar_full_df <- data.frame(matrix(NA,nrow=length(diar_cols),ncol=2))
+names(comp_diar_full_df) <- c("Variable","Equal b/t diar and long?")
+for (i in 1:length(diar_cols)){
+  var <- diar_cols[i]
+  diar_var<-diar_comp[,diar_cols[i]]
+  diar_var<-sort(diar_var[!is.na(diar_var)])
+  fulldf_var <- anthro_diar_env_sth_enrol[,diar_cols[i]]
+  fulldf_var <- sort(fulldf_var[!is.na(fulldf_var)])
+  equal <- all.equal(diar_var,fulldf_var)
+  row <- c(var,equal)
+  comp_diar_full_df[i,] <- row
+}
+
+# comparing long data to env datasets (env_early and env_mid_end combined)
+# not interested in comparing ID and time-related variables as those will differ between the datasets
+id_time_vars <- c("dataid_r","clusterid_r","block_r","childid","agedays","tr","tchild","month","sex","wet")
+env<-bind_rows(env_early,env_mid_end)
+env_comp<-env%>%select(-id_time_vars)
+env_cols<-names(env_comp)
+comp_env_full_df <- data.frame(matrix(NA,nrow=length(env_cols),ncol=2))
+names(comp_env_full_df) <- c("Variable","Equal b/t env and long?")
+for (i in 1:length(env_cols)){
+  var <- env_cols[i]
+  env_var<-as.numeric(unlist(env_comp[,env_cols[i]]))
+  env_var<-sort(env_var[!is.na(env_var)])
+  fulldf_var <- anthro_diar_env_sth_enrol[,env_cols[i]]
+  fulldf_var <- sort(fulldf_var[!is.na(fulldf_var)])
+  equal <- all.equal(env_var,fulldf_var)
+  row <- c(var,equal)
+  comp_env_full_df[i,] <- row
+}
+
+# comparing long data to sth
+# not interested in comparing ID and time-related variables as those will differ between the datasets
+id_time_vars <- c("dataid_r","childid","clusterid_r","block_r","tr","sex","agedays","agem","ageyrs","svyweek","svyyear","wet")
+sth_comp<-sth%>%select(-id_time_vars)
+sth_cols<-names(sth_comp)
+comp_sth_full_df <- data.frame(matrix(NA,nrow=length(sth_cols),ncol=2))
+names(comp_sth_full_df) <- c("Variable","Equal b/t sth and long?")
+for (i in 1:length(sth_cols)){
+  var <- sth_cols[i]
+  sth_var<-sth_comp[,sth_cols[i]]
+  sth_var<-sort(sth_var[!is.na(sth_var)])
+  fulldf_var <- anthro_diar_env_sth_enrol[,sth_cols[i]]
+  fulldf_var <- sort(fulldf_var[!is.na(fulldf_var)])
+  equal <- all.equal(sth_var,fulldf_var)
+  row <- c(var,equal)
+  comp_sth_full_df[i,] <- row
+}
 
 
 #----------------------------------------------------------------------#
-#----------------------------------------------------------------------#
+#-------------Checking that enrol vars have same values----------------#
+#----------------as environmental and sth datasets---------------------#
 #----------------------------------------------------------------------#
 
 # Checking that overlapping vars between enrol, env_early, env_mid_end, and sth have the same values
