@@ -6,7 +6,7 @@ anthro <- read.csv(paste0(dropboxDir,"WBB/raw/1-primary-outcome-datasets/washb-b
 diar <- read.csv(paste0(dropboxDir,"WBB/raw/1-primary-outcome-datasets/washb-bangladesh-diar.csv"))
 enrol <- read.csv(paste0(dropboxDir,"WBB/raw/1-primary-outcome-datasets/washb-bangladesh-enrol.csv"))
 
-# Harmonizing anthro variable names with diar
+# Harmonizing anthro variable names with diar ahead of binding them
 anthro<-anthro%>%
           rename(agedays=aged,
                  ageyrs=agey,
@@ -16,13 +16,13 @@ anthro<-anthro%>%
                  svyweek=week(dmy(svydate)))
 
 
-# binding anthro and diarrhea datasets
+# binding anthro and diar datasets
 anthro_diar<-bind_rows(anthro,diar)
 
 # reading in public IDs
 pub_ids <- read.csv(paste0(dropboxDir,"WBB/raw/public-ids.csv")) 
 
-# merge in public IDs
+# merge in public IDs to anthro/diar
 anthro_diar_pub <- inner_join(anthro_diar,pub_ids,by=c("block","clusterid","dataid"))
 
 # removing non-public ID vars
@@ -45,9 +45,8 @@ env_early$tchild<-"Target child"
 env_mid_end$childid<-"T1"
 env_mid_end$tchild<-"Target child"
 
-# Harmonizing variable types between anthro/diar/enrol and env_early
-
-# storing var names of intersect(anthro/diar/enrol,env_early) vars in vectors by type of var
+# Harmonizing variable types between anthro/diar and env_early, by coercing types of the latter to types of the former
+# storing var names of intersect(anthro/diar,env_early) vars in vectors by type of var
 ints<-c()
 nums<-c()
 factors<-c()
@@ -64,7 +63,7 @@ for (i in 1:length(intersect_1)){
   }
 }
 
-# coercing env_early vars to the type of the matching vars in anthro/diar/enrol
+# converting env_early var types to the types of the matching vars in anthro/diar
 
 for (i in 1:length(names(env_early))){
   if (names(env_early)[i] %in% ints){
@@ -81,8 +80,8 @@ for (i in 1:length(names(env_early))){
 # binding anthro/diar with env_early
 anthro_diar_env_early<-bind_rows(anthro_diar_pub,env_early)
 
-# Harmonizing variable types between anthro/diar/enrol and env_early
-# storing var names of intersect(anthro/diar/enrol/env_early,env_mid_end) vars in vectors by type of var
+# Harmonizing variable types between anthro/diar/env_early and env_mid_end
+# storing var names of intersect(anthro/diar/env_early,env_mid_end) vars in vectors by type of var
 ints<-c()
 nums<-c()
 factors<-c()
@@ -103,7 +102,7 @@ for (i in 1:length(intersect_2)){
   }
 }
 
-# coercing env_mid_end vars to the type of the matching vars in anthro/diar/enrol/env_early
+# converting env_mid_end var types to the types of the matching vars in anthro/diar/env_early
 
 for (i in 1:length(names(env_mid_end))){
   if (names(env_mid_end)[i] %in% ints){
@@ -159,7 +158,7 @@ for (i in 1:length(intersect_3)){
   }
 }
 
-# coercing sth vars to the type of the matching vars in anthro/diar/env
+# converting sth var types to the types of the matching vars in anthro/diar/env
 
 for (i in 1:length(names(sth))){
   if (names(sth)[i] %in% ints){
@@ -176,7 +175,7 @@ for (i in 1:length(names(sth))){
   }
 }
 
-# binding anthro/diar/env and sth, and sorting by child and age
+# binding anthro/diar/env and sth
 anthro_diar_env_sth<-bind_rows(anthro_diar_env,sth)
 
 # Merging in enrol (baseline covariates)
@@ -190,13 +189,13 @@ enrol_pub <- inner_join(enrol,pub_ids,by=c("block","clusterid","dataid"))
 non_pub_vars<-c("block","clusterid","dataid")
 enrol_pub <- enrol_pub%>%select(-non_pub_vars)
 
-# merging anthro/diar and enrol datasets
+# merging anthro/diar/env/sth and enrol datasets
 anthro_diar_env_sth_enrol<-left_join(anthro_diar_env_sth,enrol_pub,by=c("dataid_r","clusterid_r","block_r"))
 
 # sorting by child- and time-indexing variables
 anthro_diar_env_sth_enrol <- anthro_diar_env_sth_enrol%>%arrange(dataid_r,childid,agedays)
 
-# reorganizing columns
+# rearranging order of columns
 dataid_col<-grep("dataid_r", colnames(anthro_diar_env_sth_enrol))
 childid_col<-grep("childid", colnames(anthro_diar_env_sth_enrol))
 agedays_col<-grep("agedays", colnames(anthro_diar_env_sth_enrol))
@@ -214,14 +213,14 @@ anthro_diar_env_sth_enrol$tchild<-as.factor(anthro_diar_env_sth_enrol$tchild)
 anthro_diar_env_sth_enrol$sex<-as.factor(anthro_diar_env_sth_enrol$sex)
 
 
-# Copying childid to motherid since they match (per A)
+# Copying childid to motherid since they effectively are the same (per Andrew)
 anthro_diar_env_sth_enrol$motherid <- anthro_diar_env_sth_enrol$childid
 
-#Save dataset in dropbox directory
-saveRDS(d, paste0(dropboxDir,"WBB/clean/WBB-longform.RDS"))
+#Save long-form dataset in dropbox directory
+saveRDS(anthro_diar_env_sth_enrol, paste0(dropboxDir,"WBB/clean/WBB-longform.RDS"))
 
 #----------------------------------------------------------------------#
-#----------------Comparing long dataset to constituents----------------#
+#------------------------QA-ing long-form dataset----------------------#
 #----------------------------------------------------------------------#
 
 # Checking missings in the ID/Age variables
@@ -237,7 +236,8 @@ summary(sth2)
  
 # comparing long data to anthro
 # not interested in comparing ID and time-related variables as those will differ between the datasets
-id_time_vars <- c("dataid","childid","motherid","tchild","clusterid","block","svy","svydate","svyyear","svyweek","month","dob","agedays","agem","ageyrs")
+# (particularly, long dataset will have additional observations of these variables from non-anthro constituent datasets)
+id_time_vars <- c("dataid","childid","motherid","tchild","clusterid","block","svy","svydate","svyyear","svyweek","month","dob","agedays","agem","ageyrs","sex","birthord")
 anthro_comp<-anthro%>%select(-id_time_vars)
 anthro_cols<-names(anthro_comp)
 comp_anthro_full_df <- data.frame(matrix(NA,nrow=length(anthro_cols),ncol=2))
@@ -252,6 +252,7 @@ for (i in 1:length(anthro_cols)){
     row <- c(var,equal)
     comp_anthro_full_df[i,] <- row
 }
+comp_anthro_full_df
 
 # comparing long data to Diar
 # not interested in comparing ID and time-related variables as those will differ between the datasets
@@ -270,6 +271,7 @@ for (i in 1:length(diar_cols)){
   row <- c(var,equal)
   comp_diar_full_df[i,] <- row
 }
+comp_diar_full_df
 
 # comparing long data to env datasets (env_early and env_mid_end combined)
 # not interested in comparing ID and time-related variables as those will differ between the datasets
@@ -289,10 +291,11 @@ for (i in 1:length(env_cols)){
   row <- c(var,equal)
   comp_env_full_df[i,] <- row
 }
+comp_env_full_df
 
 # comparing long data to sth
 # not interested in comparing ID and time-related variables as those will differ between the datasets
-id_time_vars <- c("dataid_r","childid","clusterid_r","block_r","tr","sex","agedays","agem","ageyrs","svyweek","svyyear","wet")
+id_time_vars <- c("dataid_r","childid","clusterid_r","block_r","tr","sex","agedays","agem","ageyrs","svyweek","svyyear","wet","birthord","month")
 sth_comp<-sth%>%select(-id_time_vars)
 sth_cols<-names(sth_comp)
 comp_sth_full_df <- data.frame(matrix(NA,nrow=length(sth_cols),ncol=2))
@@ -307,39 +310,59 @@ for (i in 1:length(sth_cols)){
   row <- c(var,equal)
   comp_sth_full_df[i,] <- row
 }
-
+comp_sth_full_df
 
 #----------------------------------------------------------------------#
-#-------------Checking that enrol vars have same values----------------#
-#----------------as environmental and sth datasets---------------------#
+#-------Checking that enrol, environmental, and sth datasets-----------#
+#--------------have matching values for overlapping vars---------------#
+#----(justifies merging enrol at the end when creating long dataset)---#
 #----------------------------------------------------------------------#
 
-# Checking that overlapping vars between enrol, env_early, env_mid_end, and sth have the same values
+# Load Wash Benefits Bangladesh environmental sample datasets
+env_early <- read_dta(paste0(dropboxDir,"WBB/raw/3-env-datasets/washb-bangladesh-early-env-data-public.dta"))
+env_mid_end <- read_dta(paste0(dropboxDir,"WBB/raw/3-env-datasets/washb-bangladesh-midend-env-data-public.dta"))
+sth <- read.csv(paste0(dropboxDir,"WBB/raw/2-sth-kk-outcome-datasets/Public/washb-bangladesh-sth-public.csv"))
+# adjusting sth ID var names to match enrol
+sth<-sth%>%rename(dataid_r=dataid,
+                  clusterid_r=clusterid,
+                  block_r=block)
+# Outersect finds elements that are the complement of intersect (i.e. elements unique to each object)
+outersect <- function(x, y) {
+  sort(c(setdiff(x, y),
+         setdiff(y, x)))
+}
+
 # comparing enrol and env_early
 enrol_pub<-full_join(enrol,pub_ids,by=c("block","clusterid","dataid"))
 intersect_enrol_enve<-intersect(names(enrol_pub),names(env_early))
+# subsetting to overlapping vars only
 env_early2<-env_early[,c(intersect_enrol_enve)]
 enrol2<-enrol_pub[,c(intersect_enrol_enve)]
+# enrol represents more households (i.e. has more dataid's) than env_early, so enrol needs to be subsetted to where the two overlap
 enrol2<-enrol2%>%filter(dataid_r %in% intersect(unique(env_early2$dataid_r),unique(enrol2$dataid_r)))
 # identifying and printing dataid's in env dataset that are NOT in enrol
 mis<-outersect(unique(env_early2$dataid_r),unique(enrol2$dataid_r))
 print(mis)
-# this dataID had NAs for all the enrol-type covariates, so no info is lost by exlcuding it
+# the dataID printed above had NAs for all the enrol-type covariates, so no info is lost by exlcuding it
 env_early2<-env_early2%>%filter(dataid_r!=mis)
-enrol2$momedu<-as.numeric(enrol2$momedu)
-enrol2$hfiacat<-as.numeric(enrol2$hfiacat)
-env_early2$momedu<-as.numeric(env_early2$momedu)
-env_early2$hfiacat<-as.numeric(env_early2$hfiacat)
-#if the line below produces "1", all values match between the datasets
+# forcing data types to be numbers for comparison
+enrol2<-data.frame(lapply(enrol2,function(x) as.integer(x)))
+env_early2<-data.frame(lapply(env_early2,function(x) as.integer(as.character(x))))
+momedu<-env_early2$momedu<-as.numeric(as_factor(env_early2$momedu))
+env_early2$momedu<-momedu
+# sorting for comparison
+enrol2<-enrol2%>%arrange(dataid_r)
+env_early2<-env_early2%>%arrange(dataid_r)
+#if the line below produces "TRUE", all values match between the datasets
 print(all.equal(enrol2,env_early2))
 
 
 # comparing enrol and env_mid_end, timepoint=1
 enrol_pub<-full_join(enrol,pub_ids,by=c("block","clusterid","dataid"))
 env_mid_end_t1<-env_mid_end%>%filter(timepoint==1)
-intersect_enrol_enve<-intersect(names(enrol_pub),names(env_mid_end_t1))
-env_mid_end2<-env_mid_end_t1[,c(intersect_enrol_enve)]
-enrol2<-enrol_pub[,c(intersect_enrol_enve)]
+intersect_enrol_envme<-intersect(names(enrol_pub),names(env_mid_end_t1))
+env_mid_end2<-env_mid_end_t1[,c(intersect_enrol_envme)]
+enrol2<-enrol_pub[,c(intersect_enrol_envme)]
 enrol2<-enrol2%>%filter(dataid_r %in% intersect(unique(env_mid_end2$dataid_r),unique(enrol2$dataid_r)))
 # identifying and printing dataid's in env dataset that are NOT in enrol
 mis<-outersect(unique(env_mid_end2$dataid_r),unique(enrol2$dataid_r))
@@ -358,14 +381,14 @@ print(all.equal(enrol2,env_mid_end2))
 # comparing enrol and env_mid_end, timepoint=2
 enrol_pub<-full_join(enrol,pub_ids,by=c("block","clusterid","dataid"))
 env_mid_end_t2<-env_mid_end%>%filter(timepoint==2)
-intersect_enrol_enve<-intersect(names(enrol_pub),names(env_mid_end_t2))
-env_mid_end2<-env_mid_end_t2[,c(intersect_enrol_enve)]
-enrol2<-enrol_pub[,c(intersect_enrol_enve)]
+intersect_enrol_envme<-intersect(names(enrol_pub),names(env_mid_end_t2))
+env_mid_end2<-env_mid_end_t2[,c(intersect_enrol_envme)]
+enrol2<-enrol_pub[,c(intersect_enrol_envme)]
 enrol2<-enrol2%>%filter(dataid_r %in% intersect(unique(env_mid_end2$dataid_r),unique(enrol2$dataid_r)))
 # identifying and printing dataid's in env dataset that are NOT in enrol
 mis<-outersect(unique(env_mid_end2$dataid_r),unique(enrol2$dataid_r))
 print(mis)
-# this dataID had NAs for all the enrol-type covariates, so no info is lost by exlcuding it
+# nothing in outersect, i.e. dataid's perfectly match
 env_mid_end2<-env_mid_end2%>%filter(dataid_r!=mis)
 enrol2<-data.frame(lapply(enrol2,function(x) as.integer(x)))
 momedu<-env_mid_end2$momedu<-as.numeric(as_factor(env_mid_end2$momedu))
@@ -378,17 +401,16 @@ print(all.equal(enrol2,env_mid_end2))
 
 
 # comapring enrol and sth
-enrol_pub<-full_join(enrol,pub_ids,by=c("block","clusterid","dataid"))
+enrol_pub <- inner_join(enrol,pub_ids,by=c("block","clusterid","dataid"))
 sth_uni<-sth[!duplicated(sth$dataid_r),]
-intersect_enrol_enve<-intersect(names(enrol_pub),names(sth_uni))
-sth2<-sth_uni[,c(intersect_enrol_enve)]
-enrol2<-enrol_pub[,c(intersect_enrol_enve)]
+intersect_enrol_sth<-intersect(names(enrol_pub),names(sth_uni))
+sth2<-sth_uni[,c(intersect_enrol_sth)]
+enrol2<-enrol_pub[,c(intersect_enrol_sth)]
 enrol2<-enrol2%>%filter(dataid_r %in% intersect(unique(sth2$dataid_r),unique(enrol2$dataid_r)))
 # identifying and printing dataid's in env dataset that are NOT in enrol
 mis<-outersect(unique(sth2$dataid_r),unique(enrol2$dataid_r))
 print(mis)
-# this dataID had NAs for all the enrol-type covariates, so no info is lost by exlcuding it
-sth2<-sth2%>%filter(dataid_r!=mis)
+# nothing in outersect, i.e. dataid's perfectly match
 sth2$momedu<-as.factor(sth2$momedu)
 sth2$hfiacat<-as.factor(sth2$hfiacat)
 enrol2<-data.frame(lapply(enrol2,function(x) as.numeric(x)))
@@ -410,11 +432,12 @@ sth_change<-c("asset_radio",
               "walls",
               "floor",
               "elec")
-# binary changes: 2(sth)->0(enrol)
-# non-binary changes #(sth)->#(enrol): "asset_phone", 1->9, 2->1, 3->0; "asset_clock", 1->NA,3->0,2->1
-# no change: asset_tvbw,asset_tvcol
+# changing levels of factor vars to match between enrol and sth
+# binary variable changes, sth->enrol: 2->0
+# factor variable changes. sth->enrol: "asset_phone", 1->9, 2->1, 3->0; "asset_clock", 1->NA,3->0,2->1
+# no change needed: asset_tvbw,asset_tvcol
 for (i in 1:length(names(sth2))){
-  if (names(sth2)[i] %in% change){
+  if (names(sth2)[i] %in% sth_change){
     sth2[,i]<-ifelse(sth2[,i]==2,0,1)
   }
   if(names(sth2)[i]=="asset_phone"){
@@ -426,5 +449,5 @@ for (i in 1:length(names(sth2))){
 }
 enrol2<-enrol2%>%arrange(dataid_r)
 sth2<-sth2%>%arrange(dataid_r)
-#if the line below produces "1", all values match between the datasets
+#if the line below produces "TRUE", all values match between the datasets
 print(all.equal(enrol2,sth2))
