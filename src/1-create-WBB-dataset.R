@@ -367,7 +367,7 @@ enrol2<-enrol2%>%filter(dataid_r %in% intersect(unique(env_mid_end2$dataid_r),un
 # identifying and printing dataid's in env dataset that are NOT in enrol
 mis<-outersect(unique(env_mid_end2$dataid_r),unique(enrol2$dataid_r))
 print(mis)
-# this dataID had NAs for all the enrol-type covariates, so no info is lost by exlcuding it
+# the dataID printed above had NAs for all the enrol-type covariates, so no info is lost by exlcuding it
 env_mid_end2<-env_mid_end2%>%filter(dataid_r!=mis)
 enrol2<-data.frame(lapply(enrol2,function(x) as.integer(x)))
 momedu<-env_mid_end2$momedu<-as.numeric(as_factor(env_mid_end2$momedu))
@@ -389,7 +389,6 @@ enrol2<-enrol2%>%filter(dataid_r %in% intersect(unique(env_mid_end2$dataid_r),un
 mis<-outersect(unique(env_mid_end2$dataid_r),unique(enrol2$dataid_r))
 print(mis)
 # nothing in outersect, i.e. dataid's perfectly match
-env_mid_end2<-env_mid_end2%>%filter(dataid_r!=mis)
 enrol2<-data.frame(lapply(enrol2,function(x) as.integer(x)))
 momedu<-env_mid_end2$momedu<-as.numeric(as_factor(env_mid_end2$momedu))
 env_mid_end2<-data.frame(lapply(env_mid_end2,function(x) as.integer(as.character(x))))
