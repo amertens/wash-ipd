@@ -6,15 +6,17 @@ library(tidyverse)
 library(here)
 library(haven)
 library(lubridate)
+library(janitor)
+library(washb)
 
 #set data directories
 
 dropboxDir <- NULL
 #Andrew
-if(dir.exists("C:/Users/andre/Dropbox/WASH-IPD-data/")){ 
-  dropboxDir <- "C:/Users/andre/Dropbox/WASH-IPD-data/"
+if(dir.exists("C:/Users/andre/Dropbox/IPD WASH/")){ 
+  dropboxDir <- "C:/Users/andre/Dropbox/IPD WASH/"
 }
 #Ruwan
-if(dir.exists("C:/Users/ruwan/Dropbox/WASH-IPD-data/")){ 
-  dropboxDir <- "C:/Users/ruwan/Dropbox/WASH-IPD-data/"
+if(dir.exists("C:/Users/ruwan/Dropbox/IPD WASH/")){ 
+  dropboxDir <- "C:/Users/ruwan/Dropbox/IPD WASH/"
 }
