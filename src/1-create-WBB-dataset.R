@@ -27,7 +27,7 @@ PEC <- PEC %>% subset(., select=c(PID, Month.Collected, Unique.Numerical.ID, Sam
          sampleid=Unique.Numerical.ID,
          pec.month=Month.Collected,
          type=Sample.Type) %>%
-  gather(EPEC:ETECST1B, key = Assay, value = Pos)
+  gather(EPEC:ETECST1B, key = target, value = pos)
 head(PEC)
 
 colnames(qPCR)
@@ -36,6 +36,7 @@ qPCR <- qPCR %>% subset(., select=c(PID, Month.Collected, Unique.Numerical.ID, S
   rename(dataid=PID,
          sampleid=Unique.Numerical.ID,
          pec.month=Month.Collected,
+         target=assay,
          type=Sample.Type)
 head(qPCR)
 
@@ -104,6 +105,11 @@ env <- left_join(env, tr, by=c("block","clusterid"))
 
 saveRDS(env, paste0(dropboxDir, "Data/WBB/Clean/WBB_env.RDS"))
 
+
+
+#----------------------------------------------------------------------------
+#Merge in env. STH data
+#----------------------------------------------------------------------------
 
 
 #----------------------------------------------------------------------------

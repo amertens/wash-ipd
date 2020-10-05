@@ -14,6 +14,28 @@ findVar <- function(var){
 }
 
 
+# #Drop duplicate variables
+# dim(d)
+# d <- d[,!grepl("\\.y$", colnames(d))]
+# dim(d)
+# colnames(d) <- gsub("\\.x$","",colnames(d))
+
+
+#Explore aim 1 variables
+table(d$hh.rnd)
+table(d$mh.rnd)
+
+#all colony countr the same
+table(d$vc.o1)
+table(d$vc.o11)
+table(d$vc.o12)
+table(d$vc.o13)
+
+table(d$vc.o139)
+table(d$vc.o1391)
+table(d$vc.o1392)
+table(d$vc.o1393)
+
 
 
 #Subset to aim 1 variables and save dataset
@@ -33,61 +55,43 @@ df <- d %>% select(
   
     #cholera variables
   vc.kiit,
-  # vc.o1,
-  # vc.o139,
-  # vc.tcbs,
-  # vc_tcno,
+  vc.o1,
+  vc.o139,
+  vc.tcbs,
+  vc_tcno,
     
   #Shigella variables
-  sh.kiit ,
-    # sh_bcno,
-    # sh_bnote,
-    # sh_dil1,
-    # sh_dil2,
-    # sh_dil3,
-    # 
-    # sh.dys,
-    # sh.flx,
-    # 
-    # sh.sacnt1,
-    # sh.sacnt2,
-    # sh.sacnt3,
-    # sh_shcnt1,
-    # sh_shcnt2,
-    # sh_shcnt3
-  
-  #Covariates
-  hoh.edu4
-  
-  ) %>%
+    sh_bcno,
+    sh_bnote,
+    sh_dil1,
+    sh_dil2,
+    sh_dil3,
+    
+    sh.dys,
+    sh.flx,
+    
+    sh.sacnt1,
+    sh.sacnt2,
+    sh.sacnt3,
+    sh_shcnt1,
+    sh_shcnt2,
+    sh_shcnt3) %>%
   rename(
-    round=hh.rnd, 
-    momedu=hoh.edu4
-  ) %>%
-  filter(!is.na(sh.kiit) | !is.na(vc.kiit)) %>%
-  mutate(
-    tr=case_when(
-      ic==0 ~ "Control",
-      ic==1 ~ "Intervention"
-    )
+    tr=ic
   )
 
-table(df$round, df$vc.kiit)
-table(df$round, df$sh.kiit)
+# rename(tr=studyArm_binary,
+#        pos=detect,
+#        hhwealth=povNormal,
+#        Nhh=Hhsize,
+#        nrooms=hhrooms,
+#        momedu=carerEDU,
+#        walls=hh_walls,
+#        floor=hhCement,
+#        elec=compElec
+# )
 
-df <- df %>% filter(round==4)
-head(df)
 
-table(df$ev.01b)
-# 1 = Water samples
-# 2 = Hand rinse samples
-# 3 = Stool samples
-# 4 = NA
-
-table(df$tr, df$sh.kiit)
-table(df$tr, df$vc.kiit)
-
-head(df)
 
 
 #V cholera presence

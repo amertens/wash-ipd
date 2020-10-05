@@ -19,6 +19,9 @@ env <- env %>% mutate(
                    survey=="12m"~1)
 )
 
+head(env)
+
+
 
 
 #Load child data
@@ -32,18 +35,7 @@ child <- child %>% rename(childid=ï..totchildID)
 #Replace missingness code (99999999) with NA
 child <- child %>% mutate_all(~na_if(., 99999999))
 
-#Subset to aim 1 variables and save dataset
-#Adjustment covariates:
-# 1.	Child birth order/parity 
-# 2.	Asset-based wealth index 
-# 3.	Number of individuals and children in household
-# 4.	Household food security 
-# 5.	Household electrification and construction, including wall/roof material 
-# 6.	Parental age 
-# 7.	Parental education 
-# 8.	Parental employment 
-# a.	Indicator for works in agriculture 
-# 9.	Land ownership 
+
 
 
 child <- child %>% select(childid, actualPhase, compID,
@@ -124,17 +116,47 @@ dim(child)
 dim(env)
 
 d <- full_join(child, env, by = c("compID", "survey", "hh"))
-
 dim(d)
+
+# d <- left_join(child, env, by = c("compID", "survey", "hh"))
+# dim(d)
 
 
 
 #rename variables to standardize
 d <- d %>%
-  rename(tr=studyArm_binary)
+  rename(tr=studyArm_binary,
+         pos=detect,
+         hhwealth=povNormal,
+         Nhh=Hhsize,
+         nrooms=hhrooms,
+         momedu=carerEDU,
+         walls=hh_walls,
+         floor=hhCement,
+         elec=compElec
+         )
 
 
 saveRDS(d, file=paste0(dropboxDir,"Data/MapSan/mapsan_cleaned.rds"))
 
 
+#Split out just env data and covariates
+colnames(d)
+env_clean <- d %>% subset(., select = c(sampleid, compID, tr,
+  sampleid, compID, hh, survey, type, type_def, samp_level, target,
+  effort, pos, logquant,
+  hhwealth, nrooms, momedu, walls, floor, elec
+))
+
+
+#Subset to hh-level observations
+dim(env)
+dim(d)
+env_clean <- env_clean %>% 
+             distinct(.) %>%
+             filter(!is.na(type), type!="") 
+dim(env_clean)
+
+#Save environmental data
+saveRDS(env_clean, file=paste0(dropboxDir,"Data/MapSan/mapsan_env_cleaned.rds"))
 
