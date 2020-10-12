@@ -1,6 +1,7 @@
 
 
 # importing packages and setting directories
+rm(list=ls())
 source(here::here("0-config.R"))
 
 
@@ -13,6 +14,18 @@ source(here::here("0-config.R"))
 #Load env MST/pathogen datasets
 PEC <- read.csv(paste0(dropboxDir,"Data/WBB/washb_PEC_10_23_18_adjusted_var.csv"))
 qPCR <- read.csv(paste0(dropboxDir,"Data/WBB/washb_qPCR_10_23_18_adjusted_var.csv"))
+soilSTH <- read_dta(paste0(dropboxDir,"Data/WBB/WASHB-soil-sth.dta"))
+#world bank mst data
+WB <- read_dta(paste0(dropboxDir,"Data/WBB/BDdata_20AUG16_GENBAC_ADJUSTED_AMY.dta"))
+
+#Need to add giardia
+
+# labs <- makeVlist(soilSTH) %>% mutate(label=as.character(label)) %>% as.data.frame()
+# write.csv(labs, paste0(dropboxDir,"Data/WBB/wbb_STH_soil_codebook.csv"))
+
+# labs <- makeVlist(WB) %>% mutate(label=as.character(label)) %>% as.data.frame()
+# write.csv(labs, paste0(dropboxDir,"Data/WBB/wbb_WB_codebook.csv"))
+
 
 #Load covariates and treatment arms
 enrol <- read.csv(paste0(dropboxDir,"Data/WBB/washb-bangladesh-enrol.csv"))
@@ -22,7 +35,8 @@ tr <- read.csv(paste0(dropboxDir,"Data/WBB/washb-bangladesh-real-tr.csv"))
 #Subset to the environmental vars (drop covariates)
 colnames(PEC)
 PEC <- PEC %>% subset(., select=c(PID, Month.Collected, Unique.Numerical.ID, Sample.Type, EPEC, EAEC, EHEC,              
-                      EIEC, ETEC, ECVG, EHECSTX1, EHECSTX2, ETECLT1, ETECST1B)) %>%
+                      EIEC, ETEC, ECVG, EHECSTX1, EHECSTX2, ETECLT1, ETECST1B,
+                      soilsun, m_hwobs, c_hwobs, dwcont, dwcov, raintime, animalno, MoistCont2)) %>%
   rename(dataid=PID,
          sampleid=Unique.Numerical.ID,
          pec.month=Month.Collected,
@@ -30,19 +44,99 @@ PEC <- PEC %>% subset(., select=c(PID, Month.Collected, Unique.Numerical.ID, Sam
   gather(EPEC:ETECST1B, key = target, value = pos)
 head(PEC)
 
+#Just use any virulent gene
+PEC <- PEC %>% filter(target=="ECVG")
+
 colnames(qPCR)
 qPCR <- qPCR %>% subset(., select=c(PID, Month.Collected, Unique.Numerical.ID, Sample.Type, Pos, Assay,
                                     soilsun, m_hwobs, c_hwobs, dwcont, dwcov, raintime, animalno, MoistCont2)) %>%
   rename(dataid=PID,
+         pos=Pos,
          sampleid=Unique.Numerical.ID,
          pec.month=Month.Collected,
-         target=assay,
+         target=Assay,
          type=Sample.Type)
 head(qPCR)
 
+#world bank MST data
+WB2 <- WB %>% subset(., select = c(
+  pid,
+  arm,
+  ruminant_0_1,
+  birds_0_1,
+  W_br_1_0,
+  H_br_1_0,
+  S_br_1_0_combo,
+  W_av_1_0_combo,
+  H_av_1_0_combo,
+  S_av_1_0_combo,
+  W_rv_1_0,
+  H_rv_1_0,
+  S_rv_1_0,
+  W_hm_1_0,
+  H_hm_1_0,
+  S_hm_1_0,
+  WLGgbcp100ml,
+  HLGgbcp2hds,
+  SLGgbcpgram)) %>%
+  rename(dataid=pid)
+colnames(WB2) <- gsub("_combo","",colnames(WB2))
+colnames(WB2) <- gsub("_0_1","",colnames(WB2))
+colnames(WB2) <- gsub("_1_0","",colnames(WB2))
+
+#WB2 <- as.
+for(i in 1:ncol(WB2)){
+  WB2[,i]<- na_if(WB2[,i], 9999)
+  WB2[,i]<- na_if(WB2[,i], 99999)
+}
+glimpse(WB2)
+
+WB3 <- WB2 %>%
+  gather(W_br:SLGgbcpgram  , key = target, value = pos) %>%
+  filter(!is.na(pos)) %>%
+  mutate(target = case_when(
+    target=="HLGgbcp2hds" ~ "H_gbc",
+    target=="SLGgbcpgram" ~ "S_gbc",
+    target=="WLGgbcp100ml" ~ "W_gbc",
+    target==target ~ target
+  ))
+  #mutate(target=gsub("pos","", target))
+head(WB3)
+WB3$type <- str_split(WB3$target,"_", simplify = T)[,1]
+WB3$target <- str_split(WB3$target,"_", simplify = T)[,2]
+WB3$round <- "World Bank"
+WB3$log_conc <- ifelse(WB3$target=="gbc",WB3$pos,NA)
+WB3$pos[WB3$target=="gbc"] <- NA
+
+#soil sth
+soilSTH <- soilSTH %>% subset(., select=c(dataid, UniqueID, possth, posal, postt, logsth, logal, logtt)) %>%
+                       rename(sampleid=UniqueID)
+pos <- soilSTH %>% subset(., select=c(dataid, sampleid, 
+                                  possth, 
+                                  posal, 
+                                  postt)) %>%
+  gather(possth:postt, key = target, value = pos) %>%
+  mutate(target=gsub("pos","", target))
+
+quant <- soilSTH %>% subset(., select=c(dataid, sampleid, 
+                                    logsth, logal, logtt)) %>%
+  gather(logsth:logtt , key = target, value = log_conc) %>%
+  mutate(target=gsub("log","", target))
+
+soilSTH <- full_join(pos, quant, by=c("dataid","sampleid","target"))
+
+soilSTH$target[soilSTH$target=="al"] <- "ascaris"
+soilSTH$target[soilSTH$target=="tt"] <- "trichuris"
+soilSTH$type="S"
+soilSTH$dataid <- as.numeric(soilSTH$dataid)
+soilSTH$sampleid <- as.numeric(soilSTH$sampleid)
+head(soilSTH)
 
 #Merge env datasets
-env <- bind_rows(PEC, qPCR)
+env <- bind_rows(PEC, qPCR, soilSTH)
+env$round <- "WBB followup"
+env <- bind_rows(env, WB3)
+
 head(env)
 
 
@@ -102,6 +196,7 @@ enrol <-  enrol %>% subset(., select= -c(roof,walls,cement,elec,asset_radio,
 #Merge in covariates
 env <- left_join(env, enrol, by=c("dataid"))
 env <- left_join(env, tr, by=c("block","clusterid"))
+env <- env %>% filter(env$tr!="WSH")
 
 saveRDS(env, paste0(dropboxDir, "Data/WBB/Clean/WBB_env.RDS"))
 
@@ -120,8 +215,9 @@ saveRDS(env, paste0(dropboxDir, "Data/WBB/Clean/WBB_env.RDS"))
 # Load Wash Benefits Bangladesh primary datasets
 anthro <- read.csv(paste0(dropboxDir,"Data/WBB/washb-bangladesh-anthro.csv"))
 diar <- read.csv(paste0(dropboxDir,"Data/WBB/washb-bangladesh-diar.csv"))
-
-
+parasites <- read_dta(paste0(dropboxDir,"Data/WBB/wbb-parasite.dta"))
+  
+ 
 # Harmonizing anthro variable names with diar ahead of binding them
 anthro<-anthro%>%
           rename(agedays=aged,

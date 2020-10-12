@@ -4,11 +4,7 @@
 source(here::here("0-config.R"))
 
 library(dplyr)
-makeVlist <- function(dta) { 
-  labels <- sapply(dta, function(x) attr(x, "label"))
-  tibble(name = names(labels),
-         label = labels)
-}
+
 
 #----------------------------------------------------------------------------
 #Make env dataset
@@ -17,28 +13,50 @@ env <- read_dta(paste0(dropboxDir,"Data/WBK/wbk_STH_soil.dta"))
 
 head(env)
 
-labs <- makeVlist(env) %>% mutate(label=as.character(label)) %>% as.data.frame()
-labs$label[labs$name=="a2_1 "]
-write.csv(labs, paste0(dropboxDir,"Data/WBK/wbk_STH_soil_codebook.csv"))
+# labs <- makeVlist(env) %>% mutate(label=as.character(label)) %>% as.data.frame()
+# labs$label[labs$name=="a2_1 "]
+# write.csv(labs, paste0(dropboxDir,"Data/WBK/wbk_STH_soil_codebook.csv"))
 
-env2 <- env %>% subset(., select=c(hhid, vlgid, compoundid, clusterid, block_dc, tr,
+
+#Make positive and log_quant longform datasets
+#(Don't use viable because PCR can't detect the difference)
+pos <- env %>% subset(., select=c(hhid, soil_id,
                                    dummy_sth,
                                    dummy_ascaris,
-                                   dummy_trichuris,
-                                   dummy_viable_sth,
-                                   dummy_viable_ascaris,
-                                   dummy_viable_trichuris,
-                                   log_conc_sth,
-                                   log_conc_ascaris,
-                                   log_conc_trichuris,
-                                   log_conc_viable_sth,
-                                   log_conc_viable_ascaris,
-                                   log_conc_viable_trichuris)) %>%
+                                   dummy_trichuris)) %>%
+  gather(dummy_sth:dummy_trichuris, key = target, value = pos) %>%
+  mutate(target=gsub("dummy_","", target))
+
+quant <- env %>% subset(., select=c(hhid, soil_id,
+                                  log_conc_sth,
+                                  log_conc_ascaris,
+                                  log_conc_trichuris)) %>%
+  gather(log_conc_sth:log_conc_trichuris , key = target, value = log_conc) %>%
+  mutate(target=gsub("log_conc_","", target))
+
+env2 <- full_join(pos, quant, by=c("hhid","soil_id","target"))
+head(env2)
+
+#Subset and clean covariates
+cov <- env %>% subset(., select=c(hhid, vlgid, compoundid, clusterid, block_dc, soil_id,  tr,
+                                  roof,
+                                  walls,floor,
+                                  assetquintile,
+                                  cow,goat,
+                                  dog,poultry,
+                                  soil_feces,
+                                  soil_sunny,
+                                  soil_wet)) %>%
   mutate(tr = factor(tr, labels=c("Control",
                                   "Sanitation",
-                                  "WSH")))
+                                  "WSH")),
+         type = "S") 
 
-saveRDS(env2, paste0(dropboxDir, "Data/WBB/Clean/WBK_env.RDS"))
+
+env2 <- left_join(env2, cov, by=c("hhid","soil_id"))
+
+
+saveRDS(env2, paste0(dropboxDir, "Data/WBK/Clean/WBK_env.RDS"))
 
 
 

@@ -20,3 +20,11 @@ if(dir.exists("C:/Users/andre/Dropbox/IPD WASH/")){
 if(dir.exists("C:/Users/ruwan/Dropbox/IPD WASH/")){ 
   dropboxDir <- "C:/Users/ruwan/Dropbox/IPD WASH/"
 }
+
+
+
+makeVlist <- function(dta) { 
+  labels <- sapply(dta, function(x) attr(x, "label"))
+  tibble(name = names(labels),
+         label = labels)
+}

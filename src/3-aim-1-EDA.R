@@ -7,12 +7,18 @@ library(SmartEDA)
 
 #EDA - aim 1 outcomes
 
+#Notes:
+   #-log quant is missing for non-pos in mapsan but set to log(0.5) in washb
+
 
 #----------------------------------------------------
 # MapSan
 #----------------------------------------------------
 
 d <-readRDS(paste0(dropboxDir,"Data/cleaned_ipd_env_data.rds"))
+d <- d %>% subset(., select = c(dataid, study,type, target, round, pos, logquant))
+head(d)
+
 ms <- d %>% filter(study=="mapsan")
 head(ms)
 
@@ -62,9 +68,12 @@ wbb %>% group_by(type, target) %>%
 #----------------------------------------------------
 # WBK
 #----------------------------------------------------
-wbk <- readRDS(paste0(dropboxDir, "Data/WBB/Clean/WBK_env.RDS"))
+wbk <- d %>% filter(study=="WBK")
 
-wbk %>% summarize_all(mean) %>% as.data.frame()
+wbk %>% group_by(type, target) %>%
+  filter(!is.na(type)) %>%
+  summarize(N=n(), npos=sum(pos), prev=round(mean(pos),3)*100, mean_log_quant=round(mean(logquant, na.rm=T),2)) %>%
+  as.data.frame()
 
 
 #----------------------------------------------------
