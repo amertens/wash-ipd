@@ -20,25 +20,28 @@ head(env)
 
 #Make positive and log_quant longform datasets
 #(Don't use viable because PCR can't detect the difference)
-pos <- env %>% subset(., select=c(hhid, soil_id,
+pos <- env %>% subset(., select=c(hhid, block, soil_id,
                                    dummy_sth,
                                    dummy_ascaris,
                                    dummy_trichuris)) %>%
   gather(dummy_sth:dummy_trichuris, key = target, value = pos) %>%
   mutate(target=gsub("dummy_","", target))
 
-quant <- env %>% subset(., select=c(hhid, soil_id,
+quant <- env %>% subset(., select=c(hhid, block, soil_id,
                                   log_conc_sth,
                                   log_conc_ascaris,
                                   log_conc_trichuris)) %>%
   gather(log_conc_sth:log_conc_trichuris , key = target, value = log_conc) %>%
   mutate(target=gsub("log_conc_","", target))
 
-env2 <- full_join(pos, quant, by=c("hhid","soil_id","target"))
+env2 <- full_join(pos, quant, by=c("hhid","block","soil_id","target"))
 head(env2)
+
+
 
 #Subset and clean covariates
 cov <- env %>% subset(., select=c(hhid, vlgid, compoundid, clusterid, block_dc, soil_id,  tr,
+                                  num_hh, 
                                   roof,
                                   walls,floor,
                                   assetquintile,

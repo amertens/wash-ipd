@@ -115,9 +115,19 @@ child <- child %>%
 dim(child)
 dim(env)
 
-d <- full_join(child, env, by = c("compID", "survey", "hh"))
+#first merge treatment arm by compound ID so source water/latrine soil is merged
+child_tr <- child %>% subset(., select = c("compID", "studyArm_binary"))
+env <- left_join(env, child_tr, by = c("compID"))
+table(is.na(env$studyArm_binary))
+
+
+#then merge full data
+d <- full_join(child, env, by = c("compID", "survey", "hh", "studyArm_binary"))
 dim(d)
 
+table(is.na(d$studyArm_binary))
+table(d$type, is.na(d$studyArm_binary))
+ 
 # d <- left_join(child, env, by = c("compID", "survey", "hh"))
 # dim(d)
 
@@ -126,6 +136,7 @@ dim(d)
 #rename variables to standardize
 d <- d %>%
   rename(tr=studyArm_binary,
+         round=survey,
          pos=detect,
          hhwealth=povNormal,
          Nhh=Hhsize,
@@ -143,10 +154,24 @@ saveRDS(d, file=paste0(dropboxDir,"Data/MapSan/mapsan_cleaned.rds"))
 #Split out just env data and covariates
 colnames(d)
 env_clean <- d %>% subset(., select = c(sampleid, compID, tr,
-  sampleid, compID, hh, survey, type, type_def, samp_level, target,
+  sampleid, compID, hh, round, type, type_def, samp_level, target,
   effort, pos, logquant,
+  numHH,
   hhwealth, nrooms, momedu, walls, floor, elec
-))
+)) %>%
+  mutate(
+    round="env round",
+    block=1,
+    watmin=NA,
+    dadagri=NA,landacre=NA, hfiacat=NA,
+    momage=NA, momheight=NA
+  ) %>%
+rename(
+ Nhh=numHH,
+ dataid=compID
+)
+
+
 
 
 #Subset to hh-level observations
