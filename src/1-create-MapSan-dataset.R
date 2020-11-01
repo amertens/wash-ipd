@@ -9,6 +9,11 @@ env <- read.csv(paste0(dropboxDir,"Data/MapSan/mapsan_child_envr_data_forIPD.csv
 #rename variables
 env <- env %>% rename(sampleid=ï..samp_id, compID=comp)
 
+
+table(env$status)
+table(env$detect)
+table(env$status, env$detect)
+
 #Subset to aim 1 variables and save dataset
 env <- env %>% select(sampleid, compID, hh, survey, type, type_def, samp_level, 
                       target, effort, status, detect, logquant, logerror, censored, censquant, censerror)
@@ -21,8 +26,18 @@ env <- env %>% mutate(
 
 head(env)
 
+hist(exp(env$logquant))
+hist((env$logquant))
+
+#clean quantification data
+#XXXXXXXXXXXXX
+# TO DO
+#XXXXXXXXXXXXX
 
 
+
+env %>% group_by(type_def, target) %>% summarize(mean(effort), mean(logquant), mean(exp(logquant)))
+summary(exp(env$logquant))
 
 #Load child data
 child <- read.csv(paste0(dropboxDir,"Data/MapSan/triPhase_database_20200824 1412_IPD.csv"))

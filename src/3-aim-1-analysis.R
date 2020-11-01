@@ -6,6 +6,10 @@ head(d)
 d <- droplevels(d)
 d$id <- 1:nrow(d)
 
+summary(d$logquant)
+
+summary(exp(d$logquant))
+
 # ms %>% group_by(type, target) %>%
 #   summarize(N=n(), npos=sum(pos), prev=round(mean(pos),3)*100, mean_log_quant=round(mean(logquant, na.rm=T),2)) %>%
 #   as.data.frame()
@@ -70,20 +74,28 @@ aim1_glm <- function(d, Ws=NULL, outcome="pos", study="mapsan", type="ds", targe
   
   fit <- mpreg(formula = as.formula(f), df = df, vcv=FALSE, family=family)
   coef <- as.data.frame(t(fit[2,]))
-  res <- data.frame(Y=outcome,
-                    type=type,
-                    target=target,
-                    coef=coef$Estimate,
-                    RR=exp(coef$Estimate),
-                    se=coef$`Std. Error`,
-                    Zval=coef$`z value`,
-                    pval=coef$`Pr(>|z|)`)
-  
-  #Calc 95%CI
-  if(family=="gaussian"){
+
+    if(family=="gaussian"){
+      res <- data.frame(Y=outcome,
+                        type=type,
+                        target=target,
+                        coef=coef$Estimate,
+                        se=coef$`Std. Error`,
+                        Zval=coef$`z value`,
+                        pval=coef$`Pr(>|z|)`)
+      
     res$ci.lb <- res$coef - 1.96*res$se
     res$ci.ub <- res$coef + 1.96*res$se
   }else{
+    res <- data.frame(Y=outcome,
+                      type=type,
+                      target=target,
+                      coef=coef$Estimate,
+                      RR=exp(coef$Estimate),
+                      se=coef$`Std. Error`,
+                      Zval=coef$`z value`,
+                      pval=coef$`Pr(>|z|)`)
+    
     res$ci.lb <- exp(res$coef - 1.96*res$se)
     res$ci.ub <- exp(res$coef + 1.96*res$se) 
   }
@@ -137,20 +149,17 @@ save(res, file=here("results/unadjusted_aim1_RR.Rds"))
 # Unadjusted RD
 #-----------------------------------
 res <- d %>% group_by(study, type, target) %>%
-  do(aim1_glm(., outcome="pos", study=.$study[1], type=.$type[1], target=.$target[1], family="binomial"))
+  do(aim1_glm(., outcome="pos", study=.$study[1], type=.$type[1], target=.$target[1], family="gaussian"))
 res
 
-summary(res$RR)
-res[res$RR<0.1,]
-res[res$RR>20,]
-
-save(res, file=here("results/unadjusted_aim1_RR.Rds"))
+save(res, file=here("results/unadjusted_aim1_RD.Rds"))
 
 
 
 #-----------------------------------
 # Unadjusted abundance (negative binomial)
 #-----------------------------------
+
 
 
 

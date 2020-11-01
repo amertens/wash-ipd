@@ -13,13 +13,25 @@ source(here::here("0-config.R"))
 
 #Load env MST/pathogen datasets
 PEC <- read.csv(paste0(dropboxDir,"Data/WBB/washb_PEC_10_23_18_adjusted_var.csv"))
-qPCR <- read.csv(paste0(dropboxDir,"Data/WBB/washb_qPCR_10_23_18_adjusted_var.csv"))
+qPCR <- read.csv(paste0(dropboxDir,"Data/WBB/washb_qPCR_10_23_18_adjusted_var.csv"))  
 soilSTH <- read_dta(paste0(dropboxDir,"Data/WBB/WASHB-soil-sth.dta"))
 #world bank mst data
 WB <- read_dta(paste0(dropboxDir,"Data/WBB/BDdata_20AUG16_GENBAC_ADJUSTED_AMY.dta"))
 
-#Need to add giardia
+qPCR_quant <- read.csv(paste0(dropboxDir,"Data/WBB/Erica - washb_qPCR_quant_10_23_18_adjusted_var_abundance.csv"))  %>% select(Assay:log.LOQ.)
+head(qPCR)
+head(qPCR_quant)
 
+
+qPCR <- left_join(qPCR, qPCR_quant, by=c("Unique.Numerical.ID", "Sample.Type","Assay","PID","Month.Collected"))
+head(qPCR)
+
+table(qPCR$Assay, !is.na(qPCR$Quantifiable))
+table(qPCR$Sample.Type, !is.na(qPCR$Quantifiable))
+
+qPCR %>% group_by(Quantifiable) %>%
+  summarise(mean(log.gc.sample.matrix., na.rm=T), mean(log.LOD., na.rm=T), mean(log.LOQ., na.rm=T))
+summary(qPCR$log.gc.sample.matrix.[qPCR$Quantifiable==1])
 # labs <- makeVlist(soilSTH) %>% mutate(label=as.character(label)) %>% as.data.frame()
 # write.csv(labs, paste0(dropboxDir,"Data/WBB/wbb_STH_soil_codebook.csv"))
 
@@ -48,10 +60,11 @@ head(PEC)
 PEC <- PEC %>% filter(target=="ECVG")
 
 colnames(qPCR)
-qPCR <- qPCR %>% subset(., select=c(PID, Month.Collected, Unique.Numerical.ID, Sample.Type, Pos, Assay,
+qPCR <- qPCR %>% subset(., select=c(PID, Month.Collected, Unique.Numerical.ID, Sample.Type, Pos, log.gc.sample.matrix., Assay, 
                                     soilsun, m_hwobs, c_hwobs, dwcont, dwcov, raintime, animalno, MoistCont2)) %>%
   rename(dataid=PID,
          pos=Pos,
+         logquant=log.gc.sample.matrix.,
          sampleid=Unique.Numerical.ID,
          pec.month=Month.Collected,
          target=Assay,
