@@ -25,26 +25,14 @@ colnames(mapsan)
 colnames(WBB)
 colnames(WBK)
 
-#mapsan <- mapsan %>% rename(logquant=log_conc)
-WBB <- WBB %>% rename(logquant=log_conc)
-WBK <- WBK %>% rename(logquant=log_conc, dataid=hhid, Nhh=num_hh, hhwealth=assetquintile, sampleid=soil_id) %>%
+WBK <- WBK %>% rename( dataid=hhid, Nhh=num_hh, hhwealth=assetquintile, sampleid=soil_id) %>%
   mutate(round="STH round")
 
-WBB <- WBB %>% subset(., select = c(study, sampleid, dataid, tr, type, target, pos, logquant, round, block, Nhh, momage, momheight, momedu, dadagri,landacre, hfiacat,watmin,  floor, hhwealth)) %>%
+WBB <- WBB %>% subset(., select = c(study, sampleid, dataid, clusterid, tr, type, target, pos, abund, round, block, Nhh, momage, momheight, momedu, dadagri,landacre, hfiacat,watmin,  floor, hhwealth)) %>%
               mutate( tr = factor(tr, levels = c("Control", "Sanitation")))
-WBK <- WBK %>% subset(., select = c(study, sampleid, dataid, tr, type, target, pos, logquant, round, block, Nhh, 
+WBK <- WBK %>% subset(., select = c(study, sampleid, dataid, clusterid, tr, type, target, pos, abund, round, block, Nhh, 
                                     #momage, momheight, momedu, dadagri,landacre, hfiacat,watmin,  
                                     floor, hhwealth))
-mapsan <- mapsan %>% subset(., select = c(study, sampleid, dataid, tr, type, target, pos, logquant, round,  block, Nhh, momage, momheight, momedu, dadagri,landacre, hfiacat,watmin,  floor, hhwealth)) %>%
-                    mutate(tr=case_when(
-                      tr=="0" ~ "Control",
-                      tr=="1" ~ "Sanitation"
-                    ),
-                    tr = factor(tr, levels = c("Control", "Sanitation"))#,
-                    # case_when(
-                    #   type == "" ~ ""
-                    # )
-                    )
 
   
 

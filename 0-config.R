@@ -8,6 +8,8 @@ library(haven)
 library(lubridate)
 library(janitor)
 library(washb)
+library(modelr)
+library(caret)
 
 #set data directories
 

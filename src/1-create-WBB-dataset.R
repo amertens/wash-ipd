@@ -32,6 +32,16 @@ table(qPCR$Sample.Type, !is.na(qPCR$Quantifiable))
 qPCR %>% group_by(Quantifiable) %>%
   summarise(mean(log.gc.sample.matrix., na.rm=T), mean(log.LOD., na.rm=T), mean(log.LOQ., na.rm=T))
 summary(qPCR$log.gc.sample.matrix.[qPCR$Quantifiable==1])
+summary(10^(qPCR$log.gc.sample.matrix.[qPCR$Quantifiable==1]))
+
+
+#Impute half the lower limit of detection 
+qPCR <- qPCR %>% 
+  mutate(
+    log.gc.sample.matrix. = ifelse(Quantifiable==1, log.gc.sample.matrix., log.LOD./2),
+    abund = 10^log.gc.sample.matrix.)
+
+
 # labs <- makeVlist(soilSTH) %>% mutate(label=as.character(label)) %>% as.data.frame()
 # write.csv(labs, paste0(dropboxDir,"Data/WBB/wbb_STH_soil_codebook.csv"))
 
@@ -64,7 +74,7 @@ qPCR <- qPCR %>% subset(., select=c(PID, Month.Collected, Unique.Numerical.ID, S
                                     soilsun, m_hwobs, c_hwobs, dwcont, dwcov, raintime, animalno, MoistCont2)) %>%
   rename(dataid=PID,
          pos=Pos,
-         logquant=log.gc.sample.matrix.,
+         log_conc=log.gc.sample.matrix.,
          sampleid=Unique.Numerical.ID,
          pec.month=Month.Collected,
          target=Assay,
@@ -210,6 +220,12 @@ enrol <-  enrol %>% subset(., select= -c(roof,walls,cement,elec,asset_radio,
 env <- left_join(env, enrol, by=c("dataid"))
 env <- left_join(env, tr, by=c("block","clusterid"))
 env <- env %>% filter(env$tr!="WSH")
+
+env <- env %>% rename(
+  abund_only_detect=logquant,
+  abund=censquant  
+)
+
 
 saveRDS(env, paste0(dropboxDir, "Data/WBB/Clean/WBB_env.RDS"))
 

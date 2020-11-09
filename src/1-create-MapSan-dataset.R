@@ -6,8 +6,8 @@ source(here::here("0-config.R"))
 #Load env. data
 env <- read.csv(paste0(dropboxDir,"Data/MapSan/mapsan_child_envr_data_forIPD.csv"))
 
-#rename variables
-env <- env %>% rename(sampleid=ï..samp_id, compID=comp)
+#rename variables. Original study clustered on compound
+env <- env %>% rename(sampleid=ï..samp_id, clusterid=comp)
 
 
 table(env$status)
@@ -15,29 +15,27 @@ table(env$detect)
 table(env$status, env$detect)
 
 #Subset to aim 1 variables and save dataset
-env <- env %>% select(sampleid, compID, hh, survey, type, type_def, samp_level, 
-                      target, effort, status, detect, logquant, logerror, censored, censquant, censerror)
+env <- env %>% select(sampleid, clusterid, hh, survey, type, type_def, samp_level, 
+                      target, effort, status, detect, logquant, censored, censquant)
 
 #clean variables for merge
 env <- env %>% mutate(
   survey=case_when(survey=="0m"~0,
-                   survey=="12m"~1)
+                   survey=="12m"~1),
+  dataid=clusterid
 )
 
 head(env)
 
-hist(exp(env$logquant))
-hist((env$logquant))
-
-#clean quantification data
-#XXXXXXXXXXXXX
-# TO DO
-#XXXXXXXXXXXXX
 
 
 
-env %>% group_by(type_def, target) %>% summarize(mean(effort), mean(logquant), mean(exp(logquant)))
-summary(exp(env$logquant))
+
+
+
+#----------------------------------------
+#make health dataset
+#----------------------------------------
 
 #Load child data
 child <- read.csv(paste0(dropboxDir,"Data/MapSan/triPhase_database_20200824 1412_IPD.csv"))
@@ -45,7 +43,7 @@ colnames(child)
 head(child)
 
 #rename variables
-child <- child %>% rename(childid=ï..totchildID)
+child <- child %>% rename(childid=ï..totchildID, clusterid=compID)
   
 #Replace missingness code (99999999) with NA
 child <- child %>% mutate_all(~na_if(., 99999999))
@@ -53,7 +51,7 @@ child <- child %>% mutate_all(~na_if(., 99999999))
 
 
 
-child <- child %>% select(childid, actualPhase, compID,
+child <- child %>% select(childid, actualPhase, clusterid,
                    studyArm_binary, studyArm_ternary, age_months, age_sampMonths,
                    carerEDU, breast,
                    diarrhea,
@@ -131,13 +129,15 @@ dim(child)
 dim(env)
 
 #first merge treatment arm by compound ID so source water/latrine soil is merged
-child_tr <- child %>% subset(., select = c("compID", "studyArm_binary"))
-env <- left_join(env, child_tr, by = c("compID"))
-table(is.na(env$studyArm_binary))
+child_tr <- child %>% subset(., select = c("clusterid", "studyArm_binary")) %>% distinct(.)
 
+dim(child_tr)
+env2 <- left_join(env, child_tr, by = c("clusterid"))
+table(is.na(env2$studyArm_binary))
+dim(env2)
 
 #then merge full data
-d <- full_join(child, env, by = c("compID", "survey", "hh", "studyArm_binary"))
+d <- full_join(child, env2, by = c("clusterid", "survey", "hh", "studyArm_binary"))
 dim(d)
 
 table(is.na(d$studyArm_binary))
@@ -159,7 +159,9 @@ d <- d %>%
          momedu=carerEDU,
          walls=hh_walls,
          floor=hhCement,
-         elec=compElec
+         elec=compElec,
+         abund_only_detect=logquant,
+         abund=censquant
          )
 
 
@@ -168,26 +170,20 @@ saveRDS(d, file=paste0(dropboxDir,"Data/MapSan/mapsan_cleaned.rds"))
 
 #Split out just env data and covariates
 colnames(d)
-env_clean <- d %>% subset(., select = c(sampleid, compID, tr,
-  sampleid, compID, hh, round, type, type_def, samp_level, target,
-  effort, pos, logquant,
-  numHH,
-  hhwealth, nrooms, momedu, walls, floor, elec
-)) %>%
-  mutate(
-    round="env round",
-    block=1,
-    watmin=NA,
-    dadagri=NA,landacre=NA, hfiacat=NA,
-    momage=NA, momheight=NA
-  ) %>%
-rename(
- Nhh=numHH,
- dataid=compID
-)
+env_clean <- d %>% subset(., select = c(sampleid, clusterid, tr,
+  dataid,  hh, round, type, type_def, samp_level, target,
+  effort, pos, abund_only_detect, abund,numHH,
+  hhwealth, nrooms, walls, floor, elec
+)) 
 
 
-
+env_clean <- env_clean %>% subset(., select = c(study, sampleid, dataid, clusterid, tr, type, target, pos, abund_only_detect, censored, abund, round,  block, Nhh, momage, momheight, momedu, dadagri,landacre, hfiacat,watmin,  floor, hhwealth)) %>%
+  mutate(tr=case_when(
+    tr=="0" ~ "Control",
+    tr=="1" ~ "Sanitation"
+  ),
+  tr = factor(tr, levels = c("Control", "Sanitation"))
+  )
 
 #Subset to hh-level observations
 dim(env)

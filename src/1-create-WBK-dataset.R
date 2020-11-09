@@ -28,13 +28,21 @@ pos <- env %>% subset(., select=c(hhid, block, soil_id,
   mutate(target=gsub("dummy_","", target))
 
 quant <- env %>% subset(., select=c(hhid, block, soil_id,
-                                  log_conc_sth,
-                                  log_conc_ascaris,
-                                  log_conc_trichuris)) %>%
-  gather(log_conc_sth:log_conc_trichuris , key = target, value = log_conc) %>%
-  mutate(target=gsub("log_conc_","", target))
+                                    total_eggs,
+                                    ascaris,
+                                    trichuris)) %>%
+  gather(total_eggs:trichuris , key = target, value = abund) %>%
+  mutate(target=ifelse(target=="total_eggs","sth",target))
 
+
+table(pos$target)
+table(quant$target)
+
+
+dim(pos)
+dim(quant)
 env2 <- full_join(pos, quant, by=c("hhid","block","soil_id","target"))
+dim(env2)
 head(env2)
 
 
@@ -53,7 +61,8 @@ cov <- env %>% subset(., select=c(hhid, vlgid, compoundid, clusterid, block_dc, 
   mutate(tr = factor(tr, labels=c("Control",
                                   "Sanitation",
                                   "WSH")),
-         type = "S") 
+         type = "S",
+         round="env round") 
 
 
 env2 <- left_join(env2, cov, by=c("hhid","soil_id"))
