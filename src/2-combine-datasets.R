@@ -38,7 +38,7 @@ WBK <- WBK %>% subset(., select = c(study, sampleid, dataid, clusterid, tr, type
 
 WBB$sampleid<-as.character(WBB$sampleid)
 WBK$sampleid<-as.character(WBK$sampleid)
-mapsan$momedu<-factor(mapsan$momedu)
+#mapsan$momedu<-factor(mapsan$momedu)
 d <- bind_rows(WBB, WBK, mapsan)
 colnames(d)
 

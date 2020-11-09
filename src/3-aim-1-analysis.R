@@ -11,9 +11,6 @@ d <- d %>%  group_by(study) %>%
 
 
 
-summary(d$logquant)
-summary(exp(d$logquant))
-
 
 # 1.	Child birth order/parity 
 # 2.	Asset-based wealth index 
@@ -35,14 +32,12 @@ Ws = Wvars = c("hhwealth",
 
 
 
-outcome="logquant"
+outcome="abund"
 study="WBK"
 type="S"
 target="sth"
 family="neg.binom"
 
-#TEMP
-d$logquant <- floor(exp(d$logquant))
 
 d %>% distinct(study, type, target) %>% as.data.frame()
 
@@ -121,7 +116,7 @@ save(res, file=here("results/adjusted_aim1_RD.Rds"))
 # check if they should be log transformed
 
 res <- d %>% group_by(study, round,  type, target) %>%
-  do(aim1_glm(., outcome="logquant", study=.$study[1], type=.$type[1], target=.$target[1], Ws=NULL, family="gaussian"))
+  do(aim1_glm(., outcome="abund", study=.$study[1], type=.$type[1], target=.$target[1], Ws=NULL, family="neg.binom"))
 res
 
 save(res, file=here("results/unadjusted_aim1_diff.Rds"))
@@ -131,7 +126,7 @@ save(res, file=here("results/unadjusted_aim1_diff.Rds"))
 #-----------------------------------
 
 res <- d %>% group_by(study, round, type, target) %>%
-  do(aim1_glm(., outcome="logquant", study=.$study[1], type=.$type[1], target=.$target[1], Ws=Wvars, family="poisson"))
+  do(aim1_glm(., outcome="abund", study=.$study[1], type=.$type[1], target=.$target[1], Ws=Wvars, family="neg.binom"))
 res
 
 save(res, file=here("results/adjusted_aim1_diff.Rds"))

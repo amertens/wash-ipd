@@ -172,16 +172,21 @@ saveRDS(d, file=paste0(dropboxDir,"Data/MapSan/mapsan_cleaned.rds"))
 colnames(d)
 env_clean <- d %>% subset(., select = c(sampleid, clusterid, tr,
   dataid,  hh, round, type, type_def, samp_level, target,
-  effort, pos, abund_only_detect, abund,numHH,
-  hhwealth, nrooms, walls, floor, elec
+  effort, pos, abund_only_detect, abund, censored,
+  Nhh, hhwealth, nrooms, walls, floor, elec
 )) 
 
 
-env_clean <- env_clean %>% subset(., select = c(study, sampleid, dataid, clusterid, tr, type, target, pos, abund_only_detect, censored, abund, round,  block, Nhh, momage, momheight, momedu, dadagri,landacre, hfiacat,watmin,  floor, hhwealth)) %>%
+env_clean <- env_clean %>% subset(., select = c(sampleid, dataid, clusterid, tr, type, target, pos, abund_only_detect, censored, abund, round, Nhh, 
+                                                #momage, momheight, momedu, 
+                                                #dadagri, landacre, hfiacat,watmin,  
+                                                floor, hhwealth)) %>%
   mutate(tr=case_when(
     tr=="0" ~ "Control",
     tr=="1" ~ "Sanitation"
   ),
+  round=case_when(round==0~"0m",
+                   round==1~"12m"),
   tr = factor(tr, levels = c("Control", "Sanitation"))
   )
 

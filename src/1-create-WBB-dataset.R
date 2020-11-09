@@ -128,11 +128,12 @@ head(WB3)
 WB3$type <- str_split(WB3$target,"_", simplify = T)[,1]
 WB3$target <- str_split(WB3$target,"_", simplify = T)[,2]
 WB3$round <- "World Bank"
-WB3$log_conc <- ifelse(WB3$target=="gbc",WB3$pos,NA)
+WB3$abund <- ifelse(WB3$target=="gbc",WB3$pos,NA)
 WB3$pos[WB3$target=="gbc"] <- NA
 
+
 #soil sth
-soilSTH <- soilSTH %>% subset(., select=c(dataid, UniqueID, possth, posal, postt, logsth, logal, logtt)) %>%
+soilSTH <- soilSTH %>% subset(., select=c(dataid, UniqueID, possth, posal, postt, epgal, epgtt, epgsth)) %>%
                        rename(sampleid=UniqueID)
 pos <- soilSTH %>% subset(., select=c(dataid, sampleid, 
                                   possth, 
@@ -142,9 +143,17 @@ pos <- soilSTH %>% subset(., select=c(dataid, sampleid,
   mutate(target=gsub("pos","", target))
 
 quant <- soilSTH %>% subset(., select=c(dataid, sampleid, 
-                                    logsth, logal, logtt)) %>%
-  gather(logsth:logtt , key = target, value = log_conc) %>%
-  mutate(target=gsub("log","", target))
+                                        epgal, epgtt, epgsth)) %>%
+  gather(epgal:epgsth , key = target, value = abund) %>%
+  mutate(target=case_when(
+    target=="epgal" ~ "sth",
+    target=="epgsth" ~ "ascaris",
+    target=="epgtt"  ~ "trichuris"
+  ))
+
+
+
+
 
 soilSTH <- full_join(pos, quant, by=c("dataid","sampleid","target"))
 

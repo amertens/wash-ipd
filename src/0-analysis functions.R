@@ -16,6 +16,7 @@ aim1_glm <- function(d, Ws=NULL, outcome="pos", study="mapsan", type="ds", targe
   
   df$Y <- df[[outcome]]
   Wvars<-NULL
+  minN<-NA
   
   if(length(unique(df$Y))<=2){
     if(length(unique(df$Y))>1){
