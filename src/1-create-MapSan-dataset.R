@@ -14,6 +14,10 @@ table(env$status)
 table(env$detect)
 table(env$status, env$detect)
 
+#Drop cultured E.Coli
+table(env$target)
+env <- env %>% filter(target!="cEC")
+
 #Subset to aim 1 variables and save dataset
 env <- env %>% select(sampleid, clusterid, hh, survey, type, type_def, samp_level, 
                       target, effort, status, detect, logquant, censored, censquant)

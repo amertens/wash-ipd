@@ -46,8 +46,56 @@ d %>% distinct(study, type, target)
 
 
 table(d$pos)
+
+#NOTE!!! Figure out what pos=2 is 
 d <- d %>% filter(pos!=2)
 
+
+
+#create aggregate outcomes
+head(d)
+d %>% distinct(study, target)
+
+
+#create aggregate outcomes
+
+
+XXXXXXXXXXXXXXXXXXXXXX
+Note:
+  Need to keep covariates in the individual data frame because of sammple-specific vars
+  and just make a cov dataframe with hh-level vars merged into the aggregate dateset
+ plus fix dataframe names
+ Note 2: I updated code to do this, but causing duplicated in the aggregate dataframe... one covariate must vary across HH... check maybe maternal?
+XXXXXXXXXXXXX
+
+#covariates
+cov <- d %>% subset(., select = -c(target, pos, abund, abund_only_detect, censored)) %>% distinct(.)
+d_agg <- d %>% group_by(study, tr,  dataid, clusterid, round, type) %>%
+  summarise(any_entero = 1*(sum(pos)>0),
+         any_human_MST = 1*(sum(pos==1 & target %in% c("Hum", "HF183","Mnif","sth"))>0),
+         any_animal_MST = 1*(sum(pos==1 & target %in% c("BC","br","av","GFD"))>0)
+         ) %>% ungroup()
+table(d_agg$any_entero)
+table(d_agg$any_human_MST)
+table(d_agg$any_animal_MST)
+
+dim(d)
+dim(d_ind)
+dim(d_agg)
+dim(cov)
+df <- left_join(d_agg, cov, by=c("study","tr","dataid","clusterid","round","type"))
+dim(df)
+df <- bind_rows(d, df)
+dim(df)
+
+
+
+#mark aggregate outcomes
+d <- d %>% mutate(
+      aggregate_Y = case_when(
+        target %in% c("sth","any_entero","any_human_MST","any_animal_MST") ~ 1,
+        !(target %in% c("sth","any_entero","any_human_MST","any_animal_MST")) ~ 0
+        ))
 
 
 saveRDS(d, file=paste0(dropboxDir,"Data/cleaned_ipd_env_data.rds"))

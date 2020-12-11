@@ -17,6 +17,8 @@ qPCR <- read.csv(paste0(dropboxDir,"Data/WBB/washb_qPCR_10_23_18_adjusted_var.cs
 soilSTH <- read_dta(paste0(dropboxDir,"Data/WBB/WASHB-soil-sth.dta"))
 #world bank mst data
 WB <- read_dta(paste0(dropboxDir,"Data/WBB/BDdata_20AUG16_GENBAC_ADJUSTED_AMY.dta"))
+#abundance data
+
 
 qPCR_quant <- read.csv(paste0(dropboxDir,"Data/WBB/Erica - washb_qPCR_quant_10_23_18_adjusted_var_abundance.csv"))  %>% select(Assay:log.LOQ.)
 head(qPCR)
@@ -101,13 +103,13 @@ WB2 <- WB %>% subset(., select = c(
   S_hm_1_0,
   WLGgbcp100ml,
   HLGgbcp2hds,
-  SLGgbcpgram)) %>%
+  SLGgbcpgram,
+  fracmoisturesoil)) %>%
   rename(dataid=pid)
 colnames(WB2) <- gsub("_combo","",colnames(WB2))
 colnames(WB2) <- gsub("_0_1","",colnames(WB2))
 colnames(WB2) <- gsub("_1_0","",colnames(WB2))
 
-#WB2 <- as.
 for(i in 1:ncol(WB2)){
   WB2[,i]<- na_if(WB2[,i], 9999)
   WB2[,i]<- na_if(WB2[,i], 99999)
@@ -127,8 +129,9 @@ WB3 <- WB2 %>%
 head(WB3)
 WB3$type <- str_split(WB3$target,"_", simplify = T)[,1]
 WB3$target <- str_split(WB3$target,"_", simplify = T)[,2]
+WB3$target[WB3$target=="hm"] <-  "Hum"
 WB3$round <- "World Bank"
-WB3$abund <- ifelse(WB3$target=="gbc",WB3$pos,NA)
+WB3$abund <- ifelse(WB3$target=="gbc", WB3$pos, NA)
 WB3$pos[WB3$target=="gbc"] <- NA
 
 
