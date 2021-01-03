@@ -15,6 +15,8 @@ aim1_glm <- function(d, Ws=NULL, outcome="pos", study="mapsan", type="ds", targe
   #print(head(df))
   
   df$Y <- df[[outcome]]
+  print(summary(df$Y))
+  
   Wvars<-NULL
   minN<-NA
   
@@ -25,6 +27,7 @@ aim1_glm <- function(d, Ws=NULL, outcome="pos", study="mapsan", type="ds", targe
       minN <- 0
     }
   }
+  
   if(minN>=10 | length(unique(df$Y))>2){
     
     if(!is.null(Ws)){
@@ -47,7 +50,14 @@ aim1_glm <- function(d, Ws=NULL, outcome="pos", study="mapsan", type="ds", targe
         Wvars <- NULL
       }
       df <- df %>% subset(., select =c("Y","tr","clusterid", Wvars))
+      cat("N before dropping missing: ", nrow(df),"\n")
       df <- df[complete.cases(df),]
+      cat("N after dropping missing: ", nrow(df),"\n")
+    }else{
+      df <- df %>% subset(., select =c("Y","tr","clusterid"))
+      cat("N before dropping missing: ", nrow(df),"\n")
+      df <- df[complete.cases(df),]
+      cat("N after dropping missing: ", nrow(df),"\n")
     }
     
     #model formula
@@ -120,13 +130,13 @@ aim1_glm <- function(d, Ws=NULL, outcome="pos", study="mapsan", type="ds", targe
 
 mpreg <- function(formula, df, vcv=FALSE, family) {
   # modified Poisson regression formula
-  # dataaset used to fit the model	
+  # dataset used to fit the model	
   if(family!="neg.binom"){
     fit <- glm(as.formula(formula),family=family,  data=df)
   }else{
     fit <- MASS::glm.nb(as.formula(formula), data=df)
   }
-  vcovCL <- cl(df=df,fm=fit,cluster=df$clusterid)
+  vcovCL <- cl(df=df, fm=fit, cluster=df$clusterid)
   rfit <- coeftest(fit, vcovCL)
   #print(summary(fit))
   #cat("\n\nRobust, Sandwich Standard Errors Account for Clustering:\n")

@@ -16,8 +16,7 @@ PEC <- read.csv(paste0(dropboxDir,"Data/WBB/washb_PEC_10_23_18_adjusted_var.csv"
 qPCR <- read.csv(paste0(dropboxDir,"Data/WBB/washb_qPCR_10_23_18_adjusted_var.csv"))  
 soilSTH <- read_dta(paste0(dropboxDir,"Data/WBB/WASHB-soil-sth.dta"))
 #world bank mst data
-WB <- read_dta(paste0(dropboxDir,"Data/WBB/BDdata_20AUG16_GENBAC_ADJUSTED_AMY.dta"))
-#abundance data
+WB <- readRDS(paste0(dropboxDir,"Data/WBB/Clean/WBB_WB_env.RDS"))
 
 
 qPCR_quant <- read.csv(paste0(dropboxDir,"Data/WBB/Erica - washb_qPCR_quant_10_23_18_adjusted_var_abundance.csv"))  %>% select(Assay:log.LOQ.)
@@ -83,59 +82,12 @@ qPCR <- qPCR %>% subset(., select=c(PID, Month.Collected, Unique.Numerical.ID, S
          type=Sample.Type)
 head(qPCR)
 
-#world bank MST data
-WB2 <- WB %>% subset(., select = c(
-  pid,
-  arm,
-  ruminant_0_1,
-  birds_0_1,
-  W_br_1_0,
-  H_br_1_0,
-  S_br_1_0_combo,
-  W_av_1_0_combo,
-  H_av_1_0_combo,
-  S_av_1_0_combo,
-  W_rv_1_0,
-  H_rv_1_0,
-  S_rv_1_0,
-  W_hm_1_0,
-  H_hm_1_0,
-  S_hm_1_0,
-  WLGgbcp100ml,
-  HLGgbcp2hds,
-  SLGgbcpgram,
-  fracmoisturesoil)) %>%
-  rename(dataid=pid)
-colnames(WB2) <- gsub("_combo","",colnames(WB2))
-colnames(WB2) <- gsub("_0_1","",colnames(WB2))
-colnames(WB2) <- gsub("_1_0","",colnames(WB2))
-
-for(i in 1:ncol(WB2)){
-  WB2[,i]<- na_if(WB2[,i], 9999)
-  WB2[,i]<- na_if(WB2[,i], 99999)
-}
-glimpse(WB2)
-
-WB3 <- WB2 %>%
-  gather(W_br:SLGgbcpgram  , key = target, value = pos) %>%
-  filter(!is.na(pos)) %>%
-  mutate(target = case_when(
-    target=="HLGgbcp2hds" ~ "H_gbc",
-    target=="SLGgbcpgram" ~ "S_gbc",
-    target=="WLGgbcp100ml" ~ "W_gbc",
-    target==target ~ target
-  ))
-  #mutate(target=gsub("pos","", target))
-head(WB3)
-WB3$type <- str_split(WB3$target,"_", simplify = T)[,1]
-WB3$target <- str_split(WB3$target,"_", simplify = T)[,2]
-WB3$target[WB3$target=="hm"] <-  "Hum"
-WB3$round <- "World Bank"
-WB3$abund <- ifelse(WB3$target=="gbc", WB3$pos, NA)
-WB3$pos[WB3$target=="gbc"] <- NA
 
 
-#soil sth
+
+#----------------------------------------------------------------------------
+#Merge in env. STH data
+#----------------------------------------------------------------------------
 soilSTH <- soilSTH %>% subset(., select=c(dataid, UniqueID, possth, posal, postt, epgal, epgtt, epgsth)) %>%
                        rename(sampleid=UniqueID)
 pos <- soilSTH %>% subset(., select=c(dataid, sampleid, 
@@ -143,44 +95,46 @@ pos <- soilSTH %>% subset(., select=c(dataid, sampleid,
                                   posal, 
                                   postt)) %>%
   gather(possth:postt, key = target, value = pos) %>%
-  mutate(target=gsub("pos","", target))
+  mutate(target=gsub("pos","", target),
+         target=case_when(
+           target=="sth" ~ "sth",
+           target=="al" ~ "ascaris",
+           target=="tt"  ~ "trichuris"
+         )) %>% distinct(.)
 
 quant <- soilSTH %>% subset(., select=c(dataid, sampleid, 
                                         epgal, epgtt, epgsth)) %>%
   gather(epgal:epgsth , key = target, value = abund) %>%
   mutate(target=case_when(
-    target=="epgal" ~ "sth",
-    target=="epgsth" ~ "ascaris",
+    target=="epgsth" ~ "sth",
+    target=="epgal" ~ "ascaris",
     target=="epgtt"  ~ "trichuris"
-  ))
+  )) %>% distinct(.)
 
+dim(pos)
+dim(quant)
+dim(soilSTH)
+soilSTH <- full_join(pos, quant, by=c("dataid","sampleid","target")) #%>% distinct(.)
+dim(soilSTH)
+table(is.na(soilSTH$pos),is.na(soilSTH$abund))
 
-
-
-
-soilSTH <- full_join(pos, quant, by=c("dataid","sampleid","target"))
-
-soilSTH$target[soilSTH$target=="al"] <- "ascaris"
-soilSTH$target[soilSTH$target=="tt"] <- "trichuris"
 soilSTH$type="S"
 soilSTH$dataid <- as.numeric(soilSTH$dataid)
 soilSTH$sampleid <- as.numeric(soilSTH$sampleid)
 head(soilSTH)
 
+#----------------------------------------------------------------------------
 #Merge env datasets
-env <- bind_rows(PEC, qPCR, soilSTH)
-env$round <- "WBB followup"
-env <- bind_rows(env, WB3)
+#----------------------------------------------------------------------------
 
-head(env)
+env <- bind_rows(PEC, qPCR, soilSTH)
+env$round <- "followup"
+env$sampleid <- as.character(env$sampleid)
+env <- bind_rows(env, WB)
 
 
 #Create asset PCA in WBB covariates
 colnames(enrol)
-
-
-
-
 df <-  enrol %>% subset(., select=c("dataid","roof","walls","cement","elec","asset_radio",
                       "asset_tvbw",      "asset_tvcol",     "asset_refrig",    "asset_bike",      "asset_moto",     
                       "asset_sewmach",   "asset_phone",     "asset_tv",        "asset_wardrobe",  "asset_table",    
@@ -229,89 +183,89 @@ enrol <-  enrol %>% subset(., select= -c(roof,walls,cement,elec,asset_radio,
                                     n_asset_khat,  n_asset_chouki,  n_asset_mobile)) 
 
 #Merge in covariates
+dim(env)
 env <- left_join(env, enrol, by=c("dataid"))
 env <- left_join(env, tr, by=c("block","clusterid"))
+dim(env)
+
+table(env$tr)
+table(is.na(env$tr))
+
 env <- env %>% filter(env$tr!="WSH")
 
-env <- env %>% rename(
-  abund_only_detect=logquant,
-  abund=censquant  
-)
-
+#Harmonize sample type codes
+env$type[env$type=="SW"] <- "W"
 
 saveRDS(env, paste0(dropboxDir, "Data/WBB/Clean/WBB_env.RDS"))
 
 
 
-#----------------------------------------------------------------------------
-#Merge in env. STH data
-#----------------------------------------------------------------------------
 
 
-#----------------------------------------------------------------------------
-#Make child health
-#----------------------------------------------------------------------------
-
-
-# Load Wash Benefits Bangladesh primary datasets
-anthro <- read.csv(paste0(dropboxDir,"Data/WBB/washb-bangladesh-anthro.csv"))
-diar <- read.csv(paste0(dropboxDir,"Data/WBB/washb-bangladesh-diar.csv"))
-parasites <- read_dta(paste0(dropboxDir,"Data/WBB/wbb-parasite.dta"))
-  
- 
-# Harmonizing anthro variable names with diar ahead of binding them
-anthro<-anthro%>%
-          rename(agedays=aged,
-                 ageyrs=agey,
-                 svydate=anthrodate)
-anthro<-anthro%>%
-          mutate(svyyear=year(dmy(svydate)),
-                 svyweek=week(dmy(svydate)))
-
-
-
-
-#----------------------------------------------------------------------------
-#Merge in STH data
-#----------------------------------------------------------------------------
-
-# reading in public IDs
-pub_ids <- read.csv(paste0(dropboxDir,"Data/WBB/public-ids.csv"))
-
-
-
-# merge in public IDs to anthro/diar
-anthro_diar_pub <- inner_join(anthro_diar,pub_ids,by=c("block","clusterid","dataid"))
-
-# Load Wash Benefits Bangladesh child soil transmitted helminth datasets
-sth <- read.csv(paste0(dropboxDir,"Data/WBB//washb-bangladesh-sth-public.csv"))
-
-#subset to needed variables
-# Trimming vars that overlap with enrol.csv (which will be merged later)
-intersect_sth_enrol<-intersect(names(sth),names(enrol))[-1]
-sth <- sth[,which(!(colnames(sth) %in% intersect_sth_enrol))]
-head(sth)
-
-sth <- sth %>% subset(., select = c(dataid, personid,tr,sex, agem, logalepg, loghwepg, logttepg, al, tt, hw, sth))
-
-#merge in public IDs
-sth <- left_join(sth, pub_ids, by="dataid")
-
-# Harmonizing sth variable names to facilitate bind with anthro/diar/env
-sth <- sth %>% subset(., select = -c(dataid, block, clusterid)) %>%
-           rename(dataid=dataid_r,
-                  clusterid=clusterid_r,
-                  block=block_r,
-                  childid=personid)
-
-
-# binding child health outcomes
-anthro$measure = "anthro"
-diar$measure = "diar"
-sth$measure = "sth"
-child_health <- bind_rows(anthro, diar, sth)
-
-saveRDS(child_health, paste0(dropboxDir, "Data/WBB/Clean/WBB_child_health.RDS"))
+# #----------------------------------------------------------------------------
+# #Make child health
+# #----------------------------------------------------------------------------
+# 
+# 
+# # Load Wash Benefits Bangladesh primary datasets
+# anthro <- read.csv(paste0(dropboxDir,"Data/WBB/washb-bangladesh-anthro.csv"))
+# diar <- read.csv(paste0(dropboxDir,"Data/WBB/washb-bangladesh-diar.csv"))
+# parasites <- read_dta(paste0(dropboxDir,"Data/WBB/wbb-parasite.dta"))
+#   
+#  
+# # Harmonizing anthro variable names with diar ahead of binding them
+# anthro<-anthro%>%
+#           rename(agedays=aged,
+#                  ageyrs=agey,
+#                  svydate=anthrodate)
+# anthro<-anthro%>%
+#           mutate(svyyear=year(dmy(svydate)),
+#                  svyweek=week(dmy(svydate)))
+# 
+# 
+# 
+# 
+# #----------------------------------------------------------------------------
+# #Merge in STH data
+# #----------------------------------------------------------------------------
+# 
+# # reading in public IDs
+# pub_ids <- read.csv(paste0(dropboxDir,"Data/WBB/public-ids.csv"))
+# 
+# 
+# 
+# # merge in public IDs to anthro/diar
+# anthro_diar_pub <- inner_join(anthro_diar,pub_ids,by=c("block","clusterid","dataid"))
+# 
+# # Load Wash Benefits Bangladesh child soil transmitted helminth datasets
+# sth <- read.csv(paste0(dropboxDir,"Data/WBB//washb-bangladesh-sth-public.csv"))
+# 
+# #subset to needed variables
+# # Trimming vars that overlap with enrol.csv (which will be merged later)
+# intersect_sth_enrol<-intersect(names(sth),names(enrol))[-1]
+# sth <- sth[,which(!(colnames(sth) %in% intersect_sth_enrol))]
+# head(sth)
+# 
+# sth <- sth %>% subset(., select = c(dataid, personid,tr,sex, agem, logalepg, loghwepg, logttepg, al, tt, hw, sth))
+# 
+# #merge in public IDs
+# sth <- left_join(sth, pub_ids, by="dataid")
+# 
+# # Harmonizing sth variable names to facilitate bind with anthro/diar/env
+# sth <- sth %>% subset(., select = -c(dataid, block, clusterid)) %>%
+#            rename(dataid=dataid_r,
+#                   clusterid=clusterid_r,
+#                   block=block_r,
+#                   childid=personid)
+# 
+# 
+# # binding child health outcomes
+# anthro$measure = "anthro"
+# diar$measure = "diar"
+# sth$measure = "sth"
+# child_health <- bind_rows(anthro, diar, sth)
+# 
+# saveRDS(child_health, paste0(dropboxDir, "Data/WBB/Clean/WBB_child_health.RDS"))
 
 #Old code to merge in ecoli measures
 

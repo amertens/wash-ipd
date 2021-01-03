@@ -32,10 +32,18 @@ env <- env %>% mutate(
 head(env)
 
 
+#Get censoring values
+d <- env %>% filter(censored!="none") %>% 
+  mutate(grp=paste0(type, "-", target, "-", censored)) %>%
+  select(grp,censquant) %>%
+  droplevels(.)
+table(d$type, d$censquant, d$target)
 
+d %>% group_by(type, target, censored) %>% do(res=data.frame(summary(censquant))) 
 
+library(psych)
 
-
+describeBy(d, group="grp")
 
 #----------------------------------------
 #make health dataset

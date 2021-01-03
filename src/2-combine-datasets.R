@@ -3,7 +3,19 @@ rm(list=ls())
 source(here::here("0-config.R"))
 
 mapsan <- readRDS(paste0(dropboxDir,"Data/MapSan/mapsan_env_cleaned.rds"))
-mapsan <- mapsan %>% mutate(study="mapsan")
+mapsan <- mapsan %>% mutate(study="mapsan") %>%
+    #harmonize coding of sample types
+    mutate(
+      type = case_when(
+        type=="ds" ~ "S",
+        type=="fp" ~ "FP",
+        type=="hw" ~ "S",
+        type=="ls" ~ "LS",
+        type=="wp" ~ "SW"
+      )      
+    )
+
+
 
 WBB <- readRDS(paste0(dropboxDir, "Data/WBB/Clean/WBB_env.RDS"))
 WBB <- WBB %>% mutate(study="WBB")
@@ -18,8 +30,6 @@ table(WBB$tr, WBB$pos)
 
 WBK$tr = sample(WBK$tr, nrow(WBK))
 mapsan$tr = sample(mapsan$tr, nrow(mapsan))
-
-
 
 colnames(mapsan)
 colnames(WBB)
@@ -46,9 +56,9 @@ d %>% distinct(study, type, target)
 
 
 table(d$pos)
+d$pos <- ifelse(d$pos==2, 1, d$pos)
+table(d$pos)
 
-#NOTE!!! Figure out what pos=2 is 
-d <- d %>% filter(pos!=2)
 
 
 
@@ -60,42 +70,69 @@ d %>% distinct(study, target)
 #create aggregate outcomes
 
 
-XXXXXXXXXXXXXXXXXXXXXX
-Note:
-  Need to keep covariates in the individual data frame because of sammple-specific vars
-  and just make a cov dataframe with hh-level vars merged into the aggregate dateset
- plus fix dataframe names
- Note 2: I updated code to do this, but causing duplicated in the aggregate dataframe... one covariate must vary across HH... check maybe maternal?
-XXXXXXXXXXXXX
+# XXXXXXXXXXXXXXXXXXXXXX
+# Note:
+#   Need to keep covariates in the individual data frame because of sammple-specific vars
+#   and just make a cov dataframe with hh-level vars merged into the aggregate dateset
+#  plus fix dataframe names
+#  Note 2: I updated code to do this, but causing duplicated in the aggregate dataframe... one covariate must vary across HH... check maybe maternal?
+# XXXXXXXXXXXXX
 
 #covariates
-cov <- d %>% subset(., select = -c(target, pos, abund, abund_only_detect, censored)) %>% distinct(.)
+dim(d)
+#compound covariates
+cov <- d %>% group_by(study, tr,  dataid, clusterid, round, type) %>%
+  #arrange(Nhh, floor, hhwealth) %>% fill(Nhh, floor, hhwealth) %>%
+  slice(1) %>% ungroup() %>%
+  subset(., select = -c(target, pos, abund, abund_only_detect, censored)) %>% 
+  distinct(.)
+dim(cov)
+
 d_agg <- d %>% group_by(study, tr,  dataid, clusterid, round, type) %>%
-  summarise(any_entero = 1*(sum(pos)>0),
+  summarise(any_pathogen = 1*(sum(pos)>0),
          any_human_MST = 1*(sum(pos==1 & target %in% c("Hum", "HF183","Mnif","sth"))>0),
          any_animal_MST = 1*(sum(pos==1 & target %in% c("BC","br","av","GFD"))>0)
          ) %>% ungroup()
-table(d_agg$any_entero)
+table(d_agg$any_pathogen)
 table(d_agg$any_human_MST)
 table(d_agg$any_animal_MST)
 
+d_any_pathogen <- d_agg %>% rename(pos=any_pathogen) %>% select(study, tr,dataid,clusterid,round, type, pos) %>% mutate(target="any_pathogen")
+d_any_human_MST <- d_agg %>% rename(pos=any_human_MST) %>% select(study, tr,dataid,clusterid,round, type, pos) %>% mutate(target="any_human_MST")
+d_any_animal_MST<- d_agg %>% rename(pos=any_animal_MST) %>% select(study, tr,dataid,clusterid,round, type, pos) %>% mutate(target="any_animal_MST")
+
+d_agg <- bind_rows(d_any_pathogen, d_any_human_MST, d_any_animal_MST)
+table(d_agg$pos)
+
 dim(d)
-dim(d_ind)
 dim(d_agg)
 dim(cov)
 df <- left_join(d_agg, cov, by=c("study","tr","dataid","clusterid","round","type"))
 dim(df)
-df <- bind_rows(d, df)
-dim(df)
+d <- bind_rows(d, df)
+dim(d)
 
+table(d$target)
 
 
 #mark aggregate outcomes
 d <- d %>% mutate(
       aggregate_Y = case_when(
-        target %in% c("sth","any_entero","any_human_MST","any_animal_MST") ~ 1,
-        !(target %in% c("sth","any_entero","any_human_MST","any_animal_MST")) ~ 0
+        target %in% c("sth","any_pathogen","any_human_MST","any_animal_MST") ~ 1,
+        !(target %in% c("sth","any_pathogen","any_human_MST","any_animal_MST")) ~ 0
         ))
 
+#Create rows for positivity in any sample type
+dim(d)
+table(d$pos)
+table(is.na(d$pos))
+df <- d %>% mutate(abund=NA) %>% filter(!is.na(pos)) %>%
+  group_by(study, tr,  dataid, clusterid, round, target) %>%
+  mutate(pos=max(pos, na.rm = TRUE), type="any sample type") %>% 
+  slice(1)
+dim(df)
+table(df$pos)
+
+d <- bind_rows(d , df)
 
 saveRDS(d, file=paste0(dropboxDir,"Data/cleaned_ipd_env_data.rds"))
