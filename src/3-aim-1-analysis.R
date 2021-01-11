@@ -151,14 +151,14 @@ saveRDS(res, file=here("results/adjusted_aim1_diff.Rds"))
 #-----------------------------------
 # Adjusted RR - subgroup analyses
 #-----------------------------------
-res <- d %>% group_by(study, round, type, target, aggregate_Y) %>%
-  do(aim1_glm(., outcome="pos", study=.$study[1], type=.$type[1], target=.$target[1], Ws=Wvars, family="binomial"))
-res
-
-#drop estimates with less than 10 values
-res <- res %>% filter(minN>=10)
-
-saveRDS(res, file=here("results/adjusted_aim1_RR_subgroup.Rds"))
+# res <- d %>% group_by(study, round, type, target, aggregate_Y) %>%
+#   do(aim1_glm(., outcome="pos", study=.$study[1], type=.$type[1], target=.$target[1], Ws=Wvars, family="binomial"))
+# res
+# 
+# #drop estimates with less than 10 values
+# res <- res %>% filter(minN>=10)
+# 
+# saveRDS(res, file=here("results/adjusted_aim1_RR_subgroup.Rds"))
 
 
 

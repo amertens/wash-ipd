@@ -14,12 +14,22 @@ table(env$status)
 table(env$detect)
 table(env$status, env$detect)
 
-#Drop cultured E.Coli
+#Drop cultured and qPCR E.Coli
 table(env$target)
-env <- env %>% filter(target!="cEC")
+env <- env %>% filter(target!="cEC" & target!="EC23S")
+
+#mark seasons
+#https://weatherspark.com/y/97168/Average-Weather-in-Maputo-Mozambique-Year-Round
+#The wetter season lasts 5.5 months, from October 23 to April 9
+table(env$samp_date)
+#all observations in dry season
+env <- env %>% mutate(
+  season = "dry"
+  )
+ 
 
 #Subset to aim 1 variables and save dataset
-env <- env %>% select(sampleid, clusterid, hh, survey, type, type_def, samp_level, 
+env <- env %>% select(sampleid, clusterid, hh, survey, season, type, type_def, samp_level, 
                       target, effort, status, detect, logquant, censored, censquant)
 
 #clean variables for merge
@@ -33,17 +43,48 @@ head(env)
 
 
 #Get censoring values
-d <- env %>% filter(censored!="none") %>% 
-  mutate(grp=paste0(type, "-", target, "-", censored)) %>%
-  select(grp,censquant) %>%
-  droplevels(.)
-table(d$type, d$censquant, d$target)
+# d <- env %>% filter(censored!="none") %>% 
+#   mutate(grp=paste0(type, "-", target, "-", censored)) %>%
+#   select(grp,censquant) %>%
+#   droplevels(.)
+# table(d$type, d$censquant, d$target)
+# 
+# d %>% group_by(type, target, censored) %>% do(res=data.frame(summary(censquant))) 
+# 
+# library(psych)
+# 
+# describeBy(d, group="grp")
 
-d %>% group_by(type, target, censored) %>% do(res=data.frame(summary(censquant))) 
 
-library(psych)
+#----------------------------------------
+# merge in env. pathogen data
+#----------------------------------------
 
-describeBy(d, group="grp")
+
+#load soil pathogen data
+soil <- read.csv(paste0(dropboxDir,"Data/MapSan/mapsan_soil_pathogens.csv"))
+colnames(env)
+colnames(soil)
+head(soil)
+soil <- soil %>% filter(phase=="24M") %>%
+  mutate(animal_in_compound = ifelse(dog_observed=="Yes" | chicken_duck_observed=="Yes" | cat_observed=="Yes", 1, 0)) %>%
+  subset(., select=c(compound, adenovirus_40_41:campylobacter_jejuni_coli, trial_arm, animal_in_compound)) %>%
+  gather(adenovirus_40_41:campylobacter_jejuni_coli, key = target, value = detect ) %>%
+  mutate(type="S", dataid=compound, logquant=NA) %>%
+  rename(clusterid=compound )
+#Notes: keep in the intervention variable to check merging accuracy
+    
+
+#Drop non-included targets
+soil <- soil %>% filter(
+  !(target %in% c("enteroaggregative_Ecoli","enteropathogenic_Ecoli","enterotoxigenic_Ecoli","shiga_toxin_producing_Ecoli"))
+)
+
+head(env)
+head(soil)
+unique(soil$target)
+
+env <- bind_rows(env, soil)
 
 #----------------------------------------
 #make health dataset
@@ -148,6 +189,10 @@ env2 <- left_join(env, child_tr, by = c("clusterid"))
 table(is.na(env2$studyArm_binary))
 dim(env2)
 
+#Figure out why treatment arms don't line up in soil data
+df <- left_join(soil, child_tr, by = c("clusterid"))
+table(df$studyArm_binary, df$trial_arm)
+
 #then merge full data
 d <- full_join(child, env2, by = c("clusterid", "survey", "hh", "studyArm_binary"))
 dim(d)
@@ -174,7 +219,15 @@ d <- d %>%
          elec=compElec,
          abund_only_detect=logquant,
          abund=censquant
-         )
+         )%>%
+  mutate(tr=case_when(
+    tr=="0" ~ "Control",
+    tr=="1" ~ "Sanitation"
+  ),
+  round=case_when(round==0~"0m",
+                  round==1~"12m"),
+  tr = factor(tr, levels = c("Control", "Sanitation"))
+  )
 
 
 saveRDS(d, file=paste0(dropboxDir,"Data/MapSan/mapsan_cleaned.rds"))
@@ -185,30 +238,19 @@ colnames(d)
 env_clean <- d %>% subset(., select = c(sampleid, clusterid, tr,
   dataid,  hh, round, type, type_def, samp_level, target,
   effort, pos, abund_only_detect, abund, censored,
-  Nhh, hhwealth, nrooms, walls, floor, elec
+  Nhh, hhwealth, nrooms, walls, floor, elec, season, compAnyAnimal
 )) 
 
-
-env_clean <- env_clean %>% subset(., select = c(sampleid, dataid, clusterid, tr, type, target, pos, abund_only_detect, censored, abund, round, Nhh, 
-                                                #momage, momheight, momedu, 
-                                                #dadagri, landacre, hfiacat,watmin,  
-                                                floor, hhwealth)) %>%
-  mutate(tr=case_when(
-    tr=="0" ~ "Control",
-    tr=="1" ~ "Sanitation"
-  ),
-  round=case_when(round==0~"0m",
-                   round==1~"12m"),
-  tr = factor(tr, levels = c("Control", "Sanitation"))
-  )
 
 #Subset to hh-level observations
 dim(env)
 dim(d)
 env_clean <- env_clean %>% 
-             distinct(.) %>%
+             distinct(sampleid, dataid, clusterid, tr, type, target, .keep_all=TRUE) %>%
              filter(!is.na(type), type!="") 
 dim(env_clean)
+
+table(env_clean$target, env_clean$pos, env_clean$type)
 
 #Save environmental data
 saveRDS(env_clean, file=paste0(dropboxDir,"Data/MapSan/mapsan_env_cleaned.rds"))

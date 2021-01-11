@@ -57,7 +57,7 @@ library(caret)
 # concentration of a molecular target in non-target host feces must be below the range of
 # target concentrations detected in target host feces. For the specificity analysis, only
 # concentrations detected within in the ROQ were considered5
-.
+
 
 #----------------------------------------------------------------------------
 # Compiled Soil
@@ -389,9 +389,9 @@ df <- df %>%
       type=="H" & detect==0 ~ 125, 
       type=="W" & detect==0 ~ 50,
       type=="S" & detect==0 ~ 400, #Need to make based on soil moisture
-      type=="H" & detect!=0 & qual=="BLOQ" ~ 625, 
-      type=="W" & detect!=0 & qual=="BLOQ" ~ 250,
-      type=="S" & detect!=0 & qual=="BLOQ" ~ 2000, #Need to make based on soil moisture
+      type=="H" & detect!=0 & qual=="BLOQ" ~ (1250-125)/2, 
+      type=="W" & detect!=0 & qual=="BLOQ" ~ (500-50)/2,
+      type=="S" & detect!=0 & qual=="BLOQ" ~ (4000-400)/2, #Need to make based on soil moisture
       qual=="DNQ" ~ NA_real_,
       qual=="ROQ" ~ abund
     )

@@ -54,60 +54,60 @@ pander(res, digits=2, caption = "Descriptive statistics of measured children by 
 ```{r, echo=F, warning=F, message=F, fig.width = 10, fig.height = 3.5}
 load(here("figures/figure_objects.Rdata"))
 
-p_prim_pooled
+p1
 
 ```
 
 __Figure 1.__ Forest plots of intervention effects on any enteropathogen, and any general,  human and animal MST markers in different types of environmental samples.
 
 ```{r, echo=F, warning=F, message=F, fig.width = 10, fig.height = 3.5}
-p_prim_pooled
+pS1
 ```
 
 __Figure S1.__ Prevalence of any virus, any bacteria, any protozoa and any STH 
 
 ```{r, echo=F, warning=F, message=F, fig.width = 10, fig.height = 3.5}
-p_prim_pooled
+pS2
 ```
 
 __Figure S2.__ Prevalence of pathogen with human hosts, and pathogen with human/animal hosts 
 
 ```{r, echo=F, warning=F, message=F, fig.width = 10, fig.height = 3.5}
-p_prim_pooled
+pS3
 ```
 
 __Figure S3.__ Prevalence of specific pathogens 
 
 
 ```{r, echo=F, warning=F, message=F, fig.width = 10, fig.height = 3.5}
-p_prim_pooled
+pS4
 ```
 __Figure S4.__ Prevalence of specific MST markers 
 
 
 ```{r, echo=F, warning=F, message=F, fig.width = 10, fig.height = 3.5}
-p_prim_pooled
+pS5
 ```
 
 __Figure S5.__ Abundance of specific pathogens 
 
 
 ```{r, echo=F, warning=F, message=F, fig.width = 10, fig.height = 3.5}
-p_prim_pooled
+pS6
 ```
 
 __Figure S6.__ Abundance of specific MST markers 
 
 
 ```{r, echo=F, warning=F, message=F, fig.width = 10, fig.height = 3.5}
-p_prim_pooled
+pS7
 ```
 
 __Figure S7.__ Repeat of Figure 1, adjusted  
 
 
 ```{r, echo=F, warning=F, message=F, fig.width = 10, fig.height = 3.5}
-p_prim_pooled
+pS8
 ```
 
 __Figure S8.__ Repeat of Figure 1, broken down by rural/urban.

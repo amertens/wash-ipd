@@ -14,6 +14,8 @@ findVar <- function(var){
 }
 
 
+# Source water (n=1583) and drinking water (n=2044) were assayed for E. coli, Shigella spp., and V. cholerae, 
+# and children's hands (n=976)  for E. coli and Shigella spp.
 
 
 
