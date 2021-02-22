@@ -70,21 +70,33 @@ soil <- soil %>% filter(phase=="24M") %>%
   mutate(animal_in_compound = ifelse(dog_observed=="Yes" | chicken_duck_observed=="Yes" | cat_observed=="Yes", 1, 0)) %>%
   subset(., select=c(compound, adenovirus_40_41:campylobacter_jejuni_coli, trial_arm, animal_in_compound)) %>%
   gather(adenovirus_40_41:campylobacter_jejuni_coli, key = target, value = detect ) %>%
-  mutate(type="S", dataid=compound, logquant=NA) %>%
+  mutate(type="S", dataid=compound, logquant=NA, survey=2) %>%
   rename(clusterid=compound )
 #Notes: keep in the intervention variable to check merging accuracy
     
 
-#Drop non-included targets
-soil <- soil %>% filter(
-  !(target %in% c("enteroaggregative_Ecoli","enteropathogenic_Ecoli","enterotoxigenic_Ecoli","shiga_toxin_producing_Ecoli"))
-)
+#Create pathogenic E.coli Drop non-included targets
+ecoli_measures <- c("enteroaggregative_Ecoli","enteropathogenic_Ecoli","enterotoxigenic_Ecoli","shiga_toxin_producing_Ecoli")
+soil_pathogenic <- soil %>% group_by(clusterid, dataid, trial_arm, animal_in_compound, type) %>%
+  summarise(detect = 1*(sum(detect==1 & target %in% ecoli_measures))>0) %>%
+  mutate(target="pathogenic_ecoli")
+
+
+table(soil$target, soil$detect)
+table(soil_pathogenic$detect)
+
+soil <- bind_rows(soil, soil_pathogenic) %>% 
+  filter(!(target %in% ecoli_measures))
+table(soil$target, soil$detect)
 
 head(env)
 head(soil)
 unique(soil$target)
 
 env <- bind_rows(env, soil)
+
+table(env$target)
+env <- env %>% filter(target!="")
 
 #----------------------------------------
 #make health dataset
@@ -174,29 +186,40 @@ child <- child %>%
   mutate(hh=totHHid %% 100)
 
 
+#Check treatment assignments
+table(child$studyArm_ternary)
+table(soil$trial_arm)
 
+table(child$clusterid, child$studyArm_binary)
 
 
 #merge datasets
 dim(child)
 dim(env)
 
+#Update: get treatment from clusterid
 #first merge treatment arm by compound ID so source water/latrine soil is merged
 child_tr <- child %>% subset(., select = c("clusterid", "studyArm_binary")) %>% distinct(.)
-
+child[child$clusterid==2082,]
+soil[soil$clusterid==2082, ]
 dim(child_tr)
 env2 <- left_join(env, child_tr, by = c("clusterid"))
 table(is.na(env2$studyArm_binary))
 dim(env2)
 
-#Figure out why treatment arms don't line up in soil data
-df <- left_join(soil, child_tr, by = c("clusterid"))
-table(df$studyArm_binary, df$trial_arm)
+# #Figure out why treatment arms don't line up in soil data
+# df <- left_join(soil, child_tr, by = c("clusterid"))
+# table(is.na(df$studyArm_binary))
+# table(df$studyArm_binary, df$trial_arm)
+# 
+# df<-df %>% distinct(clusterid, studyArm_binary, trial_arm)
+# table(df$studyArm_binary, df$trial_arm)
 
 #then merge full data
 d <- full_join(child, env2, by = c("clusterid", "survey", "hh", "studyArm_binary"))
 dim(d)
 
+table(d$studyArm_binary)
 table(is.na(d$studyArm_binary))
 table(d$type, is.na(d$studyArm_binary))
  
@@ -207,7 +230,7 @@ table(d$type, is.na(d$studyArm_binary))
 
 #rename variables to standardize
 d <- d %>%
-  rename(tr=studyArm_binary,
+  rename(
          round=survey,
          pos=detect,
          hhwealth=povNormal,
@@ -220,15 +243,15 @@ d <- d %>%
          abund_only_detect=logquant,
          abund=censquant
          )%>%
-  mutate(tr=case_when(
-    tr=="0" ~ "Control",
-    tr=="1" ~ "Sanitation"
-  ),
+  #mutate(tr=ifelse(floor(clusterid/1000)==2,"Sanitation","Control"),
+  mutate(tr=ifelse(studyArm_binary==1,"Sanitation","Control"),
   round=case_when(round==0~"0m",
-                  round==1~"12m"),
+                  round==1~"12m",
+                  round==2~"24m"),
   tr = factor(tr, levels = c("Control", "Sanitation"))
   )
-
+table(d$tr, d$studyArm_ternary)
+table(d$tr, d$trial_arm)
 
 saveRDS(d, file=paste0(dropboxDir,"Data/MapSan/mapsan_cleaned.rds"))
 
@@ -238,7 +261,7 @@ colnames(d)
 env_clean <- d %>% subset(., select = c(sampleid, clusterid, tr,
   dataid,  hh, round, type, type_def, samp_level, target,
   effort, pos, abund_only_detect, abund, censored,
-  Nhh, hhwealth, nrooms, walls, floor, elec, season, compAnyAnimal
+  Nhh, hhwealth, nrooms, walls, floor, elec, season, compAnyAnimal, studyArm_binary
 )) 
 
 
@@ -251,6 +274,9 @@ env_clean <- env_clean %>%
 dim(env_clean)
 
 table(env_clean$target, env_clean$pos, env_clean$type)
+
+
+prop.table(table(env_clean$tr, env_clean$studyArm_binary))*100
 
 #Save environmental data
 saveRDS(env_clean, file=paste0(dropboxDir,"Data/MapSan/mapsan_env_cleaned.rds"))

@@ -2,19 +2,31 @@
 rm(list=ls())
 source(here::here("0-config.R"))
 
+
+#Gram vikas
+gv <- readRDS(paste0(dropboxDir,"Data/Gram Vikas/GV_env_cleaned.rds")) %>% mutate(study="Gram Vikas")
+head(gv)
+
+table(gv$target, gv$type, gv$pos)
+
+gv2 <- gv %>% filter(pos==1)
+table(gv2$target, gv2$type, gv2$round)
+
+#Mapsan
 mapsan <- readRDS(paste0(dropboxDir,"Data/MapSan/mapsan_env_cleaned.rds"))
 mapsan <- mapsan %>% mutate(study="mapsan") %>%
     #harmonize coding of sample types
     mutate(
       type = case_when(
+        type=="S" ~ "S",
         type=="ds" ~ "S",
         type=="fp" ~ "FP",
-        type=="hw" ~ "S",
+        type=="hw" ~ "W",
         type=="ls" ~ "LS",
         type=="wp" ~ "SW"
       )      
     )
-
+head(mapsan)
 
 
 WBB <- readRDS(paste0(dropboxDir, "Data/WBB/Clean/WBB_env.RDS"))
@@ -36,7 +48,7 @@ colnames(WBB)
 colnames(WBK)
 
 WBK <- WBK %>% rename( dataid=hhid, Nhh=num_hh, hhwealth=assetquintile, sampleid=soil_id) %>%
-  mutate(round="STH round")
+  mutate(round="")
 
 WBB <- WBB %>% subset(., select = c(study, sampleid, dataid, clusterid, tr, type, target, pos, abund, round, block, Nhh, momage, momheight, momedu, dadagri,landacre, hfiacat,watmin,  floor, hhwealth)) %>%
               mutate( tr = factor(tr, levels = c("Control", "Sanitation")))
@@ -50,8 +62,9 @@ WBK <- WBK %>% subset(., select = c(study, sampleid, dataid, clusterid, tr, type
 
 WBB$sampleid<-as.character(WBB$sampleid)
 WBK$sampleid<-as.character(WBK$sampleid)
+gv$round<-as.character(gv$round)
 #mapsan$momedu<-factor(mapsan$momedu)
-d <- bind_rows(WBB, WBK, mapsan)
+d <- bind_rows(WBB, WBK, mapsan, gv)
 colnames(d)
 
 d %>% distinct(study, type, target)
@@ -61,7 +74,8 @@ table(d$pos)
 d$pos <- ifelse(d$pos==2, 1, d$pos)
 table(d$pos)
 
-
+#harmonize sample types
+table(d$type,d$type_def)
 
 
 #create aggregate outcomes
@@ -72,7 +86,7 @@ d %>% distinct(study, target)
 unique(d$target)
 d <- d %>% mutate(
   target = case_when(
-    target=="ECVG" ~ "E. coli virulence gene",
+    target=="ECVG" ~ "Pathogenic E. coli",
     target=="Hum" ~ "HumM2",
     target=="BC" ~ "BacCow",
     target=="Gia" ~ "Giardia",
@@ -87,7 +101,6 @@ d <- d %>% mutate(
     target=="GFD" ~ "Avian (Helicobacter)",
     target=="HF183" ~ "Human (Bacteroides)",
     target=="Mnif" ~ "Human (M. smithii)",
-    
     target=="adenovirus_40_41" ~ "Adenovirus",
     target=="ascaris_lumbricoides" ~ "Ascaris",
     target=="astrovirus" ~ "Astrovirus",
@@ -105,9 +118,12 @@ d <- d %>% mutate(
     # target=="enteropathogenic_Ecoli" ~ "EPEC",
     # target=="enterotoxigenic_Ecoli" ~ "ETEC",
     # target=="shiga_toxin_producing_Ecoli" ~ "STEC",
+    target=="pathogenic_ecoli" ~ "Pathogenic E. coli",
     target=="norovirus_GI_GII" ~ "Norovirus"
   )
 )
+
+table(d$study, d$target)
 
 
 
@@ -117,13 +133,13 @@ unique(d$target)
 
 
 #pathogens:
-any_pathogens = c("E. coli virulence gene","Giardia",  "C. difficile",
+any_pathogens = c("E. coli virulence gene",  "Pathogenic E. coli", "Giardia",  "C. difficile",
                   "Shigella",  "Entamoeba histolytica",  "V. cholerae", "Yersinia",       
 "Norovirus",             "Any STH", "Ascaris",
 "Adenovirus","Trichuris",  "Rotavirus", "Astrovirus", "Cryptosporidium", "Salmonella")   
 
 any_virus = c("Norovirus",  "Adenovirus", "Rotavirus", "Astrovirus")   
-any_bacteria = c("E. coli virulence gene", "Yersinia",  "V. cholerae", "Shigella",  "C. difficile",  "Salmonella")   
+any_bacteria = c("E. coli virulence gene", "Pathogenic E. coli", "Yersinia",  "V. cholerae", "Shigella",  "C. difficile",  "Salmonella")   
 #any_helminth = c("Any STH", "Ascaris", "Trichuris")   
 any_protozoa = c("Giardia", "Cryptosporidium", "Entamoeba histolytica")   
 
@@ -141,28 +157,65 @@ animal_MST = c( "BacCow",
 human_MST = c("HumM2",  "Human (Bacteroides)",   "Human (M. smithii)")
 
 
-d_agg <- d %>% group_by(study, tr,  dataid, clusterid, round, type) %>%
-  summarise(
-    any_pathogen = 1*(sum(pos==1 & target %in% any_pathogens))>0,
-    any_virus = 1*(sum(pos==1 & target %in% any_virus))>0,                          
-    any_protozoa = 1*(sum(pos==1 & target %in% any_protozoa))>0,                          
-    any_bacteria = 1*(sum(pos==1 & target %in% any_bacteria))>0, 
-    any_general_MST = 1*(sum(pos==1 & target %in% general_MST))>0,                          
-    any_animal_MST = 1*(sum(pos==1 & target %in% animal_MST))>0,                          
-    any_human_MST = 1*(sum(pos==1 & target %in% human_MST))>0) %>% 
-  ungroup()
 
-d_any_pathogen <- d_agg %>% rename(pos=any_pathogen) %>% select(study, tr,dataid,clusterid,round, type, pos) %>% mutate(target="Any pathogen")
-d_any_virus <- d_agg %>% rename(pos=any_virus) %>% select(study, tr,dataid,clusterid,round, type, pos) %>% mutate(target="Any virus")
-d_any_protozoa <- d_agg %>% rename(pos=any_protozoa) %>% select(study, tr,dataid,clusterid,round, type, pos) %>% mutate(target="Any protozoa")
-d_any_bacteria <- d_agg %>% rename(pos=any_bacteria) %>% select(study, tr,dataid,clusterid,round, type, pos) %>% mutate(target="Any bacteria")
-d_any_general_MST <- d_agg %>% rename(pos=any_general_MST) %>% select(study, tr,dataid,clusterid,round, type, pos) %>% mutate(target="Any general MST")
-d_any_human_MST <- d_agg %>% rename(pos=any_human_MST) %>% select(study, tr,dataid,clusterid,round, type, pos) %>% mutate(target="Any human MST")
-d_any_animal_MST<- d_agg %>% rename(pos=any_animal_MST) %>% select(study, tr,dataid,clusterid,round, type, pos) %>% mutate(target="Any animal MST")
+
+# d_agg <- d %>% group_by(study, tr,  dataid, clusterid, round, type) %>%
+#   summarise(
+#     any_pathogen = 1*(sum(pos==1 & target %in% any_pathogens)>0),
+#     any_virus = 1*(sum(pos==1 & target %in% any_virus)>0),                          
+#     any_protozoa = 1*(sum(pos==1 & target %in% any_protozoa)>0),                          
+#     any_bacteria = 1*(sum(pos==1 & target %in% any_bacteria)>0), 
+#     any_general_MST = 1*(sum(pos==1 & target %in% general_MST)>0),                          
+#     any_animal_MST = 1*(sum(pos==1 & target %in% animal_MST)>0),                          
+#     any_human_MST = 1*(sum(pos==1 & target %in% human_MST)>0)) %>% 
+#   ungroup()
+# 
+# d_any_pathogen <- d_agg %>% rename(pos=any_pathogen) %>% select(study, tr,dataid,clusterid,round, type, pos) %>% mutate(target="Any pathogen")
+# d_any_virus <- d_agg %>% rename(pos=any_virus) %>% select(study, tr,dataid,clusterid,round, type, pos) %>% mutate(target="Any virus")
+# d_any_protozoa <- d_agg %>% rename(pos=any_protozoa) %>% select(study, tr,dataid,clusterid,round, type, pos) %>% mutate(target="Any protozoa")
+# d_any_bacteria <- d_agg %>% rename(pos=any_bacteria) %>% select(study, tr,dataid,clusterid,round, type, pos) %>% mutate(target="Any bacteria")
+# d_any_general_MST <- d_agg %>% rename(pos=any_general_MST) %>% select(study, tr,dataid,clusterid,round, type, pos) %>% mutate(target="Any general MST")
+# d_any_human_MST <- d_agg %>% rename(pos=any_human_MST) %>% select(study, tr,dataid,clusterid,round, type, pos) %>% mutate(target="Any human MST")
+# d_any_animal_MST<- d_agg %>% rename(pos=any_animal_MST) %>% select(study, tr,dataid,clusterid,round, type, pos) %>% mutate(target="Any animal MST")
+
+targets=any_protozoa
+name="Any protozoa"
+
+df <- d[d$target %in% any_protozoa,]
+dim(df)
+dim(df %>% distinct(sampleid, study, tr,  dataid, clusterid, round, type))
+table(df$pos, df$target)
+table(df$pos)
+
+agg_function <- function(targets, name){
+  #dtemp <- d %>% filter(target %in% !!(targets)) 
+  d_agg <- d %>% group_by(sampleid, study, tr,  dataid, clusterid, round, type) %>%
+    filter(target %in% !!(targets)) %>%
+    summarise(
+      any_pos = 1*(sum(pos==1)>0)) %>% 
+    ungroup()
+  table(d_agg$any_pos)
+  
+  d_agg <- d_agg %>% rename(pos=any_pos) %>% select(study, tr,dataid,clusterid,round, type, pos) %>% mutate(target=!!(name))
+  
+  return(d_agg)
+}
+
+d_any_pathogen <- agg_function(any_pathogens, "Any pathogen")
+d_any_virus <- agg_function(any_virus, "Any virus")
+d_any_protozoa <- agg_function(any_protozoa, "Any protozoa")
+d_any_bacteria <- agg_function(any_bacteria, "Any bacteria")
+
+d_any_general_MST <- agg_function(general_MST, "Any general MST")
+d_any_human_MST <- agg_function(human_MST, "Any human MST")
+d_any_animal_MST <- agg_function(animal_MST, "Any animal MST")
+
 
 d_agg <- bind_rows(d_any_pathogen, d_any_virus, d_any_protozoa, d_any_bacteria,
                    d_any_general_MST, d_any_human_MST, d_any_animal_MST)
 table(d_agg$pos)
+table(d_agg$target,d_agg$pos)
+table(d_agg$study, d_agg$target)
 
 
 # XXXXXXXXXXXXXXXXXXXXXX
@@ -192,6 +245,9 @@ d <- bind_rows(d, df)
 dim(d)
 
 table(d$target)
+table(d$study, d$target)
+
+
 
 
 #mark aggregate outcomes
@@ -215,6 +271,7 @@ df <- d %>% mutate(abund=NA) %>% filter(!is.na(pos)) %>%
   slice(1)
 dim(df)
 table(df$pos)
+table(df$target, df$pos)
 
 d <- bind_rows(d , df)
 

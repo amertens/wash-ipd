@@ -236,6 +236,9 @@ summary(df$abund[df$qual=="DNQ" & df$type=="H"])
 summary(df$abund[df$qual=="DNQ" & df$type=="W"])
 summary(df$abund[df$qual=="DNQ" & df$type=="S"])
 
+# #Mark GB3 positivity (not in other dataset)
+# table(df$target, df$qual)
+# table(df$target, df$detect )
 
 
 #----------------------------------------------------------------------------
@@ -244,7 +247,8 @@ summary(df$abund[df$qual=="DNQ" & df$type=="S"])
 
 
 WB <- read_dta(paste0(dropboxDir,"Data/WBB/BDdata_20AUG16_GENBAC_ADJUSTED_AMY.dta"))
-colnames(WB)
+lab<-makeVlist(WB)
+
 write.csv(WB, paste0(dropboxDir,"Data/WBB/BDdata_20AUG16_GENBAC_ADJUSTED_AMY.csv"))
 
 
@@ -331,11 +335,14 @@ dim(d1)
 dim(d2)
 table(d1$type, d1$target)
 table(d2$type, d2$target)
-df <- inner_join(d1, d2, by=c("uniqueID","target","type"))
+#df <- inner_join(d1, d2, by=c("uniqueID","target","type"))
+df <- right_join(d1, d2, by=c("uniqueID","target","type"))
+head(df)
 dim(df)
 table(df$type, df$target)
 #Note: one hand sample not merging, and a few water GBC
 table(df$detect, df$pos, df$type)
+table(df$detect, df$pos, df$target)
 
 #examine where hhid's don't match
 df[df$hhid!=df$dataid,] %>% select(hhid, dataid)
@@ -354,6 +361,15 @@ table(d2f$target)
 table(d1f$type)
 table(d2f$type)
 
+#mark positives for gbc
+df$pos[df$target=="gbc"] <- ifelse(df$detect[df$target=="gbc"]==0,0,1)
+df$pos[df$target=="gbc" & is.na(df$detect)] <- NA
+table(df$pos[df$target=="gbc"])
+
+#mark missing dataid
+temp<-sapply(strsplit(df$sampleid, "-"), "[", 2)
+temp<-as.numeric(sapply(strsplit(temp, "\\."), "[", 1))
+df$dataid[is.na(df$dataid)] <- temp[is.na(df$dataid)]
 
 
 #----------------------------------------------------------------------------

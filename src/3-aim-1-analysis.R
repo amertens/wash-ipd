@@ -7,11 +7,14 @@ d <- droplevels(d)
 
 #Drop baseline measure from mapsan
 d <- d %>% filter(round != "0m") %>% droplevels(.)
-
+table(d$study, d$round)
+table(d$study, d$target)
+table(d$type, d$target, d$study)
 
 #temporarily permute treatment assignment
-d <- d %>%  group_by(study) %>%
-  mutate(tr = sample(tr, replace=FALSE))  
+# set.seed(12345)
+# d <- d %>%  group_by(study, round) %>%
+#   mutate(tr = sample(tr, replace=FALSE))  
 
 
 
@@ -54,11 +57,9 @@ family="neg.binom"
 
 d %>% distinct(study, type, target) %>% as.data.frame()
 
-res <- aim1_glm(d, outcome="abund", study="mapsan", type="ds", target="HF183", Ws=Wvars, family="neg.binom")
+df <- d %>% filter(round=="4")
+res <- aim1_glm(df, outcome="pos", study="Gram Vikas", type="SW", target="Shigella", Ws=NULL, family="binomial")
 res
-
-#
-
 
 
 
@@ -66,7 +67,7 @@ res
 #-----------------------------------
 # Unadjusted RR
 #-----------------------------------
-res <- d %>% group_by(study, round, type, target, aggregate_Y) %>%
+res <- d %>% group_by(study, type, target, aggregate_Y) %>%
    do(aim1_glm(., outcome="pos", study=.$study[1], type=.$type[1], target=.$target[1], family="binomial"))
 res
 
@@ -82,10 +83,10 @@ saveRDS(res, file=here("results/unadjusted_aim1_RR.Rds"))
 #-----------------------------------
 # Unadjusted RD 
 #-----------------------------------
-res <- d %>% group_by(study, round, type, target, aggregate_Y) %>%
+res <- d %>% group_by(study, type, target, aggregate_Y) %>%
   do(aim1_glm(., outcome="pos", study=.$study[1], type=.$type[1], target=.$target[1], family="gaussian"))
 res
-
+table(res$study)
 summary(res$coef)
 
 #drop estimates with less than 10 values
@@ -98,7 +99,7 @@ saveRDS(res, file=here("results/unadjusted_aim1_RD.Rds"))
 #-----------------------------------
 # Adjusted RR
 #-----------------------------------
-res <- d %>% group_by(study, round, type, target, aggregate_Y) %>%
+res <- d %>% group_by(study, type, target, aggregate_Y) %>%
   do(aim1_glm(., outcome="pos", study=.$study[1], type=.$type[1], target=.$target[1], Ws=Wvars, family="binomial"))
 res
 
@@ -111,7 +112,7 @@ saveRDS(res, file=here("results/adjusted_aim1_RR.Rds"))
 #-----------------------------------
 # Adjusted RD 
 #-----------------------------------
-res <- d %>% group_by(study, round, type, target, aggregate_Y) %>%
+res <- d %>% group_by(study, type, target, aggregate_Y) %>%
   do(aim1_glm(., outcome="pos", study=.$study[1], type=.$type[1], target=.$target[1], Ws=Wvars, family="gaussian"))
 res
 
@@ -128,9 +129,10 @@ saveRDS(res, file=here("results/adjusted_aim1_RD.Rds"))
 # impute low values
 # check if they should be log transformed
 
-res <- d %>% group_by(study, round, type, target, aggregate_Y) %>%
+res <- d %>% filter(!is.na(abund)) %>% droplevels(.) %>% group_by(study, type, target, aggregate_Y) %>%
   do(aim1_glm(., outcome="abund", study=.$study[1], type=.$type[1], target=.$target[1], Ws=NULL, family="neg.binom"))
 res
+
 
 saveRDS(res, file=here("results/unadjusted_aim1_diff.Rds"))
 
@@ -138,7 +140,7 @@ saveRDS(res, file=here("results/unadjusted_aim1_diff.Rds"))
 # Adjusted abundance (negative binomial)
 #-----------------------------------
 
-res <- d %>% group_by(study, round, type, target, aggregate_Y) %>%
+res <- d %>% filter(!is.na(abund)) %>% droplevels(.) %>%  group_by(study, type, target, aggregate_Y) %>%
   do(aim1_glm(., outcome="abund", study=.$study[1], type=.$type[1], target=.$target[1], Ws=Wvars, family="neg.binom"))
 res
 
@@ -151,7 +153,7 @@ saveRDS(res, file=here("results/adjusted_aim1_diff.Rds"))
 #-----------------------------------
 # Adjusted RR - subgroup analyses
 #-----------------------------------
-# res <- d %>% group_by(study, round, type, target, aggregate_Y) %>%
+# res <- d %>% group_by(study, type, target, aggregate_Y) %>%
 #   do(aim1_glm(., outcome="pos", study=.$study[1], type=.$type[1], target=.$target[1], Ws=Wvars, family="binomial"))
 # res
 # 

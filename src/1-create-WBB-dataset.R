@@ -10,6 +10,9 @@ source(here::here("0-config.R"))
 #Make env dataset
 #----------------------------------------------------------------------------
 
+#Load covariates and treatment arms
+enrol <- read.csv(paste0(dropboxDir,"Data/WBB/washb-bangladesh-enrol.csv"))
+tr <- read.csv(paste0(dropboxDir,"Data/WBB/washb-bangladesh-real-tr.csv"))
 
 #Load env MST/pathogen datasets
 PEC <- read.csv(paste0(dropboxDir,"Data/WBB/washb_PEC_10_23_18_adjusted_var.csv"))
@@ -50,9 +53,6 @@ qPCR <- qPCR %>%
 # write.csv(labs, paste0(dropboxDir,"Data/WBB/wbb_WB_codebook.csv"))
 
 
-#Load covariates and treatment arms
-enrol <- read.csv(paste0(dropboxDir,"Data/WBB/washb-bangladesh-enrol.csv"))
-tr <- read.csv(paste0(dropboxDir,"Data/WBB/washb-bangladesh-real-tr.csv"))
 
 
 #Subset to the environmental vars (drop covariates)
@@ -128,7 +128,7 @@ head(soilSTH)
 #----------------------------------------------------------------------------
 
 env <- bind_rows(PEC, qPCR, soilSTH)
-env$round <- "followup"
+env$round <- ""
 env$sampleid <- as.character(env$sampleid)
 env <- bind_rows(env, WB)
 
@@ -182,20 +182,26 @@ enrol <-  enrol %>% subset(., select= -c(roof,walls,cement,elec,asset_radio,
                                     n_asset_khat,  n_asset_chouki,  n_asset_mobile)) 
 
 #Merge in covariates
+env2 <-env
 dim(env)
-env <- left_join(env, enrol, by=c("dataid"))
+env <- left_join(env2, enrol, by=c("dataid"))
 env <- left_join(env, tr, by=c("block","clusterid"))
 dim(env)
 
 table(env$tr)
 table(is.na(env$tr))
 
-env <- env %>% filter(env$tr!="WSH")
+#The one compound with dataid for WSH is sanitation arm based on Amy's positivity dataset
+env$tr[env$tr=="WSH"] <- "Sanitation"
+
 
 #Harmonize sample type codes
+table(env$type, env$target)
 env$type[env$type=="SW"] <- "W"
 
 env$pos[env$pos==2] <- 1
+
+
 
 saveRDS(env, paste0(dropboxDir, "Data/WBB/Clean/WBB_env.RDS"))
 
