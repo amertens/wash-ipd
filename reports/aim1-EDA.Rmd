@@ -16,11 +16,11 @@ library(SmartEDA)
 
 ```{r}
 d <-readRDS(paste0(dropboxDir,"Data/cleaned_ipd_env_data.rds"))
-d <- d %>% subset(., select = c(dataid, study,type, target, round, pos, logquant))
+d <- d %>% subset(., select = c(dataid, study,sample, target, round, pos, logquant))
 
 ms <- d %>% filter(study=="mapsan")
 
-res <- ms %>% group_by(type, target) %>%
+res <- ms %>% group_by(sample, target) %>%
   summarize(N=n(), npos=sum(pos), prev=round(mean(pos),3)*100, mean_log_quant=round(mean(logquant, na.rm=T),2)) %>%
   as.data.frame()
 
@@ -34,8 +34,8 @@ knitr::kable(res)
 ```{r}
 wbk <- d %>% filter(study=="WBK")
 
-res <- wbk %>% group_by(type, target) %>%
-  filter(!is.na(type)) %>%
+res <- wbk %>% group_by(sample, target) %>%
+  filter(!is.na(sample)) %>%
   summarize(N=n(), npos=sum(pos), prev=round(mean(pos),3)*100, mean_log_quant=round(mean(logquant, na.rm=T),2)) %>%
   as.data.frame()
 
@@ -47,8 +47,8 @@ knitr::kable(res)
 
 ```{r}
 wbb <- d %>% filter(study=="WBB")
-res <- wbb %>% group_by(round, type, target) %>%
-  filter(!is.na(type)) %>%
+res <- wbb %>% group_by(round, sample, target) %>%
+  filter(!is.na(sample)) %>%
   summarize(N=n(), npos=sum(pos), prev=round(mean(pos),3)*100, mean_log_quant=round(mean(logquant, na.rm=T),2)) %>%
   as.data.frame()
 

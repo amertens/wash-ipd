@@ -38,7 +38,7 @@ p <- ggplot(d, (aes(x=study, y=RR))) +
   geom_point(size=3) +
   geom_errorbar(aes(ymin=ci.1, ymax=ci.2),
                 width = 0.3, size = 1) +
-  geom_hline(yintercept = 1, linetype="dashed") +
+  geom_hline(yintercept = 1, linesample="dashed") +
   geom_vline(xintercept = 1.5) +
   facet_grid(tr~Outcome,  scales="free") +
   scale_y_continuous(trans='log10') +
@@ -65,14 +65,14 @@ p
 #mediation plot
 
 df <- rbind(
-  data.frame(d, type="Total effect"),
-  data.frame(d, type="Controlled direct effect"),
-  data.frame(d, type="Natural direct effect"),
-  data.frame(d, type="Natural indirect effect")
+  data.frame(d, sample="Total effect"),
+  data.frame(d, sample="Controlled direct effect"),
+  data.frame(d, sample="Natural direct effect"),
+  data.frame(d, sample="Natural indirect effect")
 )
-df$RR[df$type!="Total effect"] <- df$RR[df$type!="Total effect"] - 0.2
-df$ci.1[df$type!="Total effect"] <- df$ci.1[df$type!="Total effect"] - 0.2
-df$ci.2[df$type!="Total effect"] <- df$ci.2[df$type!="Total effect"] - 0.2
+df$RR[df$sample!="Total effect"] <- df$RR[df$sample!="Total effect"] - 0.2
+df$ci.1[df$sample!="Total effect"] <- df$ci.1[df$sample!="Total effect"] - 0.2
+df$ci.2[df$sample!="Total effect"] <- df$ci.2[df$sample!="Total effect"] - 0.2
 
 df$RR[df$RR<0.2] <- 0.2
 df$ci.1[df$ci.1<0.2] <- 0.2
@@ -87,12 +87,12 @@ df <- rbind(
 )
 
 
-p <- ggplot(df, (aes(x=study, y=RR, group=type, fill=type, color=type))) + 
+p <- ggplot(df, (aes(x=study, y=RR, group=sample, fill=sample, color=sample))) + 
   geom_point(size=3, position = position_dodge(0.5)) +
   geom_errorbar(aes(ymin=ci.1, ymax=ci.2), 
                 position = position_dodge(0.5),
                 width = 0.3, size = 1) +
-  geom_hline(yintercept = 1, linetype="dashed") +
+  geom_hline(yintercept = 1, linesample="dashed") +
   facet_grid(mediator~tr,  scales="free") +
   scale_y_continuous(trans='log10') +
   scale_fill_manual(values=c("#1F77B4", "#FF7F0E", "#2CA02C", "#D62728")) +

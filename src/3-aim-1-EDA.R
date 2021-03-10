@@ -16,7 +16,7 @@ library(SmartEDA)
 #----------------------------------------------------
 
 d <-readRDS(paste0(dropboxDir,"Data/cleaned_ipd_env_data.rds"))
-d <- d %>% subset(., select = c(dataid, study,type, target, round, pos, logquant))
+d <- d %>% subset(., select = c(dataid, study,sample, target, round, pos, logquant))
 head(d)
 
 ms <- d %>% filter(study=="mapsan")
@@ -34,7 +34,7 @@ summary(exp(ms$logquant))
 # Mnif: qPCR human target (M. smithii)
 # GFD: qPCR avian target (Helicobacter)
 
-# types:
+# samples:
 # ds=household entrance soil
 # fp=food preparation surface
 # hwhousehold stored water  
@@ -45,7 +45,7 @@ summary(exp(ms$logquant))
 #check if they
 
 
-ms %>% group_by(type, target) %>%
+ms %>% group_by(sample, target) %>%
   summarize(N=n(), npos=sum(pos), prev=round(mean(pos),3)*100, mean_log_quant=round(mean(logquant, na.rm=T),2)) %>%
   as.data.frame()
 
@@ -59,8 +59,8 @@ ms %>% group_by(type, target) %>%
 #----------------------------------------------------
 wbb <- d %>% filter(study=="WBB")
 head(wbb)
-wbb %>% group_by(type, target) %>%
-  filter(!is.na(type)) %>%
+wbb %>% group_by(sample, target) %>%
+  filter(!is.na(sample)) %>%
   summarize(N=n(), npos=sum(pos), prev=round(mean(pos),3)*100, mean_log_quant=round(mean(logquant, na.rm=T),2)) %>%
   as.data.frame()
 
@@ -70,8 +70,8 @@ wbb %>% group_by(type, target) %>%
 #----------------------------------------------------
 wbk <- d %>% filter(study=="WBK")
 
-wbk %>% group_by(type, target) %>%
-  filter(!is.na(type)) %>%
+wbk %>% group_by(sample, target) %>%
+  filter(!is.na(sample)) %>%
   summarize(N=n(), npos=sum(pos), prev=round(mean(pos),3)*100, mean_log_quant=round(mean(logquant, na.rm=T),2)) %>%
   as.data.frame()
 

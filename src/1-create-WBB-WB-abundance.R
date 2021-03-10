@@ -116,7 +116,7 @@ soil_LF <- d %>%
          var=str_split(var, "_", simplify = T)[,2]) %>%
   filter(sampleid!="EB") %>%
   pivot_wider(id_cols=c(uniqueID, sampleid, hhid, target), names_from=var, values_from=val) %>%
-  mutate(type="S",
+  mutate(sample="S",
          hhid = as.numeric(hhid),
          detect=ifelse(is.na(detect),0, detect),
          conc = as.numeric(conc))
@@ -151,7 +151,7 @@ colnames(d)
 d <- d %>%
   rename(
     "sampleid"="_SAMPLE ID",  
-    "type"="_SAMPLE TYPE         (H, W)",
+    "sample"="_SAMPLE TYPE         (H, W)",
     "uniqueID"="_UNIQUE NUMERICAL ID",                                   
     "date"="_DATE (DD.MM.YYYY)",           
     "volume"="_VOLUME",
@@ -197,11 +197,11 @@ water_LF <- d %>%
          var=str_split(var, "_", simplify = T)[,2],
          hhid = as.numeric(hhid),
          volume = as.numeric(volume)) %>%
-  filter(!(type %in% c("HB","LB")), !is.na(hhid)) %>%
-  pivot_wider(id_cols=c(uniqueID, sampleid, hhid, target, type, volume), names_from=var, values_from=val) %>%
+  filter(!(sample %in% c("HB","LB")), !is.na(hhid)) %>%
+  pivot_wider(id_cols=c(uniqueID, sampleid, hhid, target, sample, volume), names_from=var, values_from=val) %>%
   mutate(detect=ifelse(is.na(detect), 0, detect),
          conc = as.numeric(conc))
-water_LF$type[water_LF$type=="SW"] <- "W"
+water_LF$sample[water_LF$sample=="SW"] <- "W"
 head(water_LF)
 
 
@@ -213,28 +213,28 @@ df <- bind_rows(water_LF, soil_LF)
 df <- df %>% mutate(
   dilution=as.numeric(dilution),
   abund = case_when(
-    type=="H" ~ conc * (100/volume) * 200,
-    type=="W" ~ conc * (100/volume),
-    type=="S" ~ conc * dilution * (100/0.25)
+    sample=="H" ~ conc * (100/volume) * 200,
+    sample=="W" ~ conc * (100/volume),
+    sample=="S" ~ conc * dilution * (100/0.25)
   ))
 head(df)
 
 summary(df$abund)
-summary(df$abund[df$detect>0 & df$type=="H"])
-summary(df$abund[df$detect>0 & df$type=="W"])
-summary(df$abund[df$detect>0 & df$type=="S"])
+summary(df$abund[df$detect>0 & df$sample=="H"])
+summary(df$abund[df$detect>0 & df$sample=="W"])
+summary(df$abund[df$detect>0 & df$sample=="S"])
 
-summary(df$abund[df$qual=="ROQ" & df$type=="H"])
-summary(df$abund[df$qual=="ROQ" & df$type=="W"])
-summary(df$abund[df$qual=="ROQ" & df$type=="S"])
+summary(df$abund[df$qual=="ROQ" & df$sample=="H"])
+summary(df$abund[df$qual=="ROQ" & df$sample=="W"])
+summary(df$abund[df$qual=="ROQ" & df$sample=="S"])
 
-summary(df$abund[df$qual=="BLOQ" & df$type=="H"])
-summary(df$abund[df$qual=="BLOQ" & df$type=="W"])
-summary(df$abund[df$qual=="BLOQ" & df$type=="S"])
+summary(df$abund[df$qual=="BLOQ" & df$sample=="H"])
+summary(df$abund[df$qual=="BLOQ" & df$sample=="W"])
+summary(df$abund[df$qual=="BLOQ" & df$sample=="S"])
 
-summary(df$abund[df$qual=="DNQ" & df$type=="H"])
-summary(df$abund[df$qual=="DNQ" & df$type=="W"])
-summary(df$abund[df$qual=="DNQ" & df$type=="S"])
+summary(df$abund[df$qual=="DNQ" & df$sample=="H"])
+summary(df$abund[df$qual=="DNQ" & df$sample=="W"])
+summary(df$abund[df$qual=="DNQ" & df$sample=="S"])
 
 # #Mark GB3 positivity (not in other dataset)
 # table(df$target, df$qual)
@@ -305,7 +305,7 @@ WB3 <- WB2 %>%
   )) 
 #mutate(target=gsub("pos","", target))
 head(WB3)
-WB3$type <- str_split(WB3$target,"_", simplify = T)[,1]
+WB3$sample <- str_split(WB3$target,"_", simplify = T)[,1]
 WB3$target <- str_split(WB3$target,"_", simplify = T)[,2]
 WB3$target[WB3$target=="hm"] <-  "Hum"
 WB3$round <- "World Bank"
@@ -314,9 +314,9 @@ WB3$pos[WB3$target=="gbc"] <- NA
 
 WB4 <- WB3 %>% mutate(
   uniqueID  = case_when(
-      type=="H" ~ as.character(HUNIQUENUMERICALID), 
-      type=="W" ~ as.character(WUNIQUENUMERICALID), 
-      type=="S" ~ as.character(Ssample)
+      sample=="H" ~ as.character(HUNIQUENUMERICALID), 
+      sample=="W" ~ as.character(WUNIQUENUMERICALID), 
+      sample=="S" ~ as.character(Ssample)
     )
   ) %>%
   subset(., select = -c(WUNIQUENUMERICALID, HUNIQUENUMERICALID, Ssample))
@@ -328,28 +328,28 @@ head(WB4)
 
 d1 <- WB4 %>% arrange(dataid) %>% subset(., select = -c(abund))
 d2 <- df %>% mutate(hhid=as.numeric(hhid),
-                          type=ifelse(type=="SW","W",type))  %>% 
+                          sample=ifelse(sample=="SW","W",sample))  %>% 
   filter(!is.na(hhid)) %>%
   arrange(hhid) 
 dim(d1)
 dim(d2)
-table(d1$type, d1$target)
-table(d2$type, d2$target)
-#df <- inner_join(d1, d2, by=c("uniqueID","target","type"))
-df <- right_join(d1, d2, by=c("uniqueID","target","type"))
+table(d1$sample, d1$target)
+table(d2$sample, d2$target)
+#df <- inner_join(d1, d2, by=c("uniqueID","target","sample"))
+df <- right_join(d1, d2, by=c("uniqueID","target","sample"))
 head(df)
 dim(df)
-table(df$type, df$target)
+table(df$sample, df$target)
 #Note: one hand sample not merging, and a few water GBC
-table(df$detect, df$pos, df$type)
+table(df$detect, df$pos, df$sample)
 table(df$detect, df$pos, df$target)
 
 #examine where hhid's don't match
 df[df$hhid!=df$dataid,] %>% select(hhid, dataid)
 
 #rows failing to merge
-d1f <- anti_join(d1, d2, by=c("uniqueID","target","type"))
-d2f <- anti_join(d2, d1, by=c("uniqueID","target","type"))
+d1f <- anti_join(d1, d2, by=c("uniqueID","target","sample"))
+d2f <- anti_join(d2, d1, by=c("uniqueID","target","sample"))
 dim(d1f)
 dim(d2f)
 head(d1f)
@@ -358,8 +358,8 @@ table(d1f$hhid)
 table(d2f$hhid)
 table(d1f$target)
 table(d2f$target)
-table(d1f$type)
-table(d2f$type)
+table(d1f$sample)
+table(d2f$sample)
 
 #mark positives for gbc
 df$pos[df$target=="gbc"] <- ifelse(df$detect[df$target=="gbc"]==0,0,1)
@@ -396,18 +396,18 @@ df$dataid[is.na(df$dataid)] <- temp[is.na(df$dataid)]
 
 table(df$detect)
 table(df$qual)
-table(df$type)
+table(df$sample)
 
 df <- df %>%
   mutate(
     conc = as.numeric(conc),
     abund = case_when(
-      type=="H" & detect==0 ~ 125, 
-      type=="W" & detect==0 ~ 50,
-      type=="S" & detect==0 ~ 400, #Need to make based on soil moisture
-      type=="H" & detect!=0 & qual=="BLOQ" ~ (1250-125)/2, 
-      type=="W" & detect!=0 & qual=="BLOQ" ~ (500-50)/2,
-      type=="S" & detect!=0 & qual=="BLOQ" ~ (4000-400)/2, #Need to make based on soil moisture
+      sample=="H" & detect==0 ~ 125, 
+      sample=="W" & detect==0 ~ 50,
+      sample=="S" & detect==0 ~ 400, #Need to make based on soil moisture
+      sample=="H" & detect!=0 & qual=="BLOQ" ~ (1250-125)/2, 
+      sample=="W" & detect!=0 & qual=="BLOQ" ~ (500-50)/2,
+      sample=="S" & detect!=0 & qual=="BLOQ" ~ (4000-400)/2, #Need to make based on soil moisture
       qual=="DNQ" ~ NA_real_,
       qual=="ROQ" ~ abund
     )
@@ -418,7 +418,7 @@ summary(df$abund)
 
 
 #Harmonize names with WBB followup
-df$type[df$type=="H"] <- "CH"
+df$sample[df$sample=="H"] <- "CH"
 
 #Save data
 saveRDS(df, paste0(dropboxDir, "Data/WBB/Clean/WBB_WB_env.RDS"))

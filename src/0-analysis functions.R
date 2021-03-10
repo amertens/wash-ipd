@@ -8,10 +8,10 @@ makeVlist <- function(dta) {
 
 
 #Regression function 
-aim1_glm <- function(d, Ws=NULL, outcome="pos", study="mapsan", type="ds", target="Mnif", family="binomial"){
-  df <- d %>% filter(study=={{study}}, type=={{type}}, target=={{target}}) %>% droplevels(.)
+aim1_glm <- function(d, Ws=NULL, outcome="pos", study="mapsan", sample="ds", target="Mnif", family="binomial"){
+  df <- d %>% filter(study=={{study}}, sample=={{sample}}, target=={{target}}) %>% droplevels(.)
   
-  cat(study,", ", type,", ", target,"\n")
+  cat(study,", ", sample,", ", target,"\n")
   #print(head(df))
   
   df$Y <- df[[outcome]]
@@ -70,7 +70,7 @@ aim1_glm <- function(d, Ws=NULL, outcome="pos", study="mapsan", type="ds", targe
     
     if(family=="gaussian"){
       res <- data.frame(Y=outcome,
-                        type=type,
+                        sample=sample,
                         target=target,
                         coef=coef$Estimate,
                         se=coef$`Std. Error`,
@@ -81,7 +81,7 @@ aim1_glm <- function(d, Ws=NULL, outcome="pos", study="mapsan", type="ds", targe
       res$ci.ub <- res$coef + 1.96*res$se
     }else{
       res <- data.frame(Y=outcome,
-                        type=type,
+                        sample=sample,
                         target=target,
                         coef=coef$Estimate,
                         RR=exp(coef$Estimate),
@@ -94,7 +94,7 @@ aim1_glm <- function(d, Ws=NULL, outcome="pos", study="mapsan", type="ds", targe
     }
   }else{
     res <- data.frame(Y=outcome,
-                      type=type,
+                      sample=sample,
                       target=target,
                       coef=NA,
                       RR=NA,

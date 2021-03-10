@@ -29,7 +29,7 @@ env <- env %>% mutate(
  
 
 #Subset to aim 1 variables and save dataset
-env <- env %>% select(sampleid, clusterid, hh, survey, season, type, type_def, samp_level, 
+env <- env %>% select(sampleid, clusterid, hh, survey, season, sample, sample_def, samp_level, 
                       target, effort, status, detect, logquant, censored, censquant)
 
 #clean variables for merge
@@ -44,12 +44,12 @@ head(env)
 
 #Get censoring values
 # d <- env %>% filter(censored!="none") %>% 
-#   mutate(grp=paste0(type, "-", target, "-", censored)) %>%
+#   mutate(grp=paste0(sample, "-", target, "-", censored)) %>%
 #   select(grp,censquant) %>%
 #   droplevels(.)
-# table(d$type, d$censquant, d$target)
+# table(d$sample, d$censquant, d$target)
 # 
-# d %>% group_by(type, target, censored) %>% do(res=data.frame(summary(censquant))) 
+# d %>% group_by(sample, target, censored) %>% do(res=data.frame(summary(censquant))) 
 # 
 # library(psych)
 # 
@@ -70,14 +70,14 @@ soil <- soil %>% filter(phase=="24M") %>%
   mutate(animal_in_compound = ifelse(dog_observed=="Yes" | chicken_duck_observed=="Yes" | cat_observed=="Yes", 1, 0)) %>%
   subset(., select=c(compound, adenovirus_40_41:campylobacter_jejuni_coli, trial_arm, animal_in_compound)) %>%
   gather(adenovirus_40_41:campylobacter_jejuni_coli, key = target, value = detect ) %>%
-  mutate(type="S", dataid=compound, logquant=NA, survey=2) %>%
+  mutate(sample="S", dataid=compound, logquant=NA, survey=2) %>%
   rename(clusterid=compound )
 #Notes: keep in the intervention variable to check merging accuracy
     
 
 #Create pathogenic E.coli Drop non-included targets
 ecoli_measures <- c("enteroaggregative_Ecoli","enteropathogenic_Ecoli","enterotoxigenic_Ecoli","shiga_toxin_producing_Ecoli")
-soil_pathogenic <- soil %>% group_by(clusterid, dataid, trial_arm, animal_in_compound, type) %>%
+soil_pathogenic <- soil %>% group_by(clusterid, dataid, trial_arm, animal_in_compound, sample) %>%
   summarise(detect = 1*(sum(detect==1 & target %in% ecoli_measures))>0) %>%
   mutate(target="pathogenic_ecoli")
 
@@ -221,7 +221,7 @@ dim(d)
 
 table(d$studyArm_binary)
 table(is.na(d$studyArm_binary))
-table(d$type, is.na(d$studyArm_binary))
+table(d$sample, is.na(d$studyArm_binary))
  
 # d <- left_join(child, env, by = c("compID", "survey", "hh"))
 # dim(d)
@@ -259,7 +259,7 @@ saveRDS(d, file=paste0(dropboxDir,"Data/MapSan/mapsan_cleaned.rds"))
 #Split out just env data and covariates
 colnames(d)
 env_clean <- d %>% subset(., select = c(sampleid, clusterid, tr,
-  dataid,  hh, round, type, type_def, samp_level, target,
+  dataid,  hh, round, sample, sample_def, samp_level, target,
   effort, pos, abund_only_detect, abund, censored,
   Nhh, hhwealth, nrooms, walls, floor, elec, season, compAnyAnimal, studyArm_binary
 )) 
@@ -269,11 +269,11 @@ env_clean <- d %>% subset(., select = c(sampleid, clusterid, tr,
 dim(env)
 dim(d)
 env_clean <- env_clean %>% 
-             distinct(sampleid, dataid, clusterid, tr, type, target, .keep_all=TRUE) %>%
-             filter(!is.na(type), type!="") 
+             distinct(sampleid, dataid, clusterid, tr, sample, target, .keep_all=TRUE) %>%
+             filter(!is.na(sample), sample!="") 
 dim(env_clean)
 
-table(env_clean$target, env_clean$pos, env_clean$type)
+table(env_clean$target, env_clean$pos, env_clean$sample)
 
 
 prop.table(table(env_clean$tr, env_clean$studyArm_binary))*100

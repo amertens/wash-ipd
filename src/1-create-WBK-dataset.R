@@ -61,7 +61,7 @@ cov <- env %>% subset(., select=c(hhid, vlgid, compoundid, clusterid, block_dc, 
   mutate(tr = factor(tr, labels=c("Control",
                                   "Sanitation",
                                   "WSH")),
-         type = "S",
+         sample = "S",
          round="env round") 
 
 

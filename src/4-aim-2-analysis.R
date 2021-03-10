@@ -38,7 +38,7 @@ Ws = Wvars = c("hhwealth",
 
 outcome="pos"
 study="WBB"
-type="S"
+sample="S"
 target="ascaris"
 Ws=NULL
 family="binomial"
@@ -46,21 +46,21 @@ family="binomial"
 
 outcome="abund"
 study="mapsan"
-type="ds"
+sample="ds"
 target="HF183"
 Ws=Wvars
 family="neg.binom"
 
 
-d %>% distinct(study, type, target) %>% as.data.frame()
+d %>% distinct(study, sample, target) %>% as.data.frame()
 
 
 
 #-----------------------------------
 # Unadjusted RR
 #-----------------------------------
-res <- d %>% group_by(study, round, type, target, aggregate_Y) %>%
-   do(aim2_glm(., outcome="pos", study=.$study[1], type=.$type[1], target=.$target[1], family="binomial"))
+res <- d %>% group_by(study, round, sample, target, aggregate_Y) %>%
+   do(aim2_glm(., outcome="pos", study=.$study[1], sample=.$sample[1], target=.$target[1], family="binomial"))
 res
 
 

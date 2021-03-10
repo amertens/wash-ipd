@@ -4,14 +4,14 @@ source(here::here("0-config.R"))
 
 mapsan <- readRDS(paste0(dropboxDir,"Data/MapSan/mapsan_cleaned.rds"))
 mapsan <- mapsan %>% mutate(study="mapsan") %>%
-    #harmonize coding of sample types
+    #harmonize coding of sample samples
     mutate(
-      type = case_when(
-        type=="ds" ~ "S",
-        type=="fp" ~ "FP",
-        type=="hw" ~ "S",
-        type=="ls" ~ "LS",
-        type=="wp" ~ "SW"
+      sample = case_when(
+        sample=="ds" ~ "S",
+        sample=="fp" ~ "FP",
+        sample=="hw" ~ "S",
+        sample=="ls" ~ "LS",
+        sample=="wp" ~ "SW"
       )      
     )
 
@@ -48,9 +48,9 @@ colnames(WBK)
 WBK <- WBK %>% rename( dataid=hhid, Nhh=num_hh, hhwealth=assetquintile, sampleid=soil_id) %>%
   mutate(round="STH round")
 
-WBB <- WBB %>% subset(., select = c(study, sampleid, dataid, clusterid, tr, type, target, pos, abund, round, block, Nhh, momage, momheight, momedu, dadagri,landacre, hfiacat,watmin,  floor, hhwealth)) %>%
+WBB <- WBB %>% subset(., select = c(study, sampleid, dataid, clusterid, tr, sample, target, pos, abund, round, block, Nhh, momage, momheight, momedu, dadagri,landacre, hfiacat,watmin,  floor, hhwealth)) %>%
               mutate( tr = factor(tr, levels = c("Control", "Sanitation")))
-WBK <- WBK %>% subset(., select = c(study, sampleid, dataid, clusterid, tr, type, target, pos, abund, round, block, Nhh, 
+WBK <- WBK %>% subset(., select = c(study, sampleid, dataid, clusterid, tr, sample, target, pos, abund, round, block, Nhh, 
                                     #momage, momheight, momedu, dadagri,landacre, hfiacat,watmin,  
                                     floor, hhwealth))
 
@@ -62,7 +62,7 @@ WBK$sampleid<-as.character(WBK$sampleid)
 d <- bind_rows(WBB, WBK, mapsan)
 colnames(d)
 
-d %>% distinct(study, type, target)
+d %>% distinct(study, sample, target)
 
 
 table(d$pos)
@@ -91,14 +91,14 @@ d %>% distinct(study, target)
 #covariates
 dim(d)
 #compound covariates
-cov <- d %>% group_by(study, tr,  dataid, clusterid, round, type) %>%
+cov <- d %>% group_by(study, tr,  dataid, clusterid, round, sample) %>%
   #arrange(Nhh, floor, hhwealth) %>% fill(Nhh, floor, hhwealth) %>%
   slice(1) %>% ungroup() %>%
   subset(., select = -c(target, pos, abund, abund_only_detect, censored)) %>% 
   distinct(.)
 dim(cov)
 
-d_agg <- d %>% group_by(study, tr,  dataid, clusterid, round, type) %>%
+d_agg <- d %>% group_by(study, tr,  dataid, clusterid, round, sample) %>%
   summarise(any_pathogen = 1*(sum(pos)>0),
          any_human_MST = 1*(sum(pos==1 & target %in% c("Hum", "HF183","Mnif","sth"))>0),
          any_animal_MST = 1*(sum(pos==1 & target %in% c("BC","br","av","GFD"))>0)
@@ -107,9 +107,9 @@ table(d_agg$any_pathogen)
 table(d_agg$any_human_MST)
 table(d_agg$any_animal_MST)
 
-d_any_pathogen <- d_agg %>% rename(pos=any_pathogen) %>% select(study, tr,dataid,clusterid,round, type, pos) %>% mutate(target="any_pathogen")
-d_any_human_MST <- d_agg %>% rename(pos=any_human_MST) %>% select(study, tr,dataid,clusterid,round, type, pos) %>% mutate(target="any_human_MST")
-d_any_animal_MST<- d_agg %>% rename(pos=any_animal_MST) %>% select(study, tr,dataid,clusterid,round, type, pos) %>% mutate(target="any_animal_MST")
+d_any_pathogen <- d_agg %>% rename(pos=any_pathogen) %>% select(study, tr,dataid,clusterid,round, sample, pos) %>% mutate(target="any_pathogen")
+d_any_human_MST <- d_agg %>% rename(pos=any_human_MST) %>% select(study, tr,dataid,clusterid,round, sample, pos) %>% mutate(target="any_human_MST")
+d_any_animal_MST<- d_agg %>% rename(pos=any_animal_MST) %>% select(study, tr,dataid,clusterid,round, sample, pos) %>% mutate(target="any_animal_MST")
 
 d_agg <- bind_rows(d_any_pathogen, d_any_human_MST, d_any_animal_MST)
 table(d_agg$pos)
@@ -117,7 +117,7 @@ table(d_agg$pos)
 dim(d)
 dim(d_agg)
 dim(cov)
-df <- left_join(d_agg, cov, by=c("study","tr","dataid","clusterid","round","type"))
+df <- left_join(d_agg, cov, by=c("study","tr","dataid","clusterid","round","sample"))
 dim(df)
 d <- bind_rows(d, df)
 dim(d)
@@ -132,13 +132,13 @@ d <- d %>% mutate(
         !(target %in% c("sth","any_pathogen","any_human_MST","any_animal_MST")) ~ 0
         ))
 
-#Create rows for positivity in any sample type
+#Create rows for positivity in any sample sample
 dim(d)
 table(d$pos)
 table(is.na(d$pos))
 df <- d %>% mutate(abund=NA) %>% filter(!is.na(pos)) %>%
   group_by(study, tr,  dataid, clusterid, round, target) %>%
-  mutate(pos=max(pos, na.rm = TRUE), type="any sample type") %>% 
+  mutate(pos=max(pos, na.rm = TRUE), sample="any sample sample") %>% 
   slice(1)
 dim(df)
 table(df$pos)

@@ -33,17 +33,6 @@ panderOptions('keep.trailing.zeros', TRUE)
 
 ```
 
-## Tables
-
-```{r, echo=F, warning=F, message=F}
-
-# dfull <- readRDS(here("data/compiled_clean_POC_survey.rds"))
-# 
-# colnames(res) <- str_to_sentence(gsub("_", " ", colnames(res)))
-# pander(res, digits=2, caption = "Descriptive statistics of measured children by country")
-
-            
-```
 
 
 
@@ -51,57 +40,57 @@ panderOptions('keep.trailing.zeros', TRUE)
 ## Primary figures
 
 
-```{r, echo=F, warning=F, message=F, fig.width = 10, fig.height = 3.5}
+```{r, echo=F, warning=F, message=F, fig.width = 10, fig.height = 10}
 load(here("figures/all_figures.Rdata"))
 
 p_1
 
 ```
 
-__Figure 1.__ Forest plots of intervention effects on any enteropathogen, and any general,  human and animal MST markers in different types of environmental samples.
+__Figure 1.__ Forest plots of intervention effects on any enteropathogen, and any general,  human and animal MST markers in different samples of environmental samples.
 
-```{r, echo=F, warning=F, message=F, fig.width = 10, fig.height = 3.5}
+```{r, echo=F, warning=F, message=F, fig.width = 10, fig.height = 10}
 p_s1
 ```
 
 __Figure S1.__ Prevalence of any virus, any bacteria, any protozoa and any STH 
 
 
-```{r, echo=F, warning=F, message=F, fig.width = 10, fig.height = 3.5}
+```{r, echo=F, warning=F, message=F, fig.width = 10, fig.height = 10}
 p_s3
 ```
 
 __Figure S3.__ Prevalence of specific pathogens 
 
 
-```{r, echo=F, warning=F, message=F, fig.width = 10, fig.height = 3.5}
+```{r, echo=F, warning=F, message=F, fig.width = 10, fig.height = 10}
 p_s4
 ```
 __Figure S4.__ Prevalence of specific MST markers 
 
 
-```{r, echo=F, warning=F, message=F, fig.width = 10, fig.height = 3.5}
+```{r, echo=F, warning=F, message=F, fig.width = 10, fig.height = 10}
 p_s5
 ```
 
 __Figure S5.__ Abundance of specific pathogens 
 
 
-```{r, echo=F, warning=F, message=F, fig.width = 10, fig.height = 3.5}
+```{r, echo=F, warning=F, message=F, fig.width = 10, fig.height = 10}
 p_s6
 ```
 
 __Figure S6.__ Abundance of specific MST markers 
 
 
-```{r, echo=F, warning=F, message=F, fig.width = 10, fig.height = 3.5}
+```{r, echo=F, warning=F, message=F, fig.width = 10, fig.height = 10}
 p_s7
 ```
 
 __Figure S7.__ Repeat of Figure 1, adjusted  
 
 
-<!-- # ```{r, echo=F, warning=F, message=F, fig.width = 10, fig.height = 3.5} -->
+<!-- # ```{r, echo=F, warning=F, message=F, fig.width = 10, fig.height = 10} -->
 <!-- # p_s8 -->
 <!-- # ``` -->
 
@@ -110,3 +99,77 @@ __Figure S8.__ Repeat of Figure 1, broken down by rural/urban.
 __Figure S9.__ Repeat of Figure 1, broken down by season. 
 
 __Figure S10.__ Repeat of Figure 1, broken down by  animal ownership.
+
+
+
+
+## Tables
+
+#### MST/pathogen targets by sample sample and study
+
+```{r, echo=F, warning=F, message=F}
+
+load(here("figures/all_tables.Rdata"))
+
+tab1
+
+            
+```
+
+#### Any pathogens + specific pathogens prevalences (N) and mean abundances by study
+
+```{r, echo=F, warning=F, message=F}
+knitr::kable(any_pathogens_tab)
+```
+
+#### Any virus + specific virus prevalences (N) and mean abundances by study
+
+```{r, echo=F, warning=F, message=F}
+knitr::kable(any_virus_tab)
+```
+
+#### Any bacteria + specific bacteria prevalences (N) and mean abundances by study
+
+```{r, echo=F, warning=F, message=F}
+knitr::kable(any_bacteria_tab)
+```
+
+#### Any helminth + specific helminth prevalences (N) and mean abundances by study
+
+```{r, echo=F, warning=F, message=F}
+knitr::kable(any_helminth_tab)
+```
+
+#### Any protozoa + specific protozoa prevalences (N) and mean abundances by study
+
+```{r, echo=F, warning=F, message=F}
+knitr::kable(any_protozoa_tab)
+```
+
+#### Any general MST + specific general MST prevalences (N) and mean abundances by study
+
+```{r, echo=F, warning=F, message=F}
+knitr::kable(general_MST_tab)
+```
+
+#### Any animal MST + specific animal MST prevalences (N) and mean abundances by study
+
+```{r, echo=F, warning=F, message=F}
+knitr::kable(animal_MST_tab)
+```
+
+#### Any human MST + specific human MST prevalences (N) and mean abundances by study
+
+```{r, echo=F, warning=F, message=F}
+knitr::kable(human_MST_tab)
+```
+
+
+
+#### Covariate summaries by study (tabulation in progress for Gram Vikas)
+
+```{r, echo=F, warning=F, message=F}
+
+tab2
+            
+```

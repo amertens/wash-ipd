@@ -63,7 +63,7 @@ PEC <- PEC %>% subset(., select=c(PID, Month.Collected, Unique.Numerical.ID, Sam
   rename(dataid=PID,
          sampleid=Unique.Numerical.ID,
          pec.month=Month.Collected,
-         type=Sample.Type) %>%
+         sample=Sample.Type) %>%
   gather(EPEC:ETECST1B, key = target, value = pos)
 head(PEC)
 
@@ -79,7 +79,7 @@ qPCR <- qPCR %>% subset(., select=c(PID, Month.Collected, Unique.Numerical.ID, S
          sampleid=Unique.Numerical.ID,
          pec.month=Month.Collected,
          target=Assay,
-         type=Sample.Type)
+         sample=Sample.Type)
 head(qPCR)
 
 
@@ -118,7 +118,7 @@ soilSTH <- full_join(pos, quant, by=c("dataid","sampleid","target")) #%>% distin
 dim(soilSTH)
 table(is.na(soilSTH$pos),is.na(soilSTH$abund))
 
-soilSTH$type="S"
+soilSTH$sample="S"
 soilSTH$dataid <- as.numeric(soilSTH$dataid)
 soilSTH$sampleid <- as.numeric(soilSTH$sampleid)
 head(soilSTH)
@@ -195,9 +195,9 @@ table(is.na(env$tr))
 env$tr[env$tr=="WSH"] <- "Sanitation"
 
 
-#Harmonize sample type codes
-table(env$type, env$target)
-env$type[env$type=="SW"] <- "W"
+#Harmonize sample sample codes
+table(env$sample, env$target)
+env$sample[env$sample=="SW"] <- "W"
 
 env$pos[env$pos==2] <- 1
 
