@@ -19,6 +19,11 @@ table(d$study, d$target)
 table(d$sample, d$target, d$study)
 
 
+#target presence by sample and study
+df <- d %>% filter(!grepl("Any ",target), !grepl("any ",sample)) %>%
+  group_by(study,sample, target) %>% summarize(N=n(), n=sum(pos)) %>% mutate(target=paste0(target," (",n,"/",N,")")) %>%
+  select(study,sample, target) %>%
+  spread(sample, target)
 
 #table1
 tab1 <- table1(~target+sample |study, format_number = TRUE, data=d)
