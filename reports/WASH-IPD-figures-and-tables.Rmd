@@ -31,17 +31,30 @@ panderOptions('table.split.table', Inf)
 panderOptions('big.mark', ",")
 panderOptions('keep.trailing.zeros', TRUE)
 
+load(here("figures/all_tables.Rdata"))
+load(here("figures/all_figures.Rdata"))
+
 ```
 
+## Table 1. Prevalence of pathogens by sample type tested in each study
 
+```{r, echo=F, warning=F, message=F}
+knitr::kable(target_presence_P)
 
+```
+
+## Table 2. Prevalence of microbial source tracking markers by sample type tested in each study
+
+```{r, echo=F, warning=F, message=F}
+knitr::kable(target_presence_MST)
+
+```
 
 
 ## Primary figures
 
 
 ```{r, echo=F, warning=F, message=F, fig.width = 10, fig.height = 10}
-load(here("figures/all_figures.Rdata"))
 
 p_1
 
@@ -109,7 +122,6 @@ __Figure S10.__ Repeat of Figure 1, broken down by  animal ownership.
 
 ```{r, echo=F, warning=F, message=F}
 
-load(here("figures/all_tables.Rdata"))
 
 tab1
 

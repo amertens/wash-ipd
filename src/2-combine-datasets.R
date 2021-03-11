@@ -15,22 +15,9 @@ gv2 <- gv %>% filter(pos==1)
 table(gv2$target, gv2$sample, gv2$round)
 
 #Mapsan
-mapsan <- readRDS(paste0(dropboxDir,"Data/MapSan/mapsan_env_cleaned.rds"))
-mapsan <- mapsan %>% mutate(study="mapsan") %>%
-    #harmonize coding of sample types
-    mutate(
-      sample = case_when(
-        sample=="S" ~ "S",
-        sample=="ds" ~ "S",
-        sample=="fp" ~ "FP",
-        sample=="hw" ~ "W",
-        sample=="ls" ~ "LS",
-        sample=="wp" ~ "SW"
-      )      
-    )
-head(mapsan)
+mapsan <- readRDS(paste0(dropboxDir,"Data/MapSan/mapsan_env_cleaned.rds")) %>% mutate(study="mapsan") 
 
-
+#Wash benefits
 WBB <- readRDS(paste0(dropboxDir, "Data/WBB/Clean/WBB_env.RDS"))
 WBB <- WBB %>% mutate(study="WBB")
 
@@ -75,10 +62,6 @@ d %>% distinct(study, sample, target)
 table(d$pos)
 d$pos <- ifelse(d$pos==2, 1, d$pos)
 table(d$pos)
-
-#harmonize sample samples
-table(d$sample,d$sample_def)
-
 
 #create aggregate outcomes
 head(d)

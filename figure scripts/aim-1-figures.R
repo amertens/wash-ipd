@@ -45,8 +45,8 @@ clean_res <- function(d){
       sample == "W" ~ "Household water",
       sample == "CH" ~ "Child hands",
       sample == "MH" ~ "Mother's hands",
-      sample == "LS" ~ "",
-      sample == "S" ~ ""
+      sample == "LS" ~ "Latrine soil",
+      sample == "S" ~ "House soil"
     )
     )
   return(d)
@@ -106,10 +106,10 @@ base_plot <- function(mydf) {
   geom_point(size=3, position = position_dodge(0.5)) +
     geom_errorbar(aes(ymin=ci.lb, ymax=ci.ub), position = position_dodge(0.5),
                   width = 0.3, size = 1) +
-    scale_color_manual(breaks = c("Source water", "Household water", "Child hands", "Mother's hands"),
+    scale_color_manual(breaks = c("Source water", "Household water", "Child hands", "Mother's hands", "Latrine soil", "House soil"),
                        values = tableau11) +
     geom_hline(yintercept = 1, linesample="dashed") +
-    facet_grid(target_f~sample_type,  scales="free") +
+    facet_grid(target_f~sample_type,  scales="free_y") +
     scale_y_continuous(breaks=c(0.25, 0.5,1, 2, 4, 8), trans='log10', labels=scaleFUN)+ coord_flip()+
     labs(color="Sample type") +
     theme_ki() + 

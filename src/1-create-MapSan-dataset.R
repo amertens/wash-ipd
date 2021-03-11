@@ -41,6 +41,19 @@ env <- env %>% mutate(
 
 head(env)
 
+#harmonize coding of sample types
+env <- env %>% mutate(
+    sample = case_when(
+      type=="S" ~ "S",
+      type=="ds" ~ "S",
+      type=="fp" ~ "FP",
+      type=="hw" ~ "W",
+      type=="ls" ~ "LS",
+      type=="wp" ~ "SW"
+    )      
+  )
+
+
 
 #Get censoring values
 # d <- env %>% filter(censored!="none") %>% 
@@ -259,7 +272,7 @@ saveRDS(d, file=paste0(dropboxDir,"Data/MapSan/mapsan_cleaned.rds"))
 #Split out just env data and covariates
 colnames(d)
 env_clean <- d %>% subset(., select = c(sampleid, clusterid, tr,
-  dataid,  hh, round, sample, sample_def, samp_level, target,
+  dataid,  hh, round, sample, samp_level, target,
   effort, pos, abund_only_detect, abund, censored,
   Nhh, hhwealth, nrooms, walls, floor, elec, season, compAnyAnimal, studyArm_binary
 )) 
