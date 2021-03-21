@@ -11,6 +11,8 @@ adj_diff <- readRDS(file=here("results/adjusted_aim1_diff.Rds")) %>% filter(!is.
 
 unadj_RR %>% distinct(study, target, sample) %>% as.data.frame()
 
+unadj_RR %>% filter(study=="WBB", target=="Any STH")
+
 #---------------------------------------------------------------
 #function to clean results/order factors
 #---------------------------------------------------------------
@@ -18,17 +20,21 @@ unadj_RR %>% distinct(study, target, sample) %>% as.data.frame()
 unique(unadj_RD$target)
 unique(unadj_RD$sample)
 clean_res <- function(d){
-  d$target_f <- factor(d$target, levels =c(
+  
+  target_levels = c(
     "Any general MST",       "Any human MST",        "Any animal MST",  
     "Any pathogen",    "Any bacteria",                       
     "Any virus",       "Any STH", "Any protozoa",
     "Human (Bacteroides)",  
     "Human (M. smithii)",                       
-    "Ascaris",               "BacCow",               
-    "E. coli virulence gene","Giardia",               "HumM2",                
-    "Norovirus",             "Trichuris",             "Avian",                
-    "Rotavirus",             "Ruminant"   
-  ))
+    "Ascaris",                            
+    "Pathogenic E. coli","Giardia",               "HumM2",
+    "Avian",  "BacCow",                
+    "Norovirus",             "Trichuris",                            
+    "Rotavirus",             "Ruminant" )
+  
+  d$target_f <- factor(d$target, levels = c(target_levels, unique(d$target)[!(unique(d$target) %in% target_levels)])) 
+
   d <- d %>% mutate(
     sample_type =case_when(
       sample == "any sample type" ~ "Any sample\ntype",
@@ -74,13 +80,13 @@ unadj_RR$target[is.na(unadj_RR$target_f)]
 #---------------------------------------------------------------
 
   #pathogens:
-  any_pathogens = c("E. coli virulence gene","Giardia",  "C. difficile",
+  any_pathogens = c("Pathogenic E. coli","Giardia",  "C. difficile",
                     "Shigella",  "Entamoeba histolytica",  "V. cholerae", "Yersinia",       
                     "Norovirus",     "Ascaris",
                     "Adenovirus","Trichuris",  "Rotavirus", "Astrovirus", "Cryptosporidium", "Salmonella")   
   
   any_virus = c("Norovirus",  "Adenovirus", "Rotavirus", "Astrovirus")   
-  any_bacteria = c("E. coli virulence gene", "Yersinia",  "V. cholerae", "Shigella",  "C. difficile",  "Salmonella")   
+  any_bacteria = c("Pathogenic E. coli", "Yersinia",  "V. cholerae", "Shigella",  "C. difficile",  "Salmonella")   
   #any_helminth = c("Any STH", "Ascaris", "Trichuris")   
   any_protozoa = c("Giardia", "Cryptosporidium", "Entamoeba histolytica")   
   
@@ -167,7 +173,7 @@ p_s5 <- unadj_diff %>%
   geom_hline(yintercept = 1, linesample="dashed") +
   facet_wrap(target_f~sample,  scales="free") +
   scale_y_continuous(breaks=c(0.25, 0.5,1, 2, 4, 8), trans='log10', labels=scaleFUN) +
-  ylab("Count difference") +
+  ylab("IRR") +
   coord_flip()+
   theme(axis.ticks.x=element_blank(),
         legend.position = "bottom",
@@ -187,7 +193,7 @@ p_s6 <- unadj_diff %>%
   geom_hline(yintercept = 1, linesample="dashed") +
   facet_grid(target_f~sample,  scales="free") +
   scale_y_continuous(breaks=c(0.25, 0.5,1, 2, 4, 8), trans='log10', labels=scaleFUN) +
-  ylab("Count difference") +
+  ylab("IRR") +
   coord_flip()+
   theme(axis.ticks.x=element_blank(),
         legend.position = "bottom",
@@ -210,5 +216,14 @@ p_s7
 #save figures
 save(list=ls(pattern="p_"), file=here("figures/all_figures.Rdata"))
 
+#save groups
+save(any_pathogens, 
+     any_virus,  
+     any_bacteria, 
+     any_protozoa, 
+     general_MST, 
+     animal_MST, 
+     human_MST, 
+     any_MST , file=here("figures/outcome_groups.Rdata"))
 
 

@@ -33,7 +33,24 @@ panderOptions('keep.trailing.zeros', TRUE)
 
 load(here("figures/all_tables.Rdata"))
 load(here("figures/all_figures.Rdata"))
+load(here("figures/outcome_groups.Rdata"))
 
+
+
+```
+
+
+## List of pathogen/MST outcomes by group
+
+```{r, echo=T, warning=F, message=F}
+any_pathogens 
+     any_virus
+     any_bacteria
+     any_protozoa 
+     general_MST 
+     animal_MST 
+     human_MST 
+     any_MST 
 ```
 
 ## Table 1. Prevalence of pathogens by sample type tested in each study
@@ -69,41 +86,41 @@ p_s1
 __Figure S1.__ Prevalence of any virus, any bacteria, any protozoa and any STH 
 
 
-```{r, echo=F, warning=F, message=F, fig.width = 10, fig.height = 10}
+```{r, echo=F, warning=F, message=F, fig.width = 10, fig.height = 15}
 p_s3
 ```
 
 __Figure S3.__ Prevalence of specific pathogens 
 
 
-```{r, echo=F, warning=F, message=F, fig.width = 10, fig.height = 10}
+```{r, echo=F, warning=F, message=F, fig.width = 10, fig.height = 15}
 p_s4
 ```
 __Figure S4.__ Prevalence of specific MST markers 
 
 
-```{r, echo=F, warning=F, message=F, fig.width = 10, fig.height = 10}
+```{r, echo=F, warning=F, message=F, fig.width = 10, fig.height = 5}
 p_s5
 ```
 
 __Figure S5.__ Abundance of specific pathogens 
 
 
-```{r, echo=F, warning=F, message=F, fig.width = 10, fig.height = 10}
+```{r, echo=F, warning=F, message=F, fig.width = 10, fig.height = 15}
 p_s6
 ```
 
 __Figure S6.__ Abundance of specific MST markers 
 
 
-```{r, echo=F, warning=F, message=F, fig.width = 10, fig.height = 10}
+```{r, echo=F, warning=F, message=F, fig.width = 10, fig.height = 15}
 p_s7
 ```
 
 __Figure S7.__ Repeat of Figure 1, adjusted  
 
 
-<!-- # ```{r, echo=F, warning=F, message=F, fig.width = 10, fig.height = 10} -->
+<!-- # ```{r, echo=F, warning=F, message=F, fig.width = 10, fig.height = 15} -->
 <!-- # p_s8 -->
 <!-- # ``` -->
 

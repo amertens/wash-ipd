@@ -22,7 +22,7 @@ aim1_glm <- function(d, Ws=NULL, outcome="pos", study="mapsan", sample="ds", tar
   
   if(length(unique(df$Y))<=2){
     if(length(unique(df$Y))>1){
-      minN <- min(table(df$tr, df$Y))
+      minN <- min(table(df$Y))
     }else{
       minN <- 0
     }
