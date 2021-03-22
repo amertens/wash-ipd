@@ -53,7 +53,15 @@ WBB$sampleid<-as.character(WBB$sampleid)
 WBK$sampleid<-as.character(WBK$sampleid)
 gv$round<-as.character(gv$round)
 #mapsan$momedu<-factor(mapsan$momedu)
-d <- bind_rows(WBB, WBK, mapsan, gv)
+
+
+#Odisha
+odisha <- readRDS(file=paste0(dropboxDir,"Data/Odisha/GV_env_cleaned.rds"))
+
+
+
+
+d <- bind_rows(WBB, WBK, mapsan, gv, odisha)
 colnames(d)
 
 d %>% distinct(study, sample, target)
@@ -104,7 +112,8 @@ d <- d %>% mutate(
     # target=="enterotoxigenic_Ecoli" ~ "ETEC",
     # target=="shiga_toxin_producing_Ecoli" ~ "STEC",
     target=="pathogenic_ecoli" ~ "Pathogenic E. coli",
-    target=="norovirus_GI_GII" ~ "Norovirus"
+    target=="norovirus_GI_GII" ~ "Norovirus",
+    target==target ~target
   )
 )
 
