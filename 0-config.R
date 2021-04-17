@@ -10,6 +10,7 @@ library(janitor)
 library(washb)
 library(modelr)
 library(caret)
+library(rcartocolor)
 
 #set data directories
 
@@ -51,3 +52,43 @@ theme_set(theme_ki())
 
 
 scaleFUN <- function(x) sprintf("%.2f", x)
+
+
+
+#---------------
+# Outcome groupings
+#---------------
+
+#pathogens:
+any_pathogens = c("E. coli virulence gene",  "Pathogenic E. coli", "Giardia",  "C. difficile",
+                  "Shigella",  "Entamoeba histolytica",  "V. cholerae", "Yersinia",       
+                  "Norovirus",             "Any STH", "Ascaris", "any pathogen-improved", "any pathogen-unimproved",
+                  "Adenovirus","Trichuris",  "Rotavirus", "Astrovirus", "Cryptosporidium", "Salmonella")   
+
+any_virus = c("Norovirus",  "Adenovirus", "Rotavirus", "Astrovirus")   
+any_bacteria = c("E. coli virulence gene", "Pathogenic E. coli", "Yersinia",  "V. cholerae", "Shigella",  "C. difficile",  "Salmonella")   
+#any_helminth = c("Any STH", "Ascaris", "Trichuris")   
+any_protozoa = c("Giardia", "Cryptosporidium", "Entamoeba histolytica")   
+
+
+
+
+
+#MST's:
+general_MST = c("GenBac3","BacUni")
+
+animal_MST = c( "Animal (BacCow)",   
+                "Ruminant",              "Avian",
+                "Avian (Helicobacter)")
+
+human_MST = c("Human (HumM2)",  "Human (Bacteroides)",   "Human (M. smithii)")
+
+any_MST = c(general_MST, animal_MST, human_MST)
+
+
+
+target_levels = unique(c(
+  "Any pathogen", "Any general MST",       "Any human MST",        "Any animal MST",  
+  "Any bacteria",                       
+  "Any virus",     "Any protozoa",  "Any STH", 
+  any_MST, any_pathogens))

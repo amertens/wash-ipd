@@ -16,10 +16,10 @@ table(d$sample, d$target, d$study)
 df <- d %>% filter(study=="WBB",target=="Any protozoa")
 table(df$sample, df$pos)
 
-#temporarily permute treatment assignment
-set.seed(12345)
-d <- d %>%  group_by(study, round) %>%
-  mutate(tr = sample(tr, replace=FALSE))
+# #temporarily permute treatment assignment
+# set.seed(12345)
+# d <- d %>%  group_by(study, round) %>%
+#   mutate(tr = sample(tr, replace=FALSE))
 
 
 

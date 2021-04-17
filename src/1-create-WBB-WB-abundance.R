@@ -308,7 +308,6 @@ head(WB3)
 WB3$sample <- str_split(WB3$target,"_", simplify = T)[,1]
 WB3$target <- str_split(WB3$target,"_", simplify = T)[,2]
 WB3$target[WB3$target=="hm"] <-  "Hum"
-WB3$round <- "World Bank"
 WB3$abund <- ifelse(WB3$target=="gbc", WB3$pos, NA)
 WB3$pos[WB3$target=="gbc"] <- NA
 
@@ -419,6 +418,9 @@ summary(df$abund)
 
 #Harmonize names with WBB followup
 df$sample[df$sample=="H"] <- "CH"
+df$round <- "World Bank"
+
+
 
 #Save data
 saveRDS(df, paste0(dropboxDir, "Data/WBB/Clean/WBB_WB_env.RDS"))

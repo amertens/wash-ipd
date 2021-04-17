@@ -4,7 +4,7 @@ source(here::here("0-config.R"))
 
 
 #Gram vikas
-gv <- readRDS(paste0(dropboxDir,"Data/Gram Vikas/GV_env_cleaned.rds")) %>% mutate(study="Gram Vikas")
+gv <- readRDS(paste0(dropboxDir,"Data/Gram Vikas/GV_env_cleaned.rds")) %>% mutate(study="Reese et al. 2017")
 head(gv)
 
 
@@ -15,19 +15,16 @@ gv2 <- gv %>% filter(pos==1)
 table(gv2$target, gv2$sample, gv2$round)
 
 #Mapsan
-mapsan <- readRDS(paste0(dropboxDir,"Data/MapSan/mapsan_env_cleaned.rds")) %>% mutate(study="mapsan") 
+mapsan <- readRDS(paste0(dropboxDir,"Data/MapSan/mapsan_env_cleaned.rds")) %>% mutate(study="Holcomb et al. 2020") 
 
 #Wash benefits
 WBB <- readRDS(paste0(dropboxDir, "Data/WBB/Clean/WBB_env.RDS"))
-WBB <- WBB %>% mutate(study="WBB")
+WBB <- WBB %>% mutate(study=case_when(round=="" ~ "Fuhrmeister et al. 2020",
+                                      round=="World Bank" ~ "Boehm et al. 2016"
+                                      ))
 
 WBK <- readRDS(paste0(dropboxDir, "Data/WBK/Clean/WBK_env.RDS"))
-WBK <- WBK %>% mutate(study="WBK")
-
-#Temp scramble treatment
-table(WBB$tr, WBB$pos)
-WBB$tr = sample(WBB$tr, nrow(WBB))
-table(WBB$tr, WBB$pos)
+WBK <- WBK %>% mutate(study="Steinbaum et al. 2019")
 
 WBK$tr = sample(WBK$tr, nrow(WBK))
 mapsan$tr = sample(mapsan$tr, nrow(mapsan))
@@ -56,13 +53,14 @@ gv$round<-as.character(gv$round)
 
 
 #Odisha
-odisha <- readRDS(file=paste0(dropboxDir,"Data/Odisha/GV_env_cleaned.rds"))
+odisha <- readRDS(file=paste0(dropboxDir,"Data/Odisha/GV_env_cleaned.rds")) %>% mutate(study="Odagiri et al. 2016")
 
 
 
 
-d <- bind_rows(WBB, WBK, mapsan, gv, odisha)
-colnames(d)
+d <- bind_rows(WBB, WBK, mapsan, gv, odisha) %>%
+  mutate(study=factor(study, 
+            levels=c("Odagiri et al. 2016", "Boehm et al. 2016", "Reese et al. 2017", "Steinbaum et al. 2019", "Fuhrmeister et al. 2020", "Holcomb et al. 2020" )))
 
 d %>% distinct(study, sample, target)
 
@@ -80,8 +78,9 @@ unique(d$target)
 d <- d %>% mutate(
   target = case_when(
     target=="ECVG" ~ "Pathogenic E. coli",
-    target=="Hum" ~ "HumM2",
-    target=="BC" ~ "BacCow",
+    target=="Hum" ~ "Human (HumM2)",
+    target=="BC" ~ "Animal (BacCow)",
+    target=="BacCow" ~ "Animal (BacCow)",
     target=="Gia" ~ "Giardia",
     target=="Noro" ~ "Norovirus",
     target=="sth" ~ "Any STH",
@@ -92,7 +91,8 @@ d <- d %>% mutate(
     target=="rv" ~ "Rotavirus",
     target=="gbc" ~ "GenBac3",
     target=="GFD" ~ "Avian (Helicobacter)",
-    target=="HF183" ~ "Human (Bacteroides)",
+    target=="BacHum" ~ "Human (Bacteriodes)",
+    target=="HF183" ~ "Human (Bacteriodes)",
     target=="Mnif" ~ "Human (M. smithii)",
     target=="adenovirus_40_41" ~ "Adenovirus",
     target=="ascaris_lumbricoides" ~ "Ascaris",
@@ -107,10 +107,6 @@ d <- d %>% mutate(
     target=="vibrio_cholera" ~ "V. cholerae",
     target=="yersinia_spp" ~ "Yersinia",
     target=="clostridium_difficile" ~ "C. difficile",
-    # target=="enteroaggregative_Ecoli" ~ "EAEC",
-    # target=="enteropathogenic_Ecoli" ~ "EPEC",
-    # target=="enterotoxigenic_Ecoli" ~ "ETEC",
-    # target=="shiga_toxin_producing_Ecoli" ~ "STEC",
     target=="pathogenic_ecoli" ~ "Pathogenic E. coli",
     target=="norovirus_GI_GII" ~ "Norovirus",
     target==target ~target
@@ -126,29 +122,7 @@ table(d$study, d$target)
 unique(d$target)
 
 
-#pathogens:
-any_pathogens = c("E. coli virulence gene",  "Pathogenic E. coli", "Giardia",  "C. difficile",
-                  "Shigella",  "Entamoeba histolytica",  "V. cholerae", "Yersinia",       
-"Norovirus",             "Any STH", "Ascaris",
-"Adenovirus","Trichuris",  "Rotavirus", "Astrovirus", "Cryptosporidium", "Salmonella")   
 
-any_virus = c("Norovirus",  "Adenovirus", "Rotavirus", "Astrovirus")   
-any_bacteria = c("E. coli virulence gene", "Pathogenic E. coli", "Yersinia",  "V. cholerae", "Shigella",  "C. difficile",  "Salmonella")   
-#any_helminth = c("Any STH", "Ascaris", "Trichuris")   
-any_protozoa = c("Giardia", "Cryptosporidium", "Entamoeba histolytica")   
-
-
-
-
-
-#MST's:
-general_MST = c("GenBac3")
-
-animal_MST = c( "BacCow",   
-                "Ruminant",              "Avian",
-                "Avian (Helicobacter)")
-
-human_MST = c("HumM2",  "Human (Bacteroides)",   "Human (M. smithii)")
 
 
 

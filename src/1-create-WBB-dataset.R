@@ -71,7 +71,7 @@ head(PEC)
 PEC <- PEC %>% filter(target=="ECVG")
 
 colnames(qPCR)
-qPCR <- qPCR %>% subset(., select=c(PID, Month.Collected, Unique.Numerical.ID, Sample.Type, Pos, log.gc.sample.matrix., Assay, 
+qPCR <- qPCR %>% subset(., select=c(PID, Month.Collected, Unique.Numerical.ID, Sample.Type, Pos, abund, log.gc.sample.matrix., Assay, 
                                     soilsun, m_hwobs, c_hwobs, dwcont, dwcov, raintime, animalno, MoistCont2)) %>%
   rename(dataid=PID,
          pos=Pos,
@@ -131,7 +131,7 @@ env <- bind_rows(PEC, qPCR, soilSTH)
 env$round <- ""
 env$sampleid <- as.character(env$sampleid)
 env <- bind_rows(env, WB)
-
+table(env$target, is.na(env$abund))
 
 #Create asset PCA in WBB covariates
 colnames(enrol)
@@ -201,7 +201,12 @@ env$sample[env$sample=="SW"] <- "W"
 
 env$pos[env$pos==2] <- 1
 
+summaryWBB <- env %>% group_by(tr, sample, target) %>% filter(!is.na(pos)) %>%
+  summarise(N=n(), n=sum(pos, na.rm=T), 
+            prev=round(mean(pos, na.rm=T)*100, 1), 
+            abund=mean(log10(abund), na.rm=T))
 
+write.csv(summaryWBB, file=here("figures/WBB_tab.csv"))
 
 saveRDS(env, paste0(dropboxDir, "Data/WBB/Clean/WBB_env.RDS"))
 

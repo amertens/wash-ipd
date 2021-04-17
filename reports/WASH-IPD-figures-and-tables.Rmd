@@ -33,6 +33,7 @@ panderOptions('keep.trailing.zeros', TRUE)
 
 load(here("figures/all_tables.Rdata"))
 load(here("figures/all_figures.Rdata"))
+load(here("figures/density_figures.Rdata"))
 load(here("figures/outcome_groups.Rdata"))
 
 
@@ -40,30 +41,30 @@ load(here("figures/outcome_groups.Rdata"))
 ```
 
 
-## List of pathogen/MST outcomes by group
+<!-- ## List of pathogen/MST outcomes by group -->
 
-```{r, echo=T, warning=F, message=F}
-any_pathogens 
-     any_virus
-     any_bacteria
-     any_protozoa 
-     general_MST 
-     animal_MST 
-     human_MST 
-     any_MST 
-```
+<!-- ```{r, echo=T, warning=F, message=F} -->
+<!-- any_pathogens  -->
+<!--      any_virus -->
+<!--      any_bacteria -->
+<!--      any_protozoa  -->
+<!--      general_MST  -->
+<!--      animal_MST  -->
+<!--      human_MST  -->
+<!--      any_MST  -->
+<!-- ``` -->
 
 ## Table 1. Prevalence of pathogens by sample type tested in each study
 
 ```{r, echo=F, warning=F, message=F}
-knitr::kable(target_presence_P)
+knitr::kable(target_presence_long_P)
 
 ```
 
 ## Table 2. Prevalence of microbial source tracking markers by sample type tested in each study
 
 ```{r, echo=F, warning=F, message=F}
-knitr::kable(target_presence_MST)
+knitr::kable(target_presence_long_MST)
 
 ```
 
@@ -99,23 +100,23 @@ p_s4
 __Figure S4.__ Prevalence of specific MST markers 
 
 
-```{r, echo=F, warning=F, message=F, fig.width = 10, fig.height = 5}
-p_s5
-```
+<!-- # ```{r, echo=F, warning=F, message=F, fig.width = 10, fig.height = 5} -->
+<!-- # p_s5 -->
+<!-- # ``` -->
 
 __Figure S5.__ Abundance of specific pathogens 
 
 
-```{r, echo=F, warning=F, message=F, fig.width = 10, fig.height = 15}
-p_s6
-```
+<!-- # ```{r, echo=F, warning=F, message=F, fig.width = 10, fig.height = 15} -->
+<!-- # p_s6 -->
+<!-- # ``` -->
 
 __Figure S6.__ Abundance of specific MST markers 
 
 
-```{r, echo=F, warning=F, message=F, fig.width = 10, fig.height = 15}
-p_s7
-```
+<!-- # ```{r, echo=F, warning=F, message=F, fig.width = 10, fig.height = 15} -->
+<!-- # p_s7 -->
+<!-- # ``` -->
 
 __Figure S7.__ Repeat of Figure 1, adjusted  
 
@@ -131,19 +132,35 @@ __Figure S9.__ Repeat of Figure 1, broken down by season.
 __Figure S10.__ Repeat of Figure 1, broken down by  animal ownership.
 
 
+## Abundance density figures
+
+For internal use, and to discuss which can be analyzed with linear regressions. We should discuss the MST measures with non-normal discutirbutions due to high number of BLOD and BLOQ observations.
+
+#### Log10-transformed
+
+```{r, echo=F, warning=F, message=F, fig.width = 5, fig.height = 5}
+logplotlist
+```
+
+
+#### Raw
+
+```{r, echo=F, warning=F, message=F, fig.width = 5, fig.height = 5}
+plotlist
+```
 
 
 ## Tables
 
-#### MST/pathogen targets by sample sample and study
+<!-- #### MST/pathogen targets by sample sample and study -->
 
-```{r, echo=F, warning=F, message=F}
+<!-- ```{r, echo=F, warning=F, message=F} -->
 
 
-tab1
+<!-- tab1 -->
 
-            
-```
+
+<!-- ``` -->
 
 #### Any pathogens + specific pathogens prevalences (N) and mean abundances by study
 
@@ -195,10 +212,10 @@ knitr::kable(human_MST_tab)
 
 
 
-#### Covariate summaries by study (tabulation in progress for Gram Vikas)
+<!-- #### Covariate summaries by study (tabulation in progress for Gram Vikas) -->
 
-```{r, echo=F, warning=F, message=F}
+<!-- ```{r, echo=F, warning=F, message=F} -->
 
-tab2
-            
-```
+<!-- tab2 -->
+
+<!-- ``` -->

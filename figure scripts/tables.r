@@ -1,42 +1,28 @@
 
 
-
+rm(list=ls())
 source(here::here("0-config.R"))
 library(table1)
 library(rvest)
 
 
-#pathogens:
-any_pathogens = c("Any pathogens","E. coli virulence gene",  "Pathogenic E. coli", "Giardia",  "C. difficile",
-                  "Shigella",  "Entamoeba histolytica",  "V. cholerae", "Yersinia",       
-                  "Norovirus",             "Any STH", "Ascaris",
-                  "Adenovirus","Trichuris",  "Rotavirus", "Astrovirus", "Cryptosporidium", "Salmonella")   
-
-any_virus = c("Any virus","Norovirus",  "Adenovirus", "Rotavirus", "Astrovirus")   
-any_bacteria = c("Any bacteria","E. coli virulence gene", "Pathogenic E. coli", "Yersinia",  "V. cholerae", "Shigella",  "C. difficile",  "Salmonella")   
-any_helminth = c("Any STH", "Ascaris", "Trichuris")   
-any_protozoa = c("Giardia", "Cryptosporidium", "Entamoeba histolytica")   
-
-
-#MST's:
-general_MST = c("Any general MST","GenBac3")
-animal_MST = c( "Any animal MST", "BacCow",   
-                "Ruminant",              "Avian",
-                "Avian (Helicobacter)")
-human_MST = c("Any human MST","HumM2",  "Human (Bacteroides)",   "Human (M. smithii)")
-
 
 d <- readRDS(paste0(dropboxDir,"Data/cleaned_ipd_env_data.rds"))
 head(d)
 d <- droplevels(d)
+d %>% arrange(study, sample, target) %>%
+  distinct(study, sample, target)
 
-d <- d %>% filter(!is.na(target) & !is.na(sample))
+WBB_tab <- d %>% group_by(tr, sample, target) %>% filter(study=="WBB", !is.na(pos)) %>%
+  summarise(N=n(), n=sum(pos, na.rm=T), 
+            prev=round(mean(pos, na.rm=T)*100, 1), 
+            abund=mean(log10(abund), na.rm=T))
+
+d <- d %>% filter(!is.na(target) & !is.na(sample) & !is.na(pos))
 
 #Drop baseline measure from mapsan
 d <- d %>% filter(round != "0m") %>% droplevels(.)
 table(d$study, d$round)
-d$study[d$round=="World Bank"] <- "WBB-World Bank"
-table(d$study, d$target)
 table(d$sample, d$target, d$study)
 
 
@@ -88,6 +74,36 @@ target_presence_P[is.na(target_presence_P)] <- ""
 target_presence_MST[is.na(target_presence_MST)] <- ""
 
 
+#target presence by sample and study - longform
+target_presence_long <- d %>% filter(!grepl("Any ",target), !grepl("any ",sample)) %>%
+  group_by(study,sample, target, target_cat, target_type) %>% summarize(N=n(), n=sum(pos)) %>% 
+  ungroup() %>%
+  #mutate(target=paste0(target," (",target_cat,", ",n,"/",N,")")) %>% 
+  mutate(target=paste0(target," (",n,"/",N,")")) %>% 
+  arrange(target_type, study, sample, target_cat, target) %>%
+  group_by(study, target_type) %>% 
+  mutate(n=row_number()) %>%
+  group_by(study, sample, target_type) %>% 
+  mutate(n2=row_number(),
+         study=ifelse(n==1,as.character(study),""),
+         sample=ifelse(n2==1,as.character(sample),"-")) %>%
+  ungroup()
+
+
+target_presence_long_P <- target_presence_long %>% 
+  filter(target_type=="P") %>%
+  select(study,sample, target) 
+colnames(target_presence_long_P) <- str_to_title(colnames(target_presence_long_P))
+colnames(target_presence_long_P)[3] <- paste0(colnames(target_presence_long_P)[3], " (n/N)")
+target_presence_long_MST <- target_presence_long %>% 
+  filter(target_type=="MST") %>%
+  select(study,sample, target)
+colnames(target_presence_long_MST) <- str_to_title(colnames(target_presence_long_MST))
+colnames(target_presence_long_MST)[3] <- paste0(colnames(target_presence_long_MST)[3], " (n/N)")
+
+
+
+
 #table1
 tab1 <- table1(~target+sample |study, format_number = TRUE, data=d)
 #tab1 <- as.data.frame(read_html(tab1) %>% html_table(fill=TRUE))
@@ -104,10 +120,10 @@ tab2 <- table1(~. |study, format_number = TRUE, data=df)
 #tab2 <- as.data.frame(read_html(tab2) %>% html_table(fill=TRUE))
 
 #Prevalence and abundance of outcomes by sample sample
-df <- d %>% group_by(study, target, sample) %>%
+df <- d %>% group_by(study, target, sample) %>% filter(!is.na(pos)) %>%
   summarize(N=sum(!is.na(pos)), prev=mean(pos, na.rm=T), abund=mean(abund, na.rm=T)) %>%
   mutate(prev=round(prev,1), abund=round(abund,1))
-df2 <- d %>% group_by(study,round, target, sample) %>%
+df2 <- d %>% group_by(study,round, target, sample) %>% filter(!is.na(pos)) %>%
   summarize(N=sum(!is.na(pos)), prev=mean(pos, na.rm=T), abund=mean(abund, na.rm=T)) %>%
   mutate(prev=round(prev,1), abund=round(abund,1))
 
@@ -161,8 +177,16 @@ general_MST_tab2 <- tab_function2(df=df2, general_MST)
 animal_MST_tab2 <- tab_function2(df=df2, animal_MST)
 human_MST_tab2 <- tab_function2(df=df2, human_MST)
 
+#Get control-arm specific for WBB comparisons
+table(d$tr)
+df <- d %>% filter(tr=="Control", study=="WBB") %>%
+  group_by(study, target, sample) %>%
+  summarize(N=sum(!is.na(pos)), prev=mean(pos, na.rm=T)*100, abund=mean(abund, na.rm=T)) %>%
+  mutate(prev=round(prev,1), abund=round(abund,1))
+#tab_function(c(any_pathogens,general_MST,animal_MST,human_MST ))
 
 save(target_presence_P, target_presence_MST, tab1, tab2,
+     target_presence_long_P, target_presence_long_MST,
      any_pathogens_tab, any_virus_tab, any_bacteria_tab, any_helminth_tab, any_protozoa_tab,
      general_MST_tab, animal_MST_tab, human_MST_tab,
      any_pathogens_tab2, any_virus_tab2, any_bacteria_tab2, any_helminth_tab2, any_protozoa_tab2,
