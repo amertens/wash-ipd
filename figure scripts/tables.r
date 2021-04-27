@@ -24,26 +24,26 @@ d <- d %>% filter(!is.na(target) & !is.na(sample) & !is.na(pos))
 d <- d %>% filter(round != "0m") %>% droplevels(.)
 table(d$study, d$round)
 table(d$sample, d$target, d$study)
+unique(d$target)
 
 
-
-any_pathogens = c("Any pathogens","E. coli virulence gene",  "Pathogenic E. coli", "Giardia",  "C. difficile",
-                  "Shigella",  "Entamoeba histolytica",  "V. cholerae", "Yersinia",       
-                  "Norovirus",             "Any STH", "Ascaris",
-                  "Adenovirus","Trichuris",  "Rotavirus", "Astrovirus", "Cryptosporidium", "Salmonella")   
-
-any_virus = c("Any virus","Norovirus",  "Adenovirus", "Rotavirus", "Astrovirus")   
-any_bacteria = c("Any bacteria","E. coli virulence gene", "Pathogenic E. coli", "Yersinia",  "V. cholerae", "Shigella",  "C. difficile",  "Salmonella")   
-any_helminth = c("Any STH", "Ascaris", "Trichuris")   
-any_protozoa = c("Giardia", "Cryptosporidium", "Entamoeba histolytica")   
-
-
-#MST's:
-general_MST = c("Any general MST","GenBac3")
-animal_MST = c( "Any animal MST", "BacCow",   
-                "Ruminant",              "Avian",
-                "Avian (Helicobacter)")
-human_MST = c("Any human MST","HumM2",  "Human (Bacteroides)",   "Human (M. smithii)")
+# any_pathogens = c("Any pathogens","E. coli virulence gene",  "Pathogenic E. coli", "Giardia",  "C. difficile",
+#                   "Shigella",  "Entamoeba histolytica",  "V. cholerae", "Yersinia",       
+#                   "Norovirus",             "Any STH", "Ascaris",
+#                   "Adenovirus","Trichuris",  "Rotavirus", "Astrovirus", "Cryptosporidium", "Salmonella")   
+# 
+# any_virus = c("Any virus","Norovirus",  "Adenovirus", "Rotavirus", "Astrovirus")   
+# any_bacteria = c("Any bacteria","E. coli virulence gene", "Pathogenic E. coli", "Yersinia",  "V. cholerae", "Shigella",  "C. difficile",  "Salmonella")   
+# any_helminth = c("Any STH", "Ascaris", "Trichuris")   
+# any_protozoa = c("Giardia", "Cryptosporidium", "Entamoeba histolytica")   
+# 
+# 
+# #MST's:
+# general_MST = c("Any general MST","GenBac3")
+# animal_MST = c( "Any animal MST", "BacCow",   
+#                 "Ruminant",              "Avian",
+#                 "Avian (Helicobacter)")
+# human_MST = c("Any human MST","HumM2",  "Human (Bacteroides)",   "Human (M. smithii)")
 
 #Add target category
 d <- d %>% mutate(
@@ -76,30 +76,33 @@ target_presence_MST[is.na(target_presence_MST)] <- ""
 
 #target presence by sample and study - longform
 target_presence_long <- d %>% filter(!grepl("Any ",target), !grepl("any ",sample)) %>%
-  group_by(study,sample, target, target_cat, target_type) %>% summarize(N=n(), n=sum(pos)) %>% 
+  group_by(study,sample, target, target_cat, target_type) %>% summarize(N=n(), n=sum(pos), perc=round(mean(pos, na.rm=T)*100,1)) %>% 
   ungroup() %>%
   #mutate(target=paste0(target," (",target_cat,", ",n,"/",N,")")) %>% 
-  mutate(target=paste0(target," (",n,"/",N,")")) %>% 
-  arrange(target_type, study, sample, target_cat, target) %>%
+  mutate(
+    N_perc =paste0(perc,"% (",n,"/",N,")")) %>% 
+  arrange(target_type, study, sample, target_cat, target, perc) %>%
   group_by(study, target_type) %>% 
   mutate(n=row_number()) %>%
   group_by(study, sample, target_type) %>% 
   mutate(n2=row_number(),
-         study=ifelse(n==1,as.character(study),""),
-         sample=ifelse(n2==1,as.character(sample),"-")) %>%
+         study=ifelse(n==1,as.character(study),"")#,
+         #sample=ifelse(n2==1,as.character(sample),"-")
+         ) %>%
   ungroup()
 
 
 target_presence_long_P <- target_presence_long %>% 
   filter(target_type=="P") %>%
-  select(study,sample, target) 
+  select(study,sample, target, N_perc) 
 colnames(target_presence_long_P) <- str_to_title(colnames(target_presence_long_P))
-colnames(target_presence_long_P)[3] <- paste0(colnames(target_presence_long_P)[3], " (n/N)")
+colnames(target_presence_long_P)[4] <- "Percent positive (n/N)"
+
 target_presence_long_MST <- target_presence_long %>% 
   filter(target_type=="MST") %>%
-  select(study,sample, target)
+  select(study,sample, target, N_perc)
 colnames(target_presence_long_MST) <- str_to_title(colnames(target_presence_long_MST))
-colnames(target_presence_long_MST)[3] <- paste0(colnames(target_presence_long_MST)[3], " (n/N)")
+colnames(target_presence_long_MST)[4] <- "Percent positive (n/N)"
 
 
 

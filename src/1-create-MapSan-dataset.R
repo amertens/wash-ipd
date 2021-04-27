@@ -29,7 +29,7 @@ env <- env %>% mutate(
  
 
 #Subset to aim 1 variables and save dataset
-env <- env %>% select(sampleid, clusterid, hh, survey, season, sample, sample_def, samp_level, 
+env <- env %>% select(sampleid, clusterid, hh, survey, season, type, type_def, samp_level, 
                       target, effort, status, detect, logquant, censored, censquant)
 
 #clean variables for merge
@@ -81,10 +81,10 @@ colnames(soil)
 head(soil)
 soil <- soil %>% filter(phase=="24M") %>%
   mutate(animal_in_compound = ifelse(dog_observed=="Yes" | chicken_duck_observed=="Yes" | cat_observed=="Yes", 1, 0)) %>%
-  subset(., select=c(compound, adenovirus_40_41:campylobacter_jejuni_coli, trial_arm, animal_in_compound)) %>%
+  subset(., select=c(number, compound, adenovirus_40_41:campylobacter_jejuni_coli, trial_arm, animal_in_compound)) %>%
   gather(adenovirus_40_41:campylobacter_jejuni_coli, key = target, value = detect ) %>%
-  mutate(sample="S", dataid=compound, logquant=NA, survey=2) %>%
-  rename(clusterid=compound )
+  mutate(number=as.character(number), sample="S", dataid=compound, logquant=NA, survey=2) %>%
+  rename(sampleid=number, clusterid=compound )
 #Notes: keep in the intervention variable to check merging accuracy
     
 
@@ -110,6 +110,9 @@ env <- bind_rows(env, soil)
 
 table(env$target)
 env <- env %>% filter(target!="")
+
+#make numeric sample ID
+#env <- env %>% mutate(sampleid=as.numeric(factor(sampleid)))
 
 #----------------------------------------
 #make health dataset
@@ -239,7 +242,7 @@ table(d$sample, is.na(d$studyArm_binary))
 # d <- left_join(child, env, by = c("compID", "survey", "hh"))
 # dim(d)
 
-
+head(d)
 
 #rename variables to standardize
 d <- d %>%
@@ -261,8 +264,9 @@ d <- d %>%
   round=case_when(round==0~"0m",
                   round==1~"12m",
                   round==2~"24m"),
-  tr = factor(tr, levels = c("Control", "Sanitation"))
-  )
+  tr = factor(tr, levels = c("Control", "Sanitation")),
+  abund = abund^10) #untransform abundance estimates
+  
 table(d$tr, d$studyArm_ternary)
 table(d$tr, d$trial_arm)
 
@@ -284,6 +288,7 @@ dim(d)
 env_clean <- env_clean %>% 
              distinct(sampleid, dataid, clusterid, tr, sample, target, .keep_all=TRUE) %>%
              filter(!is.na(sample), sample!="") 
+            
 dim(env_clean)
 
 table(env_clean$target, env_clean$pos, env_clean$sample)
@@ -294,3 +299,7 @@ prop.table(table(env_clean$tr, env_clean$studyArm_binary))*100
 #Save environmental data
 saveRDS(env_clean, file=paste0(dropboxDir,"Data/MapSan/mapsan_env_cleaned.rds"))
 
+d <- env_clean 
+
+df <- d %>% group_by(sampleid, sample) %>% summarise(N=length(unique(tr))) 
+  table(df$N)

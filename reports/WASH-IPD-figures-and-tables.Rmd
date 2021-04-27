@@ -31,12 +31,18 @@ panderOptions('table.split.table', Inf)
 panderOptions('big.mark', ",")
 panderOptions('keep.trailing.zeros', TRUE)
 
+resRR <- readRDS(file=here("results/pooled_RR.Rds"))
+
 load(here("figures/all_tables.Rdata"))
+load(here("figures/agg_tables.Rdata"))
+load(here("figures/abundance_tables.Rdata"))
 load(here("figures/all_figures.Rdata"))
 load(here("figures/density_figures.Rdata"))
 load(here("figures/outcome_groups.Rdata"))
 
-
+#load(here("figures/abundance_table_ROQ.Rdata"))
+abund_ROQ <- read.csv(here("figures/abundance_table_ROQ.csv"))
+abund_ROQ <-abund_ROQ %>% subset(., select= c(-X))
 
 ```
 
@@ -53,6 +59,13 @@ load(here("figures/outcome_groups.Rdata"))
 <!--      human_MST  -->
 <!--      any_MST  -->
 <!-- ``` -->
+
+## Pooled relative risk for any pathogen in any sample
+
+```{r, echo=F, warning=F, message=F}
+knitr::kable(resRR[-c(1:2)])
+
+```
 
 ## Table 1. Prevalence of pathogens by sample type tested in each study
 
@@ -136,19 +149,40 @@ __Figure S10.__ Repeat of Figure 1, broken down by  animal ownership.
 
 For internal use, and to discuss which can be analyzed with linear regressions. We should discuss the MST measures with non-normal discutirbutions due to high number of BLOD and BLOQ observations.
 
-#### Log10-transformed
+<!-- #### Log10-transformed -->
 
-```{r, echo=F, warning=F, message=F, fig.width = 5, fig.height = 5}
-logplotlist
+<!-- ```{r, echo=F, warning=F, message=F, fig.width = 5, fig.height = 5} -->
+<!-- logplotlist -->
+<!-- ``` -->
+
+
+<!-- #### Raw -->
+
+<!-- ```{r, echo=F, warning=F, message=F, fig.width = 5, fig.height = 5} -->
+<!-- plotlist -->
+<!-- ``` -->
+
+
+## Abundance table
+
+N's and percents for ROQ, BLOQ, and BLOD measures, and raw and log10 transformed means and medians of ROQ abundances. P-values are test of normality on raw and log-10 transformed datas (Null hypothesis is normality). The analysis column is my proposed analysis approach.
+
+```{r, echo=F, warning=F, message=F}
+knitr::kable(abund_ROQ)
+
 ```
 
+## QA check tables
+```{r, echo=F, warning=F, message=F}
+knitr::kable(d_any_pathogen$tab)
+knitr::kable(d_any_virus$tab)
+knitr::kable(d_any_protozoa$tab)
+knitr::kable(d_any_bacteria$tab)
+knitr::kable(d_any_general_MST$tab)
+knitr::kable(d_any_human_MST$tab)
+knitr::kable(d_any_animal_MST$tab)
 
-#### Raw
-
-```{r, echo=F, warning=F, message=F, fig.width = 5, fig.height = 5}
-plotlist
 ```
-
 
 ## Tables
 

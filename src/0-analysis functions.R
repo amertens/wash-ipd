@@ -12,23 +12,29 @@ aim1_glm <- function(d, Ws=NULL, outcome="pos", study="mapsan", sample="ds", tar
   df <- d %>% filter(study=={{study}}, sample=={{sample}}, target=={{target}}) %>% droplevels(.)
   
   cat(study,", ", sample,", ", target,"\n")
-  #print(head(df))
+  cat("N before dropping missing: ", nrow(df),"\n")
   
   df$Y <- df[[outcome]]
+  df <- df %>% filter(!is.na(Y))
   print(summary(df$Y))
   
   Wvars<-NULL
   minN<-NA
   
   if(length(unique(df$Y))<=2){
-    if(length(unique(df$Y))>1){
+    if(length(unique(df$Y))>1 & length(unique(df$tr))>1){
       minN <- min(table(df$Y))
     }else{
       minN <- 0
     }
   }
   
-  if(minN>=10 | length(unique(df$Y))>2){
+  # cat("\n", minN,"\n")
+  # print(table(df$Y))
+  # print(table(df$tr))
+  
+  #cat(minN>=10 | length(unique(df$Y)) > 2)
+  if(minN>=10 | length(unique(df$Y)) > 2){
     
     if(!is.null(Ws)){
       Wdf <- df %>% ungroup() %>% select(any_of(Ws)) %>% select_if(~sum(!is.na(.)) > 0)
@@ -50,7 +56,6 @@ aim1_glm <- function(d, Ws=NULL, outcome="pos", study="mapsan", sample="ds", tar
         Wvars <- NULL
       }
       df <- df %>% subset(., select =c("Y","tr","clusterid", Wvars))
-      cat("N before dropping missing: ", nrow(df),"\n")
       df <- df[complete.cases(df),]
       cat("N after dropping missing: ", nrow(df),"\n")
     }else{
@@ -67,12 +72,12 @@ aim1_glm <- function(d, Ws=NULL, outcome="pos", study="mapsan", sample="ds", tar
     #fit model
     fit <- mpreg(formula = as.formula(f), df = df, vcv=FALSE, family=family)
     coef <- as.data.frame(t(fit[2,]))
-    
     if(family=="gaussian"){
       res <- data.frame(Y=outcome,
                         sample=sample,
                         target=target,
                         coef=coef$Estimate,
+                        RR=NA,
                         se=coef$`Std. Error`,
                         Zval=coef$`z value`,
                         pval=coef$`Pr(>|z|)`)
@@ -104,7 +109,6 @@ aim1_glm <- function(d, Ws=NULL, outcome="pos", study="mapsan", sample="ds", tar
                       ci.lb=NA,
                       ci.ub=NA)
   }
-  
   if(length(unique(df$Y))<=2){
     res$minN <- minN
     res$n<-sum(df$Y, na.rm=T)

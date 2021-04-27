@@ -1,0 +1,55 @@
+study,sample,target,N,mean,med,trans.mean,trans.med,trans.p,raw.p,ROQ,BLOQ,BLOD,Analyze
+Boehm et al. 2016,any sample type,Animal (BacR),497,192.3,15,1.5,1.2,0.00104,0,2.2 (11),20.1 (100),77.7 (386),No
+Boehm et al. 2016,any sample type,Avian (GFD),NA,NA,NA,NA,NA,NA,NA,0 (0),8.2 (41),91.8 (456),No
+Boehm et al. 2016,any sample type,General (GenBac3),492,166449.9,111.5,2.4,2,0,0,90.4 (445),9.6 (47),0 (0),linear regression - transformed
+Boehm et al. 2016,any sample type,Human (HumM2),497,52.8,50,1.7,1.7,0,0,100 (497),0 (0),0 (0),linear regression - transformed
+Boehm et al. 2016,any sample type,Rotavirus,497,38.2,38.2,1.5,1.5,NA,NA,0.4 (2),0.2 (1),99.4 (494),No
+Boehm et al. 2016,CH,Animal (BacR),493,18786.2,6738.4,4,3.8,0.00057,0,4.5 (22),49.7 (245),45.8 (226),No
+Boehm et al. 2016,CH,Avian (GFD),493,6547.6,6547.6,3.8,3.8,NA,NA,0.2 (1),15.4 (76),84.4 (416),No
+Boehm et al. 2016,CH,General (GenBac3),493,3112091.1,355751,5.6,5.6,0.00023,0,98 (483),0.6 (3),1.4 (7),linear regression - transformed
+Boehm et al. 2016,CH,Human (HumM2),482,12519.4,12519.4,4.1,4.1,NA,NA,0.2 (1),0 (0),99.8 (481),No
+Boehm et al. 2016,CH,Rotavirus,493,351201.6,17277.3,4.6,4.2,0.00575,0,3.7 (18),2.4 (12),93.9 (463),No
+Boehm et al. 2016,S,Animal (BacR),NA,NA,NA,NA,NA,NA,NA,0 (0),29.9 (138),70.1 (324),No
+Boehm et al. 2016,S,Avian (GFD),NA,NA,NA,NA,NA,NA,NA,0 (0),20.4 (100),79.6 (390),No
+Boehm et al. 2016,S,Human (HumM2),452,400,400,2.6,2.6,NA,NA,100 (452),0 (0),0 (0),linear regression - transformed
+Boehm et al. 2016,S,Rotavirus,496,88981.8,57235.3,4.8,4.7,0.81157,0.21674,0.8 (4),0.6 (3),98.6 (489),No
+Boehm et al. 2016,W,Animal (BacR),493,192.3,15,1.5,1.2,0.00104,0,2.2 (11),19.7 (97),78.1 (385),No
+Boehm et al. 2016,W,Avian (GFD),NA,NA,NA,NA,NA,NA,NA,0 (0),8.1 (40),91.9 (453),No
+Boehm et al. 2016,W,General (GenBac3),492,940.1,98.1,2.1,2,0,0,83.9 (413),9.6 (47),6.5 (32),linear regression - transformed
+Boehm et al. 2016,W,Human (HumM2),493,50,50,1.7,1.7,NA,NA,0 (0),0 (0),100 (493),No
+Boehm et al. 2016,W,Rotavirus,493,38.2,38.2,1.5,1.5,NA,NA,0.4 (2),0.2 (1),99.4 (490),No
+Steinbaum et al. 2019,any sample type,Any STH,2101,2,0,-0.7,-1,NA,0,100 (2101),0 (0),0 (0),negative binomial
+Steinbaum et al. 2019,any sample type,Ascaris,2101,1.8,0,-0.8,-1,NA,0,100 (2101),0 (0),0 (0),negative binomial
+Steinbaum et al. 2019,any sample type,Trichuris,2102,0.2,0,-0.9,-1,NA,0,100 (2102),0 (0),0 (0),negative binomial
+Steinbaum et al. 2019,S,Any STH,2101,2,0,-0.7,-1,NA,0,100 (2101),0 (0),0 (0),negative binomial
+Steinbaum et al. 2019,S,Ascaris,2101,1.8,0,-0.8,-1,NA,0,100 (2101),0 (0),0 (0),negative binomial
+Steinbaum et al. 2019,S,Trichuris,2102,0.2,0,-0.9,-1,NA,0,100 (2102),0 (0),0 (0),negative binomial
+Fuhrmeister et al. 2020,any sample type,Animal (BacCow),593,77158.1,13.3,2.3,1.1,0,0,100 (593),0 (0),0 (0),linear regression - transformed
+Fuhrmeister et al. 2020,CH,Animal (BacCow),365,127640.5,6914.8,3.5,3.8,0,0,100 (365),0 (0),0 (0),linear regression - transformed
+Fuhrmeister et al. 2020,MH,Animal (BacCow),725,41933.1,5201.9,3.2,3.7,0,0,100 (725),0 (0),0 (0),linear regression - transformed
+Fuhrmeister et al. 2020,S,Animal (BacCow),631,129712.2,13.8,2.6,1.1,0,0,100 (631),0 (0),0 (0),linear regression - transformed
+Fuhrmeister et al. 2020,W,Animal (BacCow),704,82.5,2.9,0.7,0.5,0,0,100 (704),0 (0),0 (0),linear regression - transformed
+Holcomb et al. 2020,any sample type,Avian (GFD),64,3,2.9,0.5,0.5,0,0,100 (64),0 (0),0 (0),linear regression - raw
+Holcomb et al. 2020,any sample type,Human (Bacteriodes),64,4.2,4.1,0.6,0.6,0.0336,0.07489,100 (64),0 (0),0 (0),linear regression - raw
+Holcomb et al. 2020,any sample type,Human (M. smithii),64,4,4,0.6,0.6,3.00E-05,2.00E-05,100 (64),0 (0),0 (0),linear regression - raw
+Holcomb et al. 2020,FP,Avian (GFD),96,3.2,3.4,0.5,0.5,0,0,100 (96),0 (0),0 (0),linear regression - raw
+Holcomb et al. 2020,FP,Human (Bacteriodes),96,3.5,3.3,0.6,0.5,0,0,100 (96),0 (0),0 (0),linear regression - raw
+Holcomb et al. 2020,FP,Human (M. smithii),94,3.5,3.5,0.6,0.6,0,0,100 (94),0 (0),0 (0),linear regression - raw
+Holcomb et al. 2020,LS,Avian (GFD),60,2.7,2.7,0.5,0.4,0,0,100 (60),0 (0),0 (0),linear regression - raw
+Holcomb et al. 2020,LS,Human (Bacteriodes),60,4.5,4.4,0.7,0.7,0.00013,1.00E-05,100 (60),0 (0),0 (0),linear regression - raw
+Holcomb et al. 2020,LS,Human (M. smithii),60,4.5,4.3,0.7,0.6,0,0,100 (60),0 (0),0 (0),linear regression - raw
+Holcomb et al. 2020,S,Avian (GFD),83,3,2.9,0.5,0.5,0,0,100 (83),0 (0),0 (0),linear regression - raw
+Holcomb et al. 2020,S,Human (Bacteriodes),83,4.4,4.2,0.7,0.6,8.00E-05,0,100 (83),0 (0),0 (0),linear regression - raw
+Holcomb et al. 2020,S,Human (M. smithii),83,4.2,4,0.6,0.6,0,0,100 (83),0 (0),0 (0),linear regression - raw
+Holcomb et al. 2020,SW,Avian (GFD),41,1.9,1.9,0.3,0.3,0,0,100 (41),0 (0),0 (0),linear regression - raw
+Holcomb et al. 2020,SW,Human (Bacteriodes),41,2.9,2.8,0.5,0.5,0,0,100 (41),0 (0),0 (0),linear regression - raw
+Holcomb et al. 2020,SW,Human (M. smithii),41,2.9,2.9,0.5,0.5,0,0,100 (41),0 (0),0 (0),linear regression - raw
+Holcomb et al. 2020,W,Avian (GFD),94,1.9,1.9,0.3,0.3,0,0,100 (94),0 (0),0 (0),linear regression - raw
+Holcomb et al. 2020,W,Human (Bacteriodes),94,2.8,2.7,0.5,0.4,0,0,100 (94),0 (0),0 (0),linear regression - raw
+Holcomb et al. 2020,W,Human (M. smithii),94,3,2.9,0.5,0.5,0,0,100 (94),0 (0),0 (0),linear regression - raw
+Kwong et al. 2021,any sample type,Any STH,1396,4.1,1.5,0.1,0.2,NA,0,100 (1396),0 (0),0 (0),negative binomial
+Kwong et al. 2021,any sample type,Ascaris,1396,2.3,0.7,-0.2,-0.1,NA,0,100 (1396),0 (0),0 (0),negative binomial
+Kwong et al. 2021,any sample type,Trichuris,1396,1.8,0.4,-0.3,-0.3,NA,0,100 (1396),0 (0),0 (0),negative binomial
+Kwong et al. 2021,S,Any STH,1396,4.1,1.5,0.1,0.2,NA,0,100 (1396),0 (0),0 (0),negative binomial
+Kwong et al. 2021,S,Ascaris,1396,2.3,0.7,-0.2,-0.1,NA,0,100 (1396),0 (0),0 (0),negative binomial
+Kwong et al. 2021,S,Trichuris,1396,1.8,0.4,-0.3,-0.3,NA,0,100 (1396),0 (0),0 (0),negative binomial

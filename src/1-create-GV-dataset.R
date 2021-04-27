@@ -17,6 +17,15 @@ dim(d)
 dim(d2)
 
 colnames(d)
+length(unique(d$ev_id))
+length(unique(d$ev_id1))
+length(unique(d$ev_id2))
+length(unique(d$ev_id3))
+length(unique(d$ev_id4))
+
+length(unique(d$ev_id_rnd))
+length(unique(d$ev_smp_id))
+
 table(d$ev_01b)
 table(d$vc_o139)
 table(d$vc_o1)
@@ -208,9 +217,10 @@ Ws = Wvars = c("hhwealth", "Nhh","momedu",
    rename(
      round=hh_rnd, 
      momedu=hoh_edu4,
+     sampleid=ev_smp_id
    ) %>%
    subset(., select = c(
-     hh_vid, round, hh_hid, hh_mid, hh_st, ic, sample, vc.pos, sh.pos, vc.pres.pos, sh.pres.pos, momedu, haz, whz, dia7
+     sampleid, hh_vid, round, hh_hid, hh_mid, hh_st, ic, sample, vc.pos, sh.pos, vc.pres.pos, sh.pres.pos, momedu, haz, whz, dia7
    ))
 head(dw)
 
@@ -220,10 +230,11 @@ sw <- d2 %>%
     vc.pres.pos=as.numeric(vc_tcbs.1), sh.pres.pos=as.numeric(sh_pos.1)) %>%
   rename(
     round=hh_rnd, 
-    momedu=hoh_edu4
+    momedu=hoh_edu4,
+    sampleid=ev_smp_id
   ) %>%
   subset(., select = c(
-    hh_vid, round, hh_hid, hh_mid, hh_st, ic, sample, vc.pos, sh.pos, vc.pres.pos, sh.pres.pos, momedu, haz, whz, dia7
+    sampleid, hh_vid, round, hh_hid, hh_mid, hh_st, ic, sample, vc.pos, sh.pos, vc.pres.pos, sh.pres.pos, momedu, haz, whz, dia7
   ))
 head(sw)
 

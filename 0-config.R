@@ -60,25 +60,23 @@ scaleFUN <- function(x) sprintf("%.2f", x)
 #---------------
 
 #pathogens:
-any_pathogens = c("E. coli virulence gene",  "Pathogenic E. coli", "Giardia",  "C. difficile",
-                  "Shigella",  "Entamoeba histolytica",  "V. cholerae", "Yersinia",       
-                  "Norovirus",             "Any STH", "Ascaris", "any pathogen-improved", "any pathogen-unimproved",
-                  "Adenovirus","Trichuris",  "Rotavirus", "Astrovirus", "Cryptosporidium", "Salmonella")   
 
-any_virus = c("Norovirus",  "Adenovirus", "Rotavirus", "Astrovirus")   
-any_bacteria = c("E. coli virulence gene", "Pathogenic E. coli", "Yersinia",  "V. cholerae", "Shigella",  "C. difficile",  "Salmonella")   
-#any_helminth = c("Any STH", "Ascaris", "Trichuris")   
+any_virus = c("Norovirus",  "Adenovirus", "Rotavirus", "Astrovirus", "Sapovirus")   
+any_bacteria = c("E. coli virulence gene", "Pathogenic E. coli", 
+                 "Yersinia",  "V. cholerae", "Shigella",  "C. difficile",  
+                 "Salmonella", "Campylobacter jejuni/coli")   
+any_helminth = c("Any STH", "Ascaris", "Trichuris")   
 any_protozoa = c("Giardia", "Cryptosporidium", "Entamoeba histolytica")   
 
-
+any_pathogens = c(any_virus, any_bacteria, any_helminth, any_protozoa)
 
 
 
 #MST's:
-general_MST = c("GenBac3","BacUni")
+general_MST = c("General (GenBac3)","General (BacUni)")
 
 animal_MST = c( "Animal (BacCow)",   
-                "Ruminant",              "Avian",
+                "Animal (BacR)",              "Avian (GFD)",
                 "Avian (Helicobacter)")
 
 human_MST = c("Human (HumM2)",  "Human (Bacteroides)",   "Human (M. smithii)")

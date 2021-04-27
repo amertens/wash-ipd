@@ -1,20 +1,16 @@
 
+rm(list=ls())
 source(here::here("0-config.R"))
 
 d <- readRDS(paste0(dropboxDir,"Data/cleaned_ipd_env_data.rds"))
 head(d)
 d <- droplevels(d)
 
-#Drop baseline measure from mapsan
-d <- d %>% filter(round != "0m") %>% droplevels(.)
-d$study[d$round=="World Bank"] <- "WBB-World Bank"
+#d$study <- as.numeric(d$study)
 
 table(d$study, d$round)
 table(d$study, d$target)
 table(d$sample, d$target, d$study)
-
-df <- d %>% filter(study=="WBB",target=="Any protozoa")
-table(df$sample, df$pos)
 
 # #temporarily permute treatment assignment
 # set.seed(12345)
@@ -40,27 +36,39 @@ Ws = Wvars = c("hhwealth", "Nhh","momedu",
 
 
 
-outcome="pos"
-study="WBB"
-sample="S"
-target="ascaris"
-Ws=NULL
-family="binomial"
 
+# d %>% distinct(study, sample, target) %>% as.data.frame()
+# 
+# outcome="pos"
+# study="Boehm et al. 2016"
+# sample="any sample type"
+# target="Any general MST"
+# Ws=Wvars
+# Ws=NULL
+# family="binomial"
+# 
+# temp <- d %>% filter(study==!!(study), target==!!(target)) 
+# table(temp$sample, temp$pos)
+# 
+# 
+# 
+# 
+# #df <- d %>% filter(study=="6", sample=="any sample type",target=="Any human MST") 
+# df <- d %>% filter(study==!!(study), sample==!!(sample),target==!!(target)) 
+# res <- aim1_glm(df, outcome=outcome, study=study, sample=sample, target=target, Ws=NULL, family="binomial")
+# res
+# 
+# df1 <- d %>% filter(study==!!(study), sample=="MH",target==!!(target) )
+# df2 <- d %>% filter(study==!!(study), sample=="CH",target==!!(target) )
+# table(df$sample, df$pos)
+# table(df1$sample, df1$pos)
+# table(df2$sample, df2$pos)
+# res <- aim1_glm(df, outcome=outcome, study=study, sample=sample, target=target, Ws=NULL, family="binomial")
+# res
 
-outcome="abund"
-study="mapsan"
-sample="ds"
-target="HF183"
-Ws=Wvars
-family="neg.binom"
-
-
-d %>% distinct(study, sample, target) %>% as.data.frame()
-
-df <- d %>% filter(round=="4")
-res <- aim1_glm(df, outcome="pos", study="Gram Vikas", sample="SW", target="Shigella", Ws=NULL, family="binomial")
-res
+# res <- d %>% group_by(study, sample, target, aggregate_Y) %>%
+#   do(aim1_glm(., outcome="pos", study=.$study[1], sample=.$sample[1], target=.$target[1], family="binomial"))
+# res
 
 
 
@@ -70,7 +78,7 @@ res
 #-----------------------------------
 res <- d %>% group_by(study, sample, target, aggregate_Y) %>%
    do(aim1_glm(., outcome="pos", study=.$study[1], sample=.$sample[1], target=.$target[1], family="binomial"))
-res
+res %>% filter(!is.na(coef))
 
 
 summary(res$RR)
@@ -86,7 +94,7 @@ saveRDS(res, file=here("results/unadjusted_aim1_RR.Rds"))
 #-----------------------------------
 res <- d %>% group_by(study, sample, target, aggregate_Y) %>%
   do(aim1_glm(., outcome="pos", study=.$study[1], sample=.$sample[1], target=.$target[1], family="gaussian"))
-res
+res %>% filter(!is.na(coef))
 table(res$study)
 summary(res$coef)
 
@@ -102,7 +110,7 @@ saveRDS(res, file=here("results/unadjusted_aim1_RD.Rds"))
 #-----------------------------------
 res <- d %>% group_by(study, sample, target, aggregate_Y) %>%
   do(aim1_glm(., outcome="pos", study=.$study[1], sample=.$sample[1], target=.$target[1], Ws=Wvars, family="binomial"))
-res
+res %>% filter(!is.na(coef))
 
 #drop estimates with less than 10 values
 res <- res %>% filter(minN>=10)
@@ -115,7 +123,7 @@ saveRDS(res, file=here("results/adjusted_aim1_RR.Rds"))
 #-----------------------------------
 res <- d %>% group_by(study, sample, target, aggregate_Y) %>%
   do(aim1_glm(., outcome="pos", study=.$study[1], sample=.$sample[1], target=.$target[1], Ws=Wvars, family="gaussian"))
-res
+res %>% filter(!is.na(coef))
 
 #drop estimates with less than 10 values
 res <- res %>% filter(minN>=10)

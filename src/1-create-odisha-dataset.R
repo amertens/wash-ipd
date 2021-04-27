@@ -38,17 +38,25 @@ colnames(env)
 colnames(env) <- c("clusterid","tr","round","BacUni","BacHum","BacCow","any pathogen-improved","any pathogen-unimproved","rv","av","vibrio_cholera")
 
 env <- env %>%
-  gather(BacUni:vibrio_cholera, key = target, value = pos)
+  gather(BacUni:vibrio_cholera, key = target, value = pos) %>%
+  filter(!(target %in% c("any pathogen-improved", "any pathogen-unimproved")))
+
+table(env$target)
 head(env)
 table(is.na(env$pos))
 env$rate <- env$pos
 env$rate[env$target %in% c("rv","av","vibrio_cholera")] <- NA #mark positivity-only as missing
 env$pos <- ifelse(env$pos>0 ,1,0) #Convert rates to positivity
 
+#Rename target to avoid name confusion with avian MST
+env$target[env$target=="av"] <- "Adenovirus"
+ 
 env <- env %>% mutate(tr=ifelse(tr==1,"Intervention","Control"),
        tr = factor(tr, levels = c("Control", "Intervention")),
        sample="W",
        study="Odisha",
        round=factor(round))
+
+env$sampleid <- env %>% group_indices(clusterid, tr, round, sample) #%>% mutate()
 
 saveRDS(env, file=paste0(dropboxDir,"Data/Odisha/GV_env_cleaned.rds"))
