@@ -1,8 +1,11 @@
 
 rm(list=ls())
 source(here::here("0-config.R"))
-library(metafor)
-d <- readRDS(here("results/unadjusted_aim1_RR.Rds"))
+unadj_RR <- readRDS(here("results/unadjusted_aim1_RR.Rds"))
+
+unadj_RR <- clean_res(unadj_RR)
+head(unadj_RR)
+table(unadj_RR$sample_cat)
 
 poolRR<-function(d, method="REML"){
 
@@ -15,27 +18,31 @@ poolRR<-function(d, method="REML"){
       if(is.null(fit)){try(fit<-rma(yi=untransformed_estimate, sei=untransformed_se, data=d, method="DL", measure="RR"))}
       if(is.null(fit)){try(fit<-rma(yi=untransformed_estimate, sei=untransformed_se, data=d, method="HE", measure="RR"))}
     }
+    
+    #confint(fit)
  
-      est<-data.frame(fit$b, fit$se)
-      colnames(est)<-c("logRR.psi","logSE")
+      est<-data.frame(fit$b, fit$se, fit$I2)
+      colnames(est)<-c("logRR.psi","logSE", "I2")
       
       est$RR<-exp(est$logRR)
-      est$RR.CI1<-exp(est$logRR - 1.96 * est$logSE)
-      est$RR.CI2<-exp(est$logRR + 1.96 * est$logSE)
-  
+      est$ci.lb<-exp(est$logRR - 1.96 * est$logSE)
+      est$ci.ub<-exp(est$logRR + 1.96 * est$logSE)
+      est$N <- d$N[1]
+      est <- est %>% mutate(study="Pooled", sparse="pooled", sample_type=d$sample_type[1], sample_cat=d$sample_cat[1], target_f=d$target_f[1])
+      
   return(est)
 }
 
 #pool primary estimates by study
 
-head(d)
-table(d$sample, d$target)
 
-d <- d %>% filter(sample=="any sample type", target=="Any pathogen")
-head(d)
-d$N
+res <- unadj_RR %>% group_by(sample, target) %>% 
+  filter(!is.na(se)) %>% mutate(N=n()) %>%
+  filter(N>=4)%>% group_by(sample, target) %>%
+  do(poolRR(.)) 
 
-res <- poolRR(d)
-res
+unadj_pool <- bind_rows(unadj_RR, res)
+unadj_pool$study <- factor(unadj_pool$study, levels = rev(c(levels(unadj_RR$study),"Pooled")))
 
-saveRDS(res, file=here("results/pooled_RR.Rds"))
+saveRDS(unadj_pool, file=here("results/unadjusted_aim1_RR_pooled.Rds"))
+

@@ -5,87 +5,21 @@ library(SmartEDA)
 
  
 
-#EDA - aim 1 outcomes
+#Check covariates
+d <- readRDS(paste0(dropboxDir,"Data/cleaned_ipd_env_data.rds"))
 
-#Notes:
-   #-log quant is missing for non-pos in mapsan but set to log(0.5) in washb
+Wvars = c( "nrooms","walls", "floor","elec")         
 
-
-#----------------------------------------------------
-# MapSan
-#----------------------------------------------------
-
-d <-readRDS(paste0(dropboxDir,"Data/cleaned_ipd_env_data.rds"))
-d <- d %>% subset(., select = c(dataid, study,sample, target, round, pos, logquant))
-head(d)
-
-ms <- d %>% filter(study=="mapsan")
-head(ms)
+# d %>% group_by(trial) %>% summarize(mean(hhwealth, na.rm=T))
+# table(d$trial, is.na(d$hhwealth))
+# 
 
 
 
-summary(ms$logquant)
-summary(exp(ms$logquant))
-
-#Pathogens:
-# cEC: cultured E. coli
-# EC23S: qPCR E. coli
-# HF183: qPCR human target (Bacteroides)
-# Mnif: qPCR human target (M. smithii)
-# GFD: qPCR avian target (Helicobacter)
-
-# samples:
-# ds=household entrance soil
-# fp=food preparation surface
-# hwhousehold stored water  
-# ls=latrine entrance soil 
-# wp=source water
-
-
-#check if they
-
-
-ms %>% group_by(sample, target) %>%
-  summarize(N=n(), npos=sum(pos), prev=round(mean(pos),3)*100, mean_log_quant=round(mean(logquant, na.rm=T),2)) %>%
-  as.data.frame()
-
-#Now tabulate by human or animal source
-
-#Are the GPP measures just in children? -yes according to papers
-
-
-#----------------------------------------------------
-# WBB
-#----------------------------------------------------
-wbb <- d %>% filter(study=="WBB")
-head(wbb)
-wbb %>% group_by(sample, target) %>%
-  filter(!is.na(sample)) %>%
-  summarize(N=n(), npos=sum(pos), prev=round(mean(pos),3)*100, mean_log_quant=round(mean(logquant, na.rm=T),2)) %>%
-  as.data.frame()
-
-
-#----------------------------------------------------
-# WBK
-#----------------------------------------------------
-wbk <- d %>% filter(study=="WBK")
-
-wbk %>% group_by(sample, target) %>%
-  filter(!is.na(sample)) %>%
-  summarize(N=n(), npos=sum(pos), prev=round(mean(pos),3)*100, mean_log_quant=round(mean(logquant, na.rm=T),2)) %>%
-  as.data.frame()
-
-
-#----------------------------------------------------
-# Gram Vikas
-#----------------------------------------------------
-
-gv <-readRDS(paste0(dropboxDir,"Data/Gram Vikas/GV_env_cleaned.rds"))
-head(gv)
-
-
-
-
+table(d$trial, is.na(d$nrooms))
+table(d$trial, is.na(d$walls))
+table(d$trial, is.na(d$floor))
+table(d$trial, is.na(d$elec))
 
 
 

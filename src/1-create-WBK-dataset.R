@@ -1,15 +1,16 @@
 
 
 # importing packages and setting directories
+rm(list=ls())
 source(here::here("0-config.R"))
 
-library(dplyr)
 
 
 #----------------------------------------------------------------------------
 #Make env dataset
 #----------------------------------------------------------------------------
 env <- read_dta(paste0(dropboxDir,"Data/WBK/wbk_STH_soil.dta"))
+enrol <- read.csv(paste0(dropboxDir,"Data/WBK/washb-kenya-enrol.csv"))
 
 head(env)
 
@@ -51,6 +52,7 @@ head(env2)
 cov <- env %>% subset(., select=c(hhid, vlgid, compoundid, clusterid, block_dc, soil_id,  tr,
                                   num_hh, 
                                   roof,
+                                  elec,
                                   walls,floor,
                                   assetquintile,
                                   cow,goat,
@@ -58,14 +60,36 @@ cov <- env %>% subset(., select=c(hhid, vlgid, compoundid, clusterid, block_dc, 
                                   soil_feces,
                                   soil_sunny,
                                   soil_wet)) %>%
-  mutate(tr = factor(tr, labels=c("Control",
+  mutate(tr2 = factor(tr, labels=c("Control", #save seperate treatment arm
                                   "Sanitation",
                                   "WSH")),
+          #combine Sanitation and WSH arm for primary analysis),
+          tr = case_when(tr==1 ~ "Control",
+                         tr==3 | tr==5 ~ "Sanitation"
+                         ),
          sample = "S",
          round="env round") 
 
 
+dim(env2)
 env2 <- left_join(env2, cov, by=c("hhid","soil_id"))
+dim(env2)
+
+
+#Get other enrollment covariates needed for env. analysis
+colnames(env2)
+colnames(enrol)
+enrol <- enrol %>% 
+  mutate(env_date=dmy(ms_el_up_date)) %>%
+  subset(., select=c(hhid, env_date)) %>% 
+  filter(!is.na(env_date)) %>% 
+  distinct()
+
+dim(env2)
+env2 <- left_join(env2, enrol, by=c("hhid"))
+dim(env2)
+table(is.na(env2$env_date))
+
 
 
 saveRDS(env2, paste0(dropboxDir, "Data/WBK/Clean/WBK_env.RDS"))

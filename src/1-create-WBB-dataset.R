@@ -67,7 +67,7 @@ PEC <- PEC %>% subset(., select=c(PID, Month.Collected, Unique.Numerical.ID, Sam
   gather(EPEC:ETECST1B, key = target, value = pos)
 head(PEC)
 
-#Just use any virulent gene
+#Just use any virulent gene - this is a combination variable of the pathogenic subtypes
 PEC <- PEC %>% filter(target=="ECVG")
 
 colnames(qPCR)
@@ -171,7 +171,7 @@ df.pca <- data.frame(dataid=id, hhwealth=df$hhwealth)
 enrol <- left_join(enrol, df.pca, by="dataid")
 
 #drop assets
-enrol <-  enrol %>% subset(., select= -c(roof,walls,cement,elec,asset_radio,
+enrol <-  enrol %>% subset(., select= -c(cement,asset_radio,
                                     asset_tvbw,      asset_tvcol,     asset_refrig,    asset_bike,      asset_moto,     
                                     asset_sewmach,   asset_phone,     asset_tv,        asset_wardrobe,  asset_table,    
                                     asset_chair,    
@@ -184,6 +184,7 @@ enrol <-  enrol %>% subset(., select= -c(roof,walls,cement,elec,asset_radio,
 #Merge in covariates
 env2 <-env
 dim(env)
+colnames(enrol)
 env <- left_join(env2, enrol, by=c("dataid"))
 env <- left_join(env, tr, by=c("block","clusterid"))
 dim(env)
@@ -234,14 +235,23 @@ anthro<-anthro%>%
           mutate(svyyear=year(dmy(svydate)),
                  svyweek=week(dmy(svydate)))
 
+colnames(anthro)
+anthro<-anthro%>%
+  subset(., select = c("block","clusterid","dataid","svy", "childid", "laz","whz","waz"))
+colnames(diar)
+diar<-diar%>%
+  subset(., select = c("block","clusterid","dataid","svy", "childid", "diar7d"))
+colnames(diar)
+
 #Merge anthro and diar
 dim(anthro)
 dim(diar)
-anthro_diar <- full_join(diar, anthro, by=c("block","clusterid","dataid","svy"))
+anthro_diar <- full_join(diar, anthro, by=c("childid" ,"block","clusterid","dataid","svy"))
 dim(anthro_diar)
+table(is.na(anthro_diar$dataid))
 
 anthro_diar <- anthro_diar %>%
-  filter(svy==2) %>%
+  #filter(svy==2) %>%
   mutate(svy=as.character(svy))
 
 #----------------------------------------------------------------------------
@@ -269,14 +279,23 @@ sth <- sth %>% subset(., select = -c(dataid_r, block_r, clusterid_r))
 head(sth)
 
 #subset to needed variables
-sth <- sth %>% subset(., select = c(dataid, childid,tr,sex, agem, logalepg, loghwepg, logttepg, al, tt, hw, sth)) %>%
-  mutate(svy="sth")
+sth <- sth %>% subset(., select = c(dataid, childid, agem, logalepg, loghwepg, logttepg, al, tt, hw, sth)) %>%
+  mutate(svy="2")
 
 
 
 # binding child health outcomes
 anthro_diar$measure = "anthro_diar"
 sth$measure = "sth"
-child_health <- bind_rows(anthro_diar, sth)
 
+head(anthro_diar)
+head(sth)
+dim(diar)
+dim(sth)
+child_health <- left_join(anthro_diar, sth, by=c("childid" ,"dataid","svy"))
+dim(child_health)
+table(is.na(child_health$dataid))
+
+
+head(child_health)
 saveRDS(child_health, paste0(dropboxDir, "Data/WBB/Clean/WBB_child_health.RDS"))

@@ -66,12 +66,23 @@ table(d2$sh_pos.1 )
 #   557 - hh.asset - does any member of your household own the following items?
 #   558 - 581 - hh.asset_x
 
+
+
+summary(as.numeric(d$wealth ))
+table(d$wealth_ind )
+summary(as.numeric(d$wealth_st ))
+
+
+
 # 3.	Number of individuals and children in household
     # Mnum4 - [Number of HH members, ppl >=60 yrs]
     # Mnum5 - [Number of HH members, men 18-59 yrs]
     # Mnum6 - [Number of HH members, women 18-59 yrs]
     # Mnum7 - [Number of HH members, child 5-17 yrs]
     # Numcu5 - [Number of HH members, child 5 yrs]
+table(d$mnum4)
+table(d$mnum4+d$mnum5+d$mnum6+d$mnum7+d$numcu5)
+
 
 # 4.	Household food security 
 #   Hh.hhs1 - In the past 30 days, was there ever no food to eat of any kind in your house because of lack of resources to get food?
@@ -213,36 +224,40 @@ Ws = Wvars = c("hhwealth", "Nhh","momedu",
  dw <- d %>% 
    mutate(sample="W",
      vc.pos=as.numeric(vc_kiit_pos), sh.pos=as.numeric(sh_kiit_pos),
-     vc.pres.pos=as.numeric(vc_tcbs.1), sh.pres.pos=as.numeric(sh_pos.1)) %>%
+     vc.pres.pos=as.numeric(vc_tcbs.1), sh.pres.pos=as.numeric(sh_pos.1),
+     env_date=ymd(hh_st)) %>%
    rename(
      round=hh_rnd, 
      momedu=hoh_edu4,
      sampleid=ev_smp_id
    ) %>%
    subset(., select = c(
-     sampleid, hh_vid, round, hh_hid, hh_mid, hh_st, ic, sample, vc.pos, sh.pos, vc.pres.pos, sh.pres.pos, momedu, haz, whz, dia7
+     env_date, sampleid, hh_vid, round, hh_hid, hh_mid, hh_st, ic, sample, vc.pos, sh.pos, vc.pres.pos, sh.pres.pos, momedu, haz, whz, dia7, wealth_st,
+     mnum4,mnum5,mnum6,mnum7,numcu5
    ))
 head(dw)
 
 sw <- d2 %>% 
   mutate(sample="SW",
     vc.pos=as.numeric(vc_kiit_pos), sh.pos=as.numeric(sh_kiit_pos),
-    vc.pres.pos=as.numeric(vc_tcbs.1), sh.pres.pos=as.numeric(sh_pos.1)) %>%
+    vc.pres.pos=as.numeric(vc_tcbs.1), sh.pres.pos=as.numeric(sh_pos.1),
+    env_date=ymd(hh_st)) %>%
   rename(
     round=hh_rnd, 
     momedu=hoh_edu4,
     sampleid=ev_smp_id
   ) %>%
   subset(., select = c(
-    sampleid, hh_vid, round, hh_hid, hh_mid, hh_st, ic, sample, vc.pos, sh.pos, vc.pres.pos, sh.pres.pos, momedu, haz, whz, dia7
+    env_date, sampleid, hh_vid, round, hh_hid, hh_mid, ic, sample, vc.pos, sh.pos, vc.pres.pos, sh.pres.pos, momedu, haz, whz, dia7, wealth_st,
+    mnum4,mnum5,mnum6,mnum7,numcu5
   ))
 head(sw)
 
 dim(sw)
-dim(sw %>% distinct(hh_vid, round, hh_hid, hh_mid, hh_st))
+dim(sw %>% distinct(hh_vid, round, hh_hid, hh_mid, env_date))
 
 dim(dw)
-dim(dw %>% distinct(hh_vid, round, hh_hid, hh_mid, hh_st))
+dim(dw %>% distinct(hh_vid, round, hh_hid, hh_mid, env_date))
 
 #Merge
 df <- bind_rows(sw, dw)
@@ -255,8 +270,10 @@ df <- df %>%
       tr=case_when(
         ic==0 ~ "Control",
         ic==1 ~ "Intervention"
-      )) %>%
-  subset(., select = -c(ic))
+      ),
+      hhwealth=as.numeric(wealth_st),
+      Nhh=mnum4+mnum5+mnum6+mnum7+numcu5) %>%
+  subset(., select = -c(ic, wealth_st, mnum4,mnum5,mnum6,mnum7,numcu5))
 
 
 #Transform to long, and only keep confirmed positives:
@@ -277,81 +294,82 @@ head(df)
 #   print(table(d[[i]]))
 # }
 
+table(is.na(df$env_date))
 saveRDS(df, file=paste0(dropboxDir,"Data/Gram Vikas/GV_env_cleaned.rds"))
 
 
 
-#-----------------------------------------------------------------------------------------------------------
-# Check numbers with Reese dissertation
-#-----------------------------------------------------------------------------------------------------------
-
-# sample water (n=1583) and drinking water (n=2044) were assayed for E. coli, Shigella spp., and V. cholerae, 
-# and children's hands (n=976)  for E. coli and Shigella spp.
-dim(df)
-
-#We collected samples of the sample water and drinking water for each household four times, once in each study round,
-#and child hand rinse samples two times, in rounds 2 and 4. If a household randomly selected for sampling was absent, 
-#field workers collected samples from the nearest enrolled household to the right.
-
-table(df$round, df$vc.kiit)
-table(df$round, df$sh.kiit)
-
-df <- df %>% filter(round==4)
-head(df)
-
-table(df$ev.01b)
-# 1 = Water samples
-# 2 = Hand rinse samples
-# 3 = Stool samples
-# 4 = NA
-
-table(df$tr, df$sh.kiit)
-table(df$tr, df$vc.kiit)
-
-head(df)
-
-
-#V cholera presence
-summary(df$vc.kiit)
-
-#seperate strains
-summary(df$vc.o1)
-summary(df$vc.o139)
-
-#Variables match
-table(df$vc.kiit)
-table(df$vc.o1==1 | df$vc.o1391==1)
-
-#What is the difference between these 2 positive variables?
-table(df$vc.kiit)
-table(df$vc.tcbs)
-
-
-#V cholera count
-table(df$vc_tcno)
-
-#What are the individual colony counts? Does the above make sense
-
-
-#Shigella presence
-
-
-#Shigella count
-
-
-
-table(df$sh_bcno)
-table(df$sh_bnote)
-
-table(df$sh_dil1)
-table(df$sh_dil2)
-table(df$sh_dil3)
-
-
-table(df$sh.dys)
-table(df$sh.flx)
-
-table(df$sh.sacnt1)
-
-
-
+# #-----------------------------------------------------------------------------------------------------------
+# # Check numbers with Reese dissertation
+# #-----------------------------------------------------------------------------------------------------------
+# 
+# # sample water (n=1583) and drinking water (n=2044) were assayed for E. coli, Shigella spp., and V. cholerae, 
+# # and children's hands (n=976)  for E. coli and Shigella spp.
+# dim(df)
+# 
+# #We collected samples of the sample water and drinking water for each household four times, once in each study round,
+# #and child hand rinse samples two times, in rounds 2 and 4. If a household randomly selected for sampling was absent, 
+# #field workers collected samples from the nearest enrolled household to the right.
+# 
+# table(df$round, df$vc.kiit)
+# table(df$round, df$sh.kiit)
+# 
+# df <- df %>% filter(round==4)
+# head(df)
+# 
+# table(df$ev.01b)
+# # 1 = Water samples
+# # 2 = Hand rinse samples
+# # 3 = Stool samples
+# # 4 = NA
+# 
+# table(df$tr, df$sh.kiit)
+# table(df$tr, df$vc.kiit)
+# 
+# head(df)
+# 
+# 
+# #V cholera presence
+# summary(df$vc.kiit)
+# 
+# #seperate strains
+# summary(df$vc.o1)
+# summary(df$vc.o139)
+# 
+# #Variables match
+# table(df$vc.kiit)
+# table(df$vc.o1==1 | df$vc.o1391==1)
+# 
+# #What is the difference between these 2 positive variables?
+# table(df$vc.kiit)
+# table(df$vc.tcbs)
+# 
+# 
+# #V cholera count
+# table(df$vc_tcno)
+# 
+# #What are the individual colony counts? Does the above make sense
+# 
+# 
+# #Shigella presence
+# 
+# 
+# #Shigella count
+# 
+# 
+# 
+# table(df$sh_bcno)
+# table(df$sh_bnote)
+# 
+# table(df$sh_dil1)
+# table(df$sh_dil2)
+# table(df$sh_dil3)
+# 
+# 
+# table(df$sh.dys)
+# table(df$sh.flx)
+# 
+# table(df$sh.sacnt1)
+# 
+# 
+# 

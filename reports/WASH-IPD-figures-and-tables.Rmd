@@ -31,7 +31,7 @@ panderOptions('table.split.table', Inf)
 panderOptions('big.mark', ",")
 panderOptions('keep.trailing.zeros', TRUE)
 
-resRR <- readRDS(file=here("results/pooled_RR.Rds"))
+#resRR <- readRDS(file=here("results/pooled_RR.Rds"))
 
 load(here("figures/all_tables.Rdata"))
 load(here("figures/agg_tables.Rdata"))
@@ -60,12 +60,7 @@ abund_ROQ <-abund_ROQ %>% subset(., select= c(-X))
 <!--      any_MST  -->
 <!-- ``` -->
 
-## Pooled relative risk for any pathogen in any sample
 
-```{r, echo=F, warning=F, message=F}
-knitr::kable(resRR[-c(1:2)])
-
-```
 
 ## Table 1. Prevalence of pathogens by sample type tested in each study
 
@@ -85,9 +80,15 @@ knitr::kable(target_presence_long_MST)
 ## Primary figures
 
 
-```{r, echo=F, warning=F, message=F, fig.width = 10, fig.height = 10}
+```{r, echo=F, warning=F, message=F, fig.width = 10, fig.height = 5}
 
 p_1
+
+```
+
+```{r, echo=F, warning=F, message=F, fig.width = 10, fig.height = 8}
+
+p_2
 
 ```
 
