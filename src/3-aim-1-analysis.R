@@ -4,13 +4,23 @@ source(here::here("0-config.R"))
 
 d <- readRDS(paste0(dropboxDir,"Data/cleaned_ipd_env_data.rds"))
 head(d)
-d <- droplevels(d)
 
+table(d$target)
+
+#Why is aggregation function leading to bl dropping of all Any_ variables?
+
+#drop baseline observations and food because only in one study and no estimates
+table(is.na(d$round))
+d <- d %>% filter(round!="bl", sample!="FP") %>% droplevels()
+
+table(d$target)
+table(is.na(d$tr))
+table(is.na(d$sample))
+table(is.na(d$target))
 table(d$study,d$sample)
 table(d$study, d$round)
 table(d$study, d$target)
 table(d$sample, d$target, d$study)
-table(d$sample, d$pos)
 
 
 # 1.	Child birth order/parity 
@@ -25,7 +35,7 @@ table(d$sample, d$pos)
 # 9.	Land ownership 
 
 #TODO: need to add  Indicator for works in agriculture and Land ownership
-Wvars = c("hhwealth", "Nhh","nrooms","walls", "floor","elec")         
+Wvars = c("hhwealth", "Nhh","nrooms","walls", "floor","elec","dadagri","landacre", "momedu")         
 
 
 

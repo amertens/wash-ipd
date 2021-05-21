@@ -21,13 +21,23 @@ soilSTH <- read_dta(paste0(dropboxDir,"Data/WBB/WASHB-soil-sth.dta"))
 #world bank mst data
 WB <- readRDS(paste0(dropboxDir,"Data/WBB/Clean/WBB_WB_env.RDS"))
 
+head(PEC)
+head(qPCR)
+head(soilSTH)
+head(WB)
 
+#Add date to PEC and QPCR
+PEC <- PEC %>% mutate(env_date=dmy(paste0(15,"-",Month.Collected,"-",2015)))
+qPCR <- qPCR %>% mutate(env_date=dmy(paste0(15,"-",Month.Collected,"-",2015)))
+
+#merge in abundance
 qPCR_quant <- read.csv(paste0(dropboxDir,"Data/WBB/Erica - washb_qPCR_quant_10_23_18_adjusted_var_abundance.csv"))  %>% select(Assay:log.LOQ.)
 head(qPCR)
 head(qPCR_quant)
 
-
+dim(qPCR)
 qPCR <- left_join(qPCR, qPCR_quant, by=c("Unique.Numerical.ID", "Sample.Type","Assay","PID","Month.Collected"))
+dim(qPCR)
 head(qPCR)
 
 table(qPCR$Assay, !is.na(qPCR$Quantifiable))
@@ -57,12 +67,11 @@ qPCR <- qPCR %>%
 
 #Subset to the environmental vars (drop covariates)
 colnames(PEC)
-PEC <- PEC %>% subset(., select=c(PID, Month.Collected, Unique.Numerical.ID, Sample.Type, EPEC, EAEC, EHEC,              
+PEC <- PEC %>% subset(., select=c(PID, env_date, Unique.Numerical.ID, Sample.Type, EPEC, EAEC, EHEC,              
                       EIEC, ETEC, ECVG, EHECSTX1, EHECSTX2, ETECLT1, ETECST1B,
                       soilsun, m_hwobs, c_hwobs, dwcont, dwcov, raintime, animalno, MoistCont2)) %>%
   rename(dataid=PID,
          sampleid=Unique.Numerical.ID,
-         pec.month=Month.Collected,
          sample=Sample.Type) %>%
   gather(EPEC:ETECST1B, key = target, value = pos)
 head(PEC)
@@ -71,13 +80,12 @@ head(PEC)
 PEC <- PEC %>% filter(target=="ECVG")
 
 colnames(qPCR)
-qPCR <- qPCR %>% subset(., select=c(PID, Month.Collected, Unique.Numerical.ID, Sample.Type, Pos, abund, log.gc.sample.matrix., Assay, 
+qPCR <- qPCR %>% subset(., select=c(PID, env_date, Unique.Numerical.ID, Sample.Type, Pos, abund, log.gc.sample.matrix., Assay, 
                                     soilsun, m_hwobs, c_hwobs, dwcont, dwcov, raintime, animalno, MoistCont2)) %>%
   rename(dataid=PID,
          pos=Pos,
          log_conc=log.gc.sample.matrix.,
          sampleid=Unique.Numerical.ID,
-         pec.month=Month.Collected,
          target=Assay,
          sample=Sample.Type)
 head(qPCR)
@@ -88,9 +96,12 @@ head(qPCR)
 #----------------------------------------------------------------------------
 #Merge in env. STH data
 #----------------------------------------------------------------------------
-soilSTH <- soilSTH %>% subset(., select=c(dataid, UniqueID, possth, posal, postt, epgal, epgtt, epgsth)) %>%
+soilSTH <- soilSTH %>% 
+  mutate(env_date=dmy(paste0(16,"-",labmonth,"-",2015))-lag) %>%
+  subset(., select=c(dataid, env_date, UniqueID, possth, posal, postt, epgal, epgtt, epgsth)) %>%
                        rename(sampleid=UniqueID)
-pos <- soilSTH %>% subset(., select=c(dataid, sampleid, 
+                        
+pos <- soilSTH %>% subset(., select=c(dataid, sampleid, env_date,
                                   possth, 
                                   posal, 
                                   postt)) %>%
@@ -230,17 +241,16 @@ parasites <- read_dta(paste0(dropboxDir,"Data/WBB/wbb-parasite.dta"))
 anthro<-anthro%>%
           rename(agedays=aged,
                  ageyrs=agey,
-                 svydate=anthrodate)
-anthro<-anthro%>%
-          mutate(svyyear=year(dmy(svydate)),
-                 svyweek=week(dmy(svydate)))
+                 child_date_anthro=anthrodate) %>%
+          mutate(svyyear=year(dmy(child_date_anthro)),
+                 svyweek=week(dmy(child_date_anthro)))
 
 colnames(anthro)
 anthro<-anthro%>%
-  subset(., select = c("block","clusterid","dataid","svy", "childid", "laz","whz","waz"))
+  subset(., select = c("block","clusterid","dataid","svy","child_date_anthro", "childid", "laz","whz","waz"))
 colnames(diar)
-diar<-diar%>%
-  subset(., select = c("block","clusterid","dataid","svy", "childid", "diar7d"))
+diar<-diar%>% rename(child_date=svydate) %>%
+  subset(., select = c("block","clusterid","dataid","svy", "child_date","childid", "diar7d"))
 colnames(diar)
 
 #Merge anthro and diar

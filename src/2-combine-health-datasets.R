@@ -3,36 +3,26 @@ rm(list=ls())
 source(here::here("0-config.R"))
 # devtools::install_github("moodymudskipper/safejoin")
 library(safejoin)
+options(scipen=999)
 
 
 
 #-----------------------------------------------------------
 # Clean WASH Benefits Bangladesh
 #-----------------------------------------------------------
-wbb <- readRDS(paste0(dropboxDir, "Data/WBB/Clean/WBB_child_health.RDS")) %>% mutate(trial="WBB")
+wbb <- readRDS(paste0(dropboxDir, "Data/WBB/Clean/WBB_child_health.RDS")) %>% 
+  rename(haz=laz) %>%
+  mutate(trial="WBB",
+         child_date =dmy(child_date),
+         child_date_anthro =dmy(child_date_anthro)
+         )
 head(wbb)
-
-# # reading in public IDs
-# pub_ids <- read.csv(paste0(dropboxDir,"Data/WBB/public-ids.csv"))
-# 
-# # Harmonizing sth variable names to facilitate bind with anthro/diar/env
-# # WBB_health <- WBB_health %>%
-# #   rename(dataid_r=dataid,
-# #          clusterid_r=clusterid,
-# #          block_r=block)
-# 
-# #merge in public IDs
-# WBB_health <- left_join(WBB_health, pub_ids, by=c("dataid","clusterid","block"))
-# #WBB_health <- WBB_health %>% subset(., select = -c(dataid_r, block_r, clusterid_r)) 
-# head(WBB_health)
-
 
 #-----------------------------------------------------------
 # Merge in WASH Benefits Kenya
 #-----------------------------------------------------------
-
 wbk_diar <- read.csv(paste0(dropboxDir, "Data/WBK/washb-kenya-diar.csv"))
-wbk_anthro <- read.csv(paste0(dropboxDir, "Data/WBK/washb-kenya-anthro.csv"))
+wbk_anthro <- read_dta(paste0(dropboxDir, "Data/WBK/washb-kenya-anthro.dta"))
 wbk_sth <- read_dta(paste0(dropboxDir, "Data/WBK/parasites_kenya_public_ca20171215.dta"))
 # wbk_enrol <- read.csv(paste0(dropboxDir, "Data/WBK/washb-kenya-enrol.csv")) %>% subset(., select=c(
 #   "childid", "clusterid", "block" ,     "tr",    "hhid",
@@ -63,23 +53,21 @@ wbk_sth <- wbk_sth %>% subset(., select =c("childid","studyyear","hhid","deworm6
 
 colnames(wbk_anthro)
 wbk_anthro <- wbk_anthro %>% 
-  subset(., select =c("childid","studyyear","laz","waz","whz"))
+  mutate(child_date_anthro=dmy(DOB)+aged) %>%
+  subset(., select =c("childid","child_date_anthro","studyyear","laz","waz","whz"))
 
 #Merge WBK datasets
 dim(wbk_diar)
 dim(wbk_anthro)
 wbk <- full_join(wbk_diar, wbk_anthro, by=c("childid", "studyyear"))
-head(wbk)
+dim(wbk)
 table(!is.na(wbk$diar7d), !is.na(wbk$laz))
-#Note: not merging successfully
 
 dim(wbk_sth)
 dim(wbk)
 wbk <- full_join(wbk, wbk_sth, by=c("childid","hhid", "studyyear"))
 dim(wbk)
 
-wbk <- full_join(wbk, wbk_anthro, by=c("childid", "studyyear"))
-dim(wbk)
 
 wbk <- wbk %>% mutate(trial="WBK") %>%
   rename(dataid=hhid,
@@ -90,8 +78,8 @@ wbk <- wbk %>% mutate(trial="WBK") %>%
 #-----------------------------------------------------------
 # Clean Mapsan
 #-----------------------------------------------------------
-mapsan <- readRDS(paste0(dropboxDir, "Data/MapSan/mapsan_cleaned.rds")) %>% mutate(trial="MapSan")
-mapsan <- mapsan %>% subset(., select=c(trial, child_date,dataid,clusterid, diar7d, haz,whz,waz))
+mapsan <- readRDS(paste0(dropboxDir, "Data/MapSan/mapsan_child_cleaned.rds")) %>% mutate(trial="MapSan", dataid=clusterid)
+mapsan <- mapsan %>% subset(., select=c(trial, child_date,childid , dataid,clusterid, diar7d, haz,whz,waz))
 head(mapsan)
 table(mapsan$diar7d)
 
@@ -110,17 +98,21 @@ odisha <- odisha %>%
          clusterid=villid,
          age=currage,
          diar7d=hh106) %>% 
-  subset(., select =c(clusterid, hhid,age,diar7d, waz,
+  subset(., select =c(childid, clusterid, hhid,age,diar7d, waz,
                       visitdate1)) %>%
   mutate(trial="Odisha",
-         dataid=1,
+         dataid=clusterid,
          child_date=ymd(visitdate1),
          diar7d=case_when(
            diar7d==2 ~ 0, 
            diar7d==1 ~ 1, 
-           diar7d==99 ~ NA_real_
-         ))
+           diar7d==99 | diar7d==92 ~ NA_real_
+         )) %>%
+  filter(!is.na(diar7d) | !is.na(waz))
 head(odisha)
+
+#Why are there so many missing ages? Are these adults?
+table(is.na(odisha$age))
 
 #-----------------------------------------------------------
 # clean GV
@@ -135,6 +127,8 @@ head(odisha)
 #Z-scores
 
 #identifiers
+#hhm.id
+
 
 #Note that the GV lab data had diarrhea/anthro merged in, but 
 
@@ -149,6 +143,8 @@ gv <- readRDS(paste0(dropboxDir,"Data/Gram Vikas/GV_env_cleaned.rds")) %>%
                                   whz=as.numeric(whz),
                                   child_date =env_date) %>%
   subset(., select = -c(dia7))
+ gv %>% group_by(dataid, round) %>% summarize(N=n()) %>% ungroup() %>% summarise(mean(N))
+
 head(gv)
 #-----------------------------------------------------------
 # bind child health data together
@@ -156,57 +152,19 @@ head(gv)
 
 df <- data.table::rbindlist(list(wbb, wbk, mapsan, odisha, gv), fill=T)
 
-table(df$trial, !is.na(df$child_date))
-table(df$trial, !is.na(df$diar7d))
-table(df$trial, !is.na(df$haz)|!is.na(df$waz)|!is.na(df$whz))
-
-# df <- df%>% filter(trial=="Odisha")
-# env<-env%>% filter(trial=="Odisha")
-# 
+# table(df$trial, !is.na(df$childid))
+# table(df$trial, !is.na(df$child_date))
+# table(df$trial, !is.na(df$diar7d))
+# table(df$trial, !is.na(df$haz)|!is.na(df$waz)|!is.na(df$whz))
 # head(df)
-# head(env)
-# 
-# dim(env)
-# dim(df)
-# d <- full_join(env, df, by = c("trial","dataid","clusterid")) %>% filter(!is.na(sample))
-# dim(d)
-# head(d)
-#-----------------------------------------------------------
-# Merge in child health and environmental data
-#-----------------------------------------------------------
 
-#env data
-env <- readRDS(paste0(dropboxDir,"Data/cleaned_ipd_env_data.rds"))
-env <- env %>% mutate(
-  trial = case_when(study %in% c("Fuhrmeister et al. 2020", "Kwong et al. 2021", "Boehm et al. 2016") ~ "WBB",
-                    study=="Steinbaum et al. 2019" ~ "WBK",
-                    study=="Holcomb et al. 2020" ~ "MapSan",
-                    study=="Reese et al. 2017" ~ "Gram Vikas",
-                    study=="Odagiri et al. 2016" ~ "Odisha"),
-  dataid=ifelse(trial=="Odisha", 1, dataid))
-table(env$trial)  
-#Drop baseline measure from mapsan
-env <- env %>% filter(round != "0m") %>% droplevels(.)
-
-table(env$trial, is.na(env$dataid))  
+class(df$haz)
+class(df$whz)
+class(df$waz)
 
 
-dim(env)
-dim(df)
-# d <- eat(d, env, .by = c("trial","clusterid"), .conflict = "patch")
-d <- full_join(env, df, by = c("trial","dataid","clusterid")) %>% filter(!is.na(sample))
-dim(d)
-table(d$sample,d$diar7d)
-table(d$trial,d$diar7d)
+#TEMP 
+#Temporarily subset to primary health outcome
+df <- df %>% subset(., select = c(trial, clusterid, dataid, childid, child_date, diar7d, haz, whz, waz, svy))
 
-head(d)
-
-#-----------------------------------------------------------
-# Drop obs of diarrhea < 3 months from sampling time
-#-----------------------------------------------------------
-
-#-----------------------------------------------------------
-# Save
-#-----------------------------------------------------------
-        
-saveRDS(d, file=paste0(dropboxDir,"Data/cleaned_ipd_CH_data.rds"))
+saveRDS(df, file=paste0(dropboxDir,"Data/cleaned_ipd_CH_data.rds"))

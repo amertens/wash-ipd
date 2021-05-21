@@ -2,10 +2,12 @@
 rm(list=ls())
 source(here::here("0-config.R"))
 
-d <- readRDS(paste0(dropboxDir,"Data/cleaned_ipd_CH_data.rds"))
+d <- readRDS(paste0(dropboxDir,"Data/merged_env_CH_data.rds"))
 head(d)
 d <- droplevels(d)
 table(d$trial, d$pos)
+
+d <- d %>% filter(sample!="FP") %>% droplevels()
 
 
 # 1.	Child birth order/parity 
@@ -20,44 +22,120 @@ table(d$trial, d$pos)
 # 9.	Land ownership 
 
 #TODO: need to add child health specific covariates
-Wvars = c("hhwealth",
-     "Nhh",
-     "momedu",
-     "hfiacat",
-  "hhwealth","nrooms","momedu","walls" ,    
-"floor","elec","tr")         
+Wvars = c("hhwealth", "Nhh","nrooms","walls", "floor","elec","dadagri","landacre", "momedu", "tr")         
 
-# Ws <- d %>% select(!!(Wvars))
-# try(Ws<-Ws[,-nearZeroVar(Ws)])
-
-# table(d$study)
-# table(d$target)
-# table(d$sample)
-# d <- d %>% filter(target=="Any pathogen", sample=="S")
-# 
-# res <- aim2_glm(d, Ws=NULL, outcome="diar7d", exposure="pos", study="Fuhrmeister et al. 2020", sample="S", target="Any pathogen", family="binomial")
-# 
-# res <- washb_glm(Y=d$diar7d, tr=d$pos, W=Ws, id=d$clusterid.x, contrast=c("0","1"), family=binomial(link='log'), pval=0.2, print=TRUE)
-# res
-
-#Subset to
 
 #-----------------------------------
 # Unadjusted RR
 #-----------------------------------
-table(d$pos, d$diar7d)
 
-outcome="diar7d"
-exposure="pos"
-study=d$study[1]
-sample=d$sample[1]
-target=d$target[1]
-family="binomial"
-Ws=NULL
+# outcome="diar7d"
+# exposure="pos"
+# study="Fuhrmeister et al. 2020"
+# #sample="any sample type"
+# sample="W"
+# target= "Any pathogen"
+# family="binomial"
+# Ws=NULL
 
-res <- d %>% group_by(study, sample, target) %>%
-   do(aim2_glm(., outcome="diar7d", exposure="pos", study=.$study[1], sample=.$sample[1], target=.$target[1], family="binomial"))
-res
+
+fullres <- NULL
+res_diar <- d %>% group_by(study, sample, target) %>%
+   do(aim2_glm(., outcome="diar7d", exposure="pos", study=.$study[1], sample=.$sample[1], target=.$target[1], family="binomial")) 
+res_diar$sparse <- ifelse(is.na(res_diar$RR), "yes", "no")
+res_diar$RR[is.na(res_diar$RR)] <- 1
+fullres <- bind_rows(fullres, res_diar)
+
+res_stunt<- d %>% group_by(study, sample, target) %>%
+  do(aim2_glm(., outcome="stunt", exposure="pos", study=.$study[1], sample=.$sample[1], target=.$target[1], family="binomial")) 
+res_diar$sparse <- ifelse(is.na(res_diar$RR), "yes", "no")
+res_diar$RR[is.na(res_diar$RR)] <- 1
+fullres <- bind_rows(fullres, res_diar)
+
+res_wast<- d %>% group_by(study, sample, target) %>%
+  do(aim2_glm(., outcome="wast", exposure="pos", study=.$study[1], sample=.$sample[1], target=.$target[1], family="binomial")) 
+res_diar$sparse <- ifelse(is.na(res_diar$RR), "yes", "no")
+res_diar$RR[is.na(res_diar$RR)] <- 1
+fullres <- bind_rows(fullres, res_diar)
+
+res_underwt <- d %>% group_by(study, sample, target) %>%
+  do(aim2_glm(., outcome="underwt", exposure="pos", study=.$study[1], sample=.$sample[1], target=.$target[1], family="binomial")) 
+res_diar$sparse <- ifelse(is.na(res_diar$RR), "yes", "no")
+res_diar$RR[is.na(res_diar$RR)] <- 1
+fullres <- bind_rows(fullres, res_diar)
+
+res_haz <- d %>% group_by(study, sample, target) %>%
+   do(aim2_glm(., outcome="haz", exposure="pos", study=.$study[1], sample=.$sample[1], target=.$target[1], family="gaussian")) 
+res_haz$sparse <- ifelse(is.na(res_haz$coef), "yes", "no")
+res_haz$coef[is.na(res_haz$coef)] <- 0
+res_haz
+fullres <- bind_rows(fullres, res_haz)
+
+res_whz <- d %>% group_by(study, sample, target) %>%
+  do(aim2_glm(., outcome="whz", exposure="pos", study=.$study[1], sample=.$sample[1], target=.$target[1], family="gaussian")) 
+res_whz$sparse <- ifelse(is.na(res_whz$coef), "yes", "no")
+res_whz$coef[is.na(res_whz$coef)] <- 0
+res_whz
+fullres <- bind_rows(fullres, res_whz)
+
+res_waz <- d %>% group_by(study, sample, target) %>%
+  do(aim2_glm(., outcome="waz", exposure="pos", study=.$study[1], sample=.$sample[1], target=.$target[1], family="gaussian")) 
+res_waz$sparse <- ifelse(is.na(res_waz$coef), "yes", "no")
+res_waz$coef[is.na(res_waz$coef)] <- 0
+res_waz
+fullres <- bind_rows(fullres, res_waz)
+
+
+
+
+
+
+fullres_adj <- NULL
+res_diar_adj <- d %>% group_by(study, sample, target) %>%
+  do(aim2_glm(., Ws = Wvars, outcome="diar7d", exposure="pos", study=.$study[1], sample=.$sample[1], target=.$target[1], family="binomial")) 
+res_diar_adj$sparse <- ifelse(is.na(res_diar_adj$RR), "yes", "no")
+res_diar_adj$RR[is.na(res_diar_adj$RR)] <- 1
+fullres_adj <- bind_rows(fullres_adj, res_diar_adj)
+
+res_stunt_adj <- d %>% group_by(study, sample, target) %>%
+  do(aim2_glm(., Ws = Wvars, outcome="stunt", exposure="pos", study=.$study[1], sample=.$sample[1], target=.$target[1], family="binomial")) 
+res_stunt_adj$sparse <- ifelse(is.na(res_stunt_adj$RR), "yes", "no")
+res_stunt_adj$RR[is.na(res_stunt_adj$RR)] <- 1
+fullres_adj <- bind_rows(fullres_adj, res_stunt_adj)
+
+res_wast_adj <- d %>% group_by(study, sample, target) %>%
+  do(aim2_glm(., Ws = Wvars, outcome="wast", exposure="pos", study=.$study[1], sample=.$sample[1], target=.$target[1], family="binomial")) 
+res_wast_adj$sparse <- ifelse(is.na(res_wast_adj$RR), "yes", "no")
+res_wast_adj$RR[is.na(res_wast_adj$RR)] <- 1
+fullres_adj <- bind_rows(fullres_adj, res_wast_adj)
+
+res_underwt_adj <- d %>% group_by(study, sample, target) %>%
+  do(aim2_glm(., Ws = Wvars, outcome="underwt", exposure="pos", study=.$study[1], sample=.$sample[1], target=.$target[1], family="binomial")) 
+res_underwt_adj$sparse <- ifelse(is.na(res_underwt_adj$RR), "yes", "no")
+res_underwt_adj$RR[is.na(res_underwt_adj$RR)] <- 1
+fullres_adj <- bind_rows(fullres_adj, res_underwt_adj)
+
+
+res_haz_adj <- d %>% group_by(study, sample, target) %>%
+  do(aim2_glm(., Ws = Wvars, outcome="haz", exposure="pos", study=.$study[1], sample=.$sample[1], target=.$target[1], family="gaussian")) 
+res_haz_adj$sparse <- ifelse(is.na(res_haz_adj$coef), "yes", "no")
+res_haz_adj$coef[is.na(res_haz_adj$coef)] <- 0
+res_haz_adj
+fullres_adj <- bind_rows(fullres_adj, res_haz_adj)
+
+res_waz_adj <- d %>% group_by(study, sample, target) %>%
+  do(aim2_glm(., Ws = Wvars, outcome="waz", exposure="pos", study=.$study[1], sample=.$sample[1], target=.$target[1], family="gaussian")) 
+res_waz_adj$sparse <- ifelse(is.na(res_waz_adj$coef), "yes", "no")
+res_waz_adj$coef[is.na(res_waz_adj$coef)] <- 0
+res_waz_adj
+fullres_adj <- bind_rows(fullres_adj, res_waz_adj)
+
+res_whz_adj <- d %>% group_by(study, sample, target) %>%
+  do(aim2_glm(., Ws = Wvars, outcome="whz", exposure="pos", study=.$study[1], sample=.$sample[1], target=.$target[1], family="gaussian")) 
+res_whz_adj$sparse <- ifelse(is.na(res_whz_adj$coef), "yes", "no")
+res_whz_adj$coef[is.na(res_whz_adj$coef)] <- 0
+res_whz_adj
+fullres_adj <- bind_rows(fullres_adj, res_whz_adj)
 
 
 # Primary outcomes for this aim include: 
@@ -77,12 +155,10 @@ res
 # lifetime prior to the anthropometry measurement. For the other outcomes, 
 # we will only consider environmental samples collected up to three months 
 # before the measurement of the health outcome. 
-summary(res$RR)
 
-#drop estimates with less than 10 values
-res <- res %>% filter(minN>=10)
 
-saveRDS(res, file=here("results/unadjusted_aim2_RR.Rds"))
+saveRDS(fullres, file=here("results/unadjusted_aim2_res.Rds"))
+saveRDS(fullres_adj, file=here("results/adjusted_aim2_res.Rds"))
 
 
 

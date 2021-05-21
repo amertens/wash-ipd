@@ -263,6 +263,7 @@ WB2 <- WB %>% subset(., select = c(
   pid,
   WUNIQUENUMERICALID,
   HUNIQUENUMERICALID,
+  WDATEDDMMYYYY,
   Ssample,
   arm,
   ruminant_0_1,
@@ -316,9 +317,10 @@ WB4 <- WB3 %>% mutate(
       sample=="H" ~ as.character(HUNIQUENUMERICALID), 
       sample=="W" ~ as.character(WUNIQUENUMERICALID), 
       sample=="S" ~ as.character(Ssample)
-    )
+    ),
+  env_date=dmy(WDATEDDMMYYYY)
   ) %>%
-  subset(., select = -c(WUNIQUENUMERICALID, HUNIQUENUMERICALID, Ssample))
+  subset(., select = -c(WDATEDDMMYYYY, WUNIQUENUMERICALID, HUNIQUENUMERICALID, Ssample))
 head(WB4)
 
 #----------------------------------------------------------------------------

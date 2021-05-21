@@ -216,7 +216,7 @@ cl   <- function(df,fm, cluster){
 aim2_glm <- function(d, Ws=NULL, outcome="pos", exposure, study="mapsan", sample="ds", target="Mnif", family="binomial"){
   df <- d %>% filter(study=={{study}}, sample=={{sample}}, target=={{target}}) %>% droplevels(.)
   
-  cat(study,", ", sample,", ", target,"\n")
+  cat(d$trial[1],", ", sample,", ", target,"\n")
   cat("N before dropping missing: ", nrow(df),"\n")
   
   df$Y <- df[[outcome]]
@@ -231,16 +231,24 @@ aim2_glm <- function(d, Ws=NULL, outcome="pos", exposure, study="mapsan", sample
   minN<-NA
   
   if(length(unique(df$Y))<=2){
+    print(table(df$X, df$Y))
     if(length(unique(df$Y))>1 & length(unique(df$X))>1){
       minN <- min(table(df$Y))
     }else{
       minN <- 0
     }
+  }else{
+    if(length(unique(df$X))>1){
+      minN <- min(table(df$X))
+    }else{
+      minN <- 0
+    }
   }
+  
   cat(minN,"\n")
   
   #cat(minN>=10 | length(unique(df$Y)) > 2)
-  if(minN>=10 | length(unique(df$Y)) > 2){
+  if((minN>=10 & min(table(df$Y, df$X))>1) | (length(unique(df$Y)) > 2 & length(unique(df$X)) == 2)){
     
     if(!is.null(Ws)){
       Wdf <- df %>% ungroup() %>% select(any_of(Ws)) %>% select_if(~sum(!is.na(.)) > 0)
@@ -324,6 +332,6 @@ aim2_glm <- function(d, Ws=NULL, outcome="pos", exposure, study="mapsan", sample
   res$N<-nrow(df)
   res$W <-ifelse(is.null(Wvars), "unadjusted", paste(Wvars, sep="", collapse=", "))
   res$study <- study
-  print(res)
+  #print(res)
   return(res)
 }

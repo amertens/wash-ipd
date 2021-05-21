@@ -7,16 +7,16 @@ source(here::here("0-config.R"))
 #Load env. data
 env <- read.csv(paste0(dropboxDir,"Data/MapSan/mapsan_child_envr_data_forIPD.csv"))
 
+head(env)
+#compID is the clustering ID
+table(env$hh)
+
 #rename variables. Original study clustered on compound
-env <- env %>% rename(sampleid=ï..samp_id, clusterid=comp, env_date=samp_date)
+env <- env %>% rename(sampleid=ï..samp_id, clusterid=comp, env_date=samp_date) %>%
+  mutate(hhid=env$comp*100+env$hh)
 
-
-table(env$status)
-table(env$detect)
-table(env$status, env$detect)
 
 #Drop cultured and qPCR E.Coli
-table(env$target)
 env <- env %>% filter(target!="cEC" & target!="EC23S")
 
 #mark seasons
@@ -35,14 +35,12 @@ env <- env %>% select(env_date, sampleid, clusterid, hh, survey, season, type, t
 
 #clean variables for merge
 env <- env %>% mutate(
-  survey=case_when(survey=="0m"~0,
-                   survey=="12m"~1),
+  round=case_when(survey=="0m"~"bl",
+                   survey=="12m"~"ml"),
   env_date=paste0(env_date,"-15"),
   env_date=ymd(env_date)
-) %>% filter(!is.na(env_date))
-head(env)
+) %>% filter(!is.na(env_date)) %>% subset(., select = -c(survey))
 
-head(env)
 
 #harmonize coding of sample types
 env <- env %>% mutate(
@@ -68,7 +66,7 @@ soil <- read.csv(paste0(dropboxDir,"Data/MapSan/mapsan_soil_pathogens.csv"))
 #load dates
 soil_dates <- read.csv(paste0(dropboxDir,"Data/MapSan/soil_samples_dates_to share.csv")) %>%
   rename(compound=Compound, phase=Phase, compound_phase=Soil.Sample, env_date=Date)
-soil_dates$phase[soil_dates$phase=="bl"] <- "BL"
+soil$phase[soil$phase=="BL"] <- "bl"
 
 dim(soil)
 soil <- left_join(soil,soil_dates, by=c("compound", "phase", "compound_phase"))
@@ -82,16 +80,17 @@ soil <- soil %>%
   mutate(animal_in_compound = ifelse(dog_observed=="Yes" | chicken_duck_observed=="Yes" | cat_observed=="Yes", 1, 0)) %>%
   subset(., select=c(compound_phase, phase, compound, env_date, adenovirus_40_41:campylobacter_jejuni_coli, trial_arm, animal_in_compound)) %>%
   gather(adenovirus_40_41:campylobacter_jejuni_coli, key = target, value = detect ) %>%
-  mutate(sample="S", dataid=compound, logquant=NA, survey=2, env_date=ymd(mdy(env_date))) %>%
+  mutate(sample="S", dataid=compound, logquant=NA, env_date=ymd(mdy(env_date))) %>%
   rename(sampleid=compound_phase, clusterid=compound, round=phase )
 #Notes: keep in the intervention variable to check merging accuracy
 soil$env_date[1:10]
+soil$round[soil$round=="24M"] <- "el"
 
 
 unique(soil$target)
 #Create pathogenic E.coli Drop non-included targets
 ecoli_measures <- c("enteroaggregative_Ecoli","enteropathogenic_Ecoli","enterotoxigenic_Ecoli","shiga_toxin_producing_Ecoli")
-soil_pathogenic <- soil %>% group_by(env_date, clusterid, dataid, round, trial_arm, animal_in_compound, sample) %>%
+soil_pathogenic <- soil %>% group_by(sampleid, env_date, clusterid, dataid, round, trial_arm, animal_in_compound, sample) %>%
   summarise(detect = 1*(sum(detect==1 & target %in% ecoli_measures)>0)) %>%
   mutate(target="pathogenic_ecoli")
 
@@ -103,24 +102,15 @@ soil <- bind_rows(soil, soil_pathogenic) %>%
   filter(!(target %in% ecoli_measures))
 table(soil$target, soil$detect)
 
-head(env)
-head(soil)
-unique(soil$target)
-
+#add soil to env dataset
 env <- bind_rows(env, soil)
-table(is.na(env$env_date))
 
-env[is.na(env$env_date),]
-
-table(env$target)
-env <- env %>% filter(target!="")
 table(env$round)
-
-env$round[env$round=="24M"] <- "el"
-
-#make numeric sample ID
-#env <- env %>% mutate(sampleid=as.numeric(factor(sampleid)))
-
+table(is.na(env$env_date))
+table(env$target)
+table(env$round)
+table(is.na(env$sampleid))
+table(is.na(env$clusterid))
 
 #----------------------------------------
 # merge in fly pathogen data
@@ -154,6 +144,7 @@ head(flypos_pathogenic)
 flypos <- bind_rows(flypos, flypos_pathogenic) %>% 
   filter(!(target %in% ecoli_measures))
 table(flypos$target, flypos$pos)
+table(flypos$tr, flypos$pos, flypos$round,flypos$sample,flypos$target)
 
 
 dim(flypos)
@@ -209,12 +200,18 @@ fly <- fly %>% filter(target!="human_mtDNA")
 env <- bind_rows(env, fly)
 
 table(env$round)
-env$round[env$round=="BL"] <- "bl"
-env$round[env$round=="EL"] <- "el"
-
 env <- env %>%
   mutate(dataid=clusterid)
-table(is.na(env$dataid))
+
+
+table(env$round)
+table(is.na(env$env_date))
+table(env$target)
+table(env$round)
+table(is.na(env$sampleid))
+table(is.na(env$clusterid))
+table(is.na(env$env_date))
+table(is.na(env$pos))
 
 
 #----------------------------------------
@@ -297,6 +294,7 @@ child <- child %>% select(childid, actualPhase, clusterid, child_date,
 )
 
 head(child)
+table(child$clusterid)
 
 #Rename variables
 child <- child %>% 
@@ -322,6 +320,8 @@ table(soil$trial_arm)
 
 table(child$clusterid, child$studyArm_binary)
 
+saveRDS(child, file=paste0(dropboxDir,"Data/MapSan/mapsan_child_cleaned.rds"))
+
 
 #merge datasets
 dim(child)
@@ -337,6 +337,9 @@ dim(env)
 env2 <- left_join(env, child_tr, by = c("clusterid"))
 table(is.na(env2$studyArm_binary))
 dim(env2)
+table(env2$tr, env2$studyArm_binary)
+table(env2$tr, env2$clusterid)
+table(is.na(env2$studyArm_binary))
 
 
 #then merge full data
@@ -356,7 +359,7 @@ env2 <- env2 %>% subset(., select = -c(hh, tr))
 
 
 dim(child)+dim(env2)
-d <- full_join(child, env2, by = c("clusterid", "round", "studyArm_binary")) %>% filter(!is.na(pos))
+d <- full_join(env2, child,  by = c("clusterid", "round", "studyArm_binary")) %>% filter(!is.na(pos))
 dim(d)
 
 colnames(d)
@@ -392,7 +395,7 @@ saveRDS(d, file=paste0(dropboxDir,"Data/MapSan/mapsan_cleaned.rds"))
 colnames(d)
 env_clean <- d %>% subset(., select = c(env_date,sampleid, clusterid, tr,
   dataid,  hh, round, sample, samp_level, target,
-  effort, pos, abund_only_detect, abund, censored,
+  effort, pos, abund_only_detect, abund, censored, momedu,
   Nhh, hhwealth, nrooms, walls, floor, elec, season, compAnyAnimal, studyArm_binary
 )) 
 
@@ -416,3 +419,4 @@ table(is.na(env_clean$env_date))
 
 df <- env_clean %>% group_by(sampleid, sample) %>% summarise(N=length(unique(tr))) 
   table(df$N)
+  

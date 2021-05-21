@@ -8,7 +8,9 @@ gv <- readRDS(paste0(dropboxDir,"Data/Gram Vikas/GV_env_cleaned.rds")) %>%
   mutate(study="Reese et al. 2017",
          trial="Gram Vikas",
          #dataid=hh_hid*10000 + dataid,
-         dataid=as.numeric(factor(hh_mid))*10+round)
+         dataid=as.numeric(factor(hh_mid))*10+round,
+         dadagri=as.numeric(dadagri),
+         landacre=as.numeric(landacre))
 head(gv)
 
 
@@ -19,7 +21,8 @@ gv2 <- gv %>% filter(pos==1)
 table(gv2$target, gv2$sample, gv2$round)
 
 #Mapsan
-mapsan <- readRDS(paste0(dropboxDir,"Data/MapSan/mapsan_env_cleaned.rds")) %>% mutate(study="Holcomb et al. 2020", trial="MapSan") 
+mapsan <- readRDS(paste0(dropboxDir,"Data/MapSan/mapsan_env_cleaned.rds")) %>% mutate(study="Holcomb et al. 2020", trial="MapSan") %>%
+            mutate(momedu=factor(momedu))
 
 
 #Wash benefits
@@ -40,7 +43,7 @@ colnames(WBK)
 WBK <- WBK %>% rename( dataid=hhid, Nhh=num_hh, hhwealth=assetquintile, sampleid=soil_id) %>%
   mutate(round="el")
 
-WBB <- WBB %>% subset(., select = c(study, trial, sampleid, dataid, clusterid, tr, sample, 
+WBB <- WBB %>% subset(., select = c(study, trial, sampleid, dataid, clusterid, tr, sample,  env_date,
                                     target, pos, abund, qual, round, block, Nhh, momage, momheight, 
                                     momedu, dadagri,landacre, hfiacat,watmin,  floor, hhwealth,
                                     roof, elec, walls)) 
@@ -77,13 +80,19 @@ table(d$study, d$sample)
 d %>% distinct(study, sample, target)
 
 
+
+#-----------------------------------------------
 #check duplicates
+#-----------------------------------------------
+
 dim(d)
 dim(d %>% distinct(.))
-dim(d %>% distinct(study,  dataid, tr, clusterid, sample, target,  sampleid))
-# df <- d %>% group_by(study,  dataid, tr, clusterid, sample, target,  sampleid) %>% mutate(N=n()) %>%
-#   filter(N>1) %>% arrange(study,  dataid, tr, clusterid, sample, target,  sampleid)
-
+dim(d %>% distinct(study,  dataid, tr, clusterid, sample, target,  sampleid, pos))
+dim(d %>% distinct(study,  dataid, tr, round, clusterid, sample, target,  sampleid, pos))
+dim(d %>% distinct(study,  dataid, tr, env_date, clusterid, sample, target,  sampleid, pos))
+df <- d %>% group_by(study,  dataid, tr, clusterid, sample, target,  sampleid) %>% mutate(N=n()) %>%
+  filter(N>1) %>% arrange(study,  dataid, tr, clusterid, sample, target,  sampleid)
+head(df)
 
   #Mark positives
 table(d$pos)
@@ -94,7 +103,9 @@ table(d$pos)
 head(d)
 d %>% distinct(study, target)
 
+#-----------------------------------------------
 #Give targets more descriptive names
+#-----------------------------------------------
 unique(d$target)
 d <- d %>% mutate(
   target_raw=target,
@@ -155,30 +166,112 @@ unique(d$target[d$target_raw==d$target])
 
 table(d$study, d$target)
 
+#-----------------------------------------------
+# Drop abundances without variation
+#-----------------------------------------------
 
-#drop baseline rounds
-table(d$study,d$round)
-table(d$study,d$sample)
-d <- d %>% filter(round!="bl")
+#Drop abundances with less than or equal to 5 unique values or continious estimation doesn't work
+d <- d %>% group_by(study, target, sample) %>% 
+  mutate(Nunique=length(unique(abund)), abund=ifelse(Nunique<=5,NA, abund))
+
+#-----------------------------------------------
+#Clean covariates
+#-----------------------------------------------
 
 
+d <- d %>% mutate(tr=case_when(tr=="Control"~"Control",
+                               tr=="Intervention"|tr=="Sanitation"~"Intervention"),
+                  tr=factor(tr, levels=c("Control","Intervention")))
+table(d$tr)
+
+d <- d %>% group_by(trial) %>% 
+  mutate(hhwealth=factor(ntile(hhwealth,4), levels=c("1","2","3","4")),
+         hhwealth=fct_explicit_na(hhwealth, na_level = "Missing"),
+         Nhh=factor(case_when(
+           Nhh<5 ~ "<5",
+           Nhh>=5 & Nhh <=8 ~ "5-8",
+           Nhh>8 ~ ">8"
+         ), levels=c("5-8","<5",">8")),
+         Nhh=fct_explicit_na(Nhh, na_level = "Missing"),
+         nrooms=factor(case_when(
+           nrooms<3 ~ "1-2",
+           Nhh>2  ~ ">3",
+         ), levels=c("1-4",">3")),
+         nrooms=fct_explicit_na(nrooms, na_level = "Missing"),
+         dadagri=factor(dadagri),
+         dadagri=fct_explicit_na(dadagri, na_level = "Missing"),
+         momedu=factor(momedu),
+         momedu=fct_explicit_na(momedu, na_level = "Missing"),
+         walls=factor(walls),
+         walls=fct_explicit_na(walls, na_level = "Missing"),
+         floor=factor(floor),
+         floor=fct_explicit_na(floor, na_level = "Missing"),
+         elec=factor(elec),
+         elec=fct_explicit_na(elec, na_level = "Missing")
+  )
+
+# 1.	Child birth order/parity -aim 2 only
+# 2.	Asset-based wealth index 
+table(d$study, d$hhwealth) #check Reese and Holcomb missing
+table(d$study, is.na(d$hhwealth))
+
+# 3.	Number of individuals and children in household
+table(d$study, d$Nhh) #check Reese and Holcomb missing
+table(d$study, is.na(d$Nhh))
+
+# 4.	Household food security -aim 2 only
+# 5.	Household electrification and construction, including wall/roof material
+table(d$study, d$elec) #check missing in Holcomb
+table(d$study, is.na(d$elec))
+table(d$study, d$walls) #check missing in Holcomb
+table(d$study, is.na(d$walls))
+table(d$study, d$floor) #check missing in Holcomb
+table(d$study, is.na(d$floor))
+# 6.	Parental age -aim 2 only
+# 7.	Parental education 
+table(d$study, d$momedu)
+table(d$study, is.na(d$momedu)) #add to Steinbaum and check Holcomb
+# 8.	Parental employment  - check all
+# a.	Indicator for works in agriculture 
+table(d$study, d$dadagri)
+table(d$study, is.na(d$dadagri)) #add missingness check Steinbaum
+
+# 9.	Land ownership 
+table(d$study, is.na(d$landacre)) #check Steinbaum, reese
+
+
+
+#-----------------------------------------------
+# drop unneeded columns
+#-----------------------------------------------
+colnames(d)
+d <- d %>% subset(., select=c(study,            trial,            sampleid,         dataid,           clusterid,       
+                              tr,               sample,           env_date,         target,           pos,             
+                              abund,            qual,             round,            Nhh,             
+                              momage,           momedu,           dadagri,          landacre,        
+                              hfiacat,          watmin,           floor,            hhwealth,         roof,            
+                              elec,             walls,            nrooms,           season,           compAnyAnimal))
+
+
+#-----------------------------------------------
 #create aggregate outcomes
+#-----------------------------------------------
+
 agg_function <- function(targets, name){
-  #dtemp <- d %>% filter(target %in% !!(targets)) 
-  df <- d %>% group_by(study,  dataid, tr, clusterid, sample,  sampleid) %>%
+  df <- d %>% group_by(study,  dataid, tr, clusterid, sample, round,  sampleid) %>%
     filter(target %in% !!(targets)) %>%
     select(pos, target)
   table(df$target)
   
   
-  d_agg <- df %>% group_by(study,  dataid, tr, clusterid, sample,  sampleid) %>%
+  d_agg <- df %>% group_by(study,  dataid, tr, clusterid, sample, round, sampleid) %>%
     summarise(
       any_pos = 1*(sum(pos==1)>0), N=n()) %>% 
     ungroup()
   table(d_agg$any_pos)
   
-  d_agg <- d_agg %>% rename(pos=any_pos) %>% select(study, dataid,clusterid, sample, pos) %>% mutate(target=!!(name))
-  
+  d_agg <- d_agg %>% rename(pos=any_pos) %>% select(study,  tr, dataid,clusterid, sample,round, sampleid, pos) %>% mutate(target=!!(name))
+
   tab <- bind_rows(df, d_agg) %>%
     group_by(study, target) %>%
     summarise(N=n(), n=sum(pos, na.rm=T)) %>%
@@ -191,8 +284,6 @@ agg_function <- function(targets, name){
   
   return(list(df=d_agg, tab=tab))
 }
-
-
 
 d_any_pathogen <- agg_function(any_pathogens, "Any pathogen")
 d_any_virus <- agg_function(any_virus, "Any virus")
@@ -218,9 +309,15 @@ save(d_any_pathogen, d_any_virus, d_any_protozoa, d_any_bacteria,
                    d_any_general_MST, d_any_human_MST, d_any_animal_MST,
      file=here("figures/agg_tables.Rdata"))
 
+
+#-----------------------------------------------
+# Merge covariates into aggregate outcomes
+#-----------------------------------------------
+
+
 # XXXXXXXXXXXXXXXXXXXXXX
 # Note:
-#   Need to keep covariates in the individual data frame because of sammple-specific vars
+#   Need to keep covariates in the individual data frame because of sample-specific vars
 #   and just make a cov dataframe with hh-level vars merged into the aggregate dateset
 #  plus fix dataframe names
 #  Note 2: I updated code to do this, but causing duplicated in the aggregate dataframe... one covariate must vary across HH... check maybe maternal?
@@ -229,23 +326,24 @@ save(d_any_pathogen, d_any_virus, d_any_protozoa, d_any_bacteria,
 #covariates
 dim(d)
 #compound covariates
-cov <- d %>% group_by(study, tr,  dataid, clusterid, round, sample) %>%
+cov <- d %>% group_by(study, tr,  dataid, clusterid, sample) %>%
   #arrange(Nhh, floor, hhwealth) %>% fill(Nhh, floor, hhwealth) %>%
   slice(1) %>% ungroup() %>%
-  subset(., select = -c(target, pos, abund, abund_only_detect, censored)) %>% 
+  subset(., select = -c(round, tr, sampleid, target, pos, abund)) %>% 
   distinct(.)
-dim(cov)
+head(cov)
 
 dim(d)
 dim(d_agg)
 dim(cov)
-df <- left_join(d_agg, cov, by=c("study","dataid","clusterid","sample"))
-dim(df)
-d <- bind_rows(d, df)
+d_agg_cov <- left_join(d_agg, cov, by=c("study","dataid","clusterid","sample"))
+dim(d_agg_cov)
+d <- bind_rows(d, d_agg_cov)
 dim(d)
 
 table(d$target)
 table(d$study, d$target)
+
 
 
 
@@ -261,19 +359,6 @@ d <- d %>% mutate(
         !(target %in% aggregate_vars) ~ 0
         ))
 
-temp <- d %>% filter(target=="Pathogenic E. coli", study=="Fuhrmeister et al. 2020")
-temp %>% 
-  group_by(study, dataid, target, sample) %>%
-  summarise(N=n()) %>% 
-  group_by(sample) %>%
-  summarise(mean(N)) 
-
-d %>% 
-  group_by(study, dataid, target, sample) %>%
-  summarise(N=n()) %>% 
-  group_by(study,sample) %>%
-  summarise(mean(N)) 
-
 
 #Create rows for positivity in any sample type
 dim(d)
@@ -281,7 +366,7 @@ table(d$pos)
 table(is.na(d$pos))
 
 df <- d %>% 
-  group_by(study, clusterid, dataid, tr, target) %>%
+  group_by(study, clusterid, dataid, tr, target, round) %>%
   mutate(pos=max(pos, na.rm = TRUE), sample="any sample type") %>% 
   slice(1)
 dim(df)
@@ -292,44 +377,7 @@ df %>% tabyl(target, tr, study, show_na = T, show_missing_levels = F)
 
 d <- bind_rows(d , df)
 
-#-----------------------------------------------
-#Clean covariates
-#-----------------------------------------------
 
-#Drop abundances with less than or equal to 5 unique values... continious estimation doesn't work
-d <- d %>% group_by(study, target, sample) %>% 
-  mutate(Nunique=length(unique(abund)), abund=ifelse(Nunique<=5,NA, abund))
-
-#-----------------------------------------------
-#Clean covariates
-#-----------------------------------------------
-d <- d %>% mutate(tr=case_when(tr=="Control"~"Control",
-                               tr=="Intervention"|tr=="Sanitation"~"Intervention"),
-                  tr=factor(tr, levels=c("Control","Intervention")))
-table(d$tr)
-
-d <- d %>% group_by(trial) %>% 
-  mutate(hhwealth=factor(ntile(hhwealth,4), levels=c("1","2","3","4")),
-         hhwealth=fct_explicit_na(hhwealth, na_level = "Missing"),
-         Nhh=factor(case_when(
-           Nhh<5 ~ "<5",
-           Nhh>=5 & Nhh <=8 ~ "5-8",
-           Nhh>8 ~ ">8"
-         ), levels=c("5-8","<5",">8")),
-         Nhh=fct_explicit_na(Nhh, na_level = "Missing"),
-         nrooms=factor(case_when(
-           nrooms<3 ~ "1-2",
-           Nhh>2  ~ ">3",
-         ), levels=c("1-4",">3")),
-         nrooms=fct_explicit_na(nrooms, na_level = "Missing"),
-         walls=factor(walls),
-         walls=fct_explicit_na(walls, na_level = "Missing"),
-         floor=factor(floor),
-         floor=fct_explicit_na(floor, na_level = "Missing"),
-         elec=factor(elec),
-         elec=fct_explicit_na(elec, na_level = "Missing")
-         )
-         
 
 saveRDS(d, file=paste0(dropboxDir,"Data/cleaned_ipd_env_data.rds"))
 

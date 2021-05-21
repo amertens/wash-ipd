@@ -4,7 +4,7 @@ source(here::here("0-config.R"))
 
 unadj_RR <- readRDS(file=here("results/unadjusted_aim1_RR_pooled.Rds")) 
 unadj_RD <- readRDS(file=here("results/unadjusted_aim1_RD.Rds")) 
-adj_RR <- readRDS(file=here("results/adjusted_aim1_RR.Rds")) 
+adj_RR <- readRDS(file=here("results/adjusted_aim1_RR_pooled.Rds")) 
 adj_RD <- readRDS(file=here("results/adjusted_aim1_RD.Rds")) 
 
 unadj_RR %>% distinct(study, target, sample) %>% as.data.frame()
@@ -28,10 +28,7 @@ target_lev=target_levels
 
 #unadj_RR <- clean_res(unadj_RR)
 unadj_RD <- clean_res(unadj_RD)
-unadj_diff <- clean_res(unadj_diff)
-adj_RR <- clean_res(adj_RR)
 adj_RD <- clean_res(adj_RD)
-adj_diff <- clean_res(adj_diff)
 
 
 #see if any levels are missing
@@ -45,10 +42,12 @@ sample_cats = levels(unadj_RR$sample_cat)[levels(unadj_RR$sample_cat)!="Any samp
 #---------------------------------------------------------------
   
 mydf <- unadj_RR %>% 
-  filter(target %in% c("Any pathogen","Any MST"))
+  filter(target %in% any_pathogens, !c(target %in% c("Any STH","any pathogen-improved","any pathogen-unimproved"))) 
+drop_full_sparse=T
 legend_labels=sample_cats
 
-base_plot <- function(mydf, legend_labels=sample_cats){
+
+base_plot <- function(mydf, legend_labels=sample_cats, drop_full_sparse=F){
   
   my_colors = c("grey20",carto_pal(12, "Prism"))
   
@@ -62,6 +61,11 @@ base_plot <- function(mydf, legend_labels=sample_cats){
                "Flies in kitchen" = my_colors[9],
                "Flies in latrine" = my_colors[10],
                "Sparse data" = "grey50")
+  
+  if(drop_full_sparse){
+    mydf <- mydf %>% group_by(target) %>%
+      filter(n()!=sum(sparse=="yes")) %>% ungroup()
+  }
   
   mydf <- mydf %>% droplevels(.)
   
@@ -104,6 +108,10 @@ p_2 <- unadj_RR %>%
   base_plot
 p_2
 
+df <- unadj_RR %>% 
+  filter(target %in% c("Any human MST"), study=="Holcomb et al. 2020") 
+  
+
 p_s1 <- unadj_RR %>% 
   filter(target %in% c("Any bacteria", "Any protozoa", "Any STH", "Any virus")) %>%
   base_plot
@@ -116,7 +124,7 @@ p_s1
 unique(unadj_RR$target_f)
 p_s3 <- unadj_RR %>% 
   filter(target %in% any_pathogens, !c(target %in% c("Any STH","any pathogen-improved","any pathogen-unimproved"))) %>%
-  base_plot
+  base_plot(drop_full_sparse=T)
 p_s3
 
 
@@ -127,7 +135,6 @@ p_s4 <- unadj_RR %>%
   base_plot
 p_s4
 
-#TO DO: separate abundance analysis between lm and n.b.
 
 
 
@@ -169,11 +176,16 @@ base_plot_diff <- function(mydf, legend_labels=sample_cats){
 
 
 
-# -	Fig S7. Repeat of Fig 1, adjusted  
+# -	Fig S7-8. Repeat of Fig 1, adjusted  
 p_s7 <- adj_RR %>% 
-  filter(target %in% c("Any human MST","Any animal MST","Any pathogen","Any general MST")) %>%
+  filter(target %in% c("Any pathogen","Any MST")) %>%
   base_plot
 p_s7
+
+p_s8 <- adj_RR %>% 
+  filter(target %in% c("Any human MST","Any animal MST","Any general MST")) %>%
+  base_plot
+p_s8
 
 # -	Fig S8-S10. Repeat of Fig 1, broken down by rural/urban, season, animal ownership 
 #rural/urban, 

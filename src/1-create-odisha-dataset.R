@@ -56,6 +56,7 @@ env <- env %>% mutate(tr=ifelse(tr==1,"Intervention","Control"),
        tr = factor(tr, levels = c("Control", "Intervention")),
        sample="W",
        study="Odisha",
+       dataid=clusterid,
        round=factor(round))
 
 env$sampleid <- env %>% group_indices(clusterid, tr, round, sample) #%>% mutate()

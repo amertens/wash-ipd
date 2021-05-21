@@ -79,17 +79,21 @@ dim(env2)
 #Get other enrollment covariates needed for env. analysis
 colnames(env2)
 colnames(enrol)
-enrol <- enrol %>% 
+enrol2 <- enrol %>% 
   mutate(env_date=dmy(ms_el_up_date)) %>%
-  subset(., select=c(hhid, env_date)) %>% 
+  subset(., select=c(hhid, env_date, momedu, Ncomp)) 
   filter(!is.na(env_date)) %>% 
   distinct()
 
 dim(env2)
-env2 <- left_join(env2, enrol, by=c("hhid"))
+env2 <- left_join(env2, enrol2, by=c("hhid"))
 dim(env2)
 table(is.na(env2$env_date))
 
+
+enrol2 <- enrol %>% 
+  subset(., select=c(hhid, momedu, Ncomp)) %>% 
+  rename(Nhh=Ncomp)
 
 
 saveRDS(env2, paste0(dropboxDir, "Data/WBK/Clean/WBK_env.RDS"))
@@ -106,7 +110,6 @@ STH <- read_dta(paste0(dropboxDir,"Data/WBK/parasites_kenya_public_ca20171215.dt
 head(STH)
 
 #Load covariates and treatment arms
-enrol <- read.csv(paste0(dropboxDir,"Data/WBB/washb-bangladesh-enrol.csv"))
 tr <- read.csv(paste0(dropboxDir,"Data/WBB/washb-bangladesh-real-tr.csv"))
 
 

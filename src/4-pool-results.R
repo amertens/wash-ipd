@@ -2,8 +2,10 @@
 rm(list=ls())
 source(here::here("0-config.R"))
 unadj_RR <- readRDS(here("results/unadjusted_aim1_RR.Rds"))
+adj_RR <- readRDS(here("results/adjusted_aim1_RR.Rds"))
 
 unadj_RR <- clean_res(unadj_RR)
+adj_RR <- clean_res(adj_RR)
 head(unadj_RR)
 table(unadj_RR$sample_cat)
 
@@ -34,15 +36,22 @@ poolRR<-function(d, method="REML"){
 }
 
 #pool primary estimates by study
-
-
-res <- unadj_RR %>% group_by(sample, target) %>% 
+res_unadj <- unadj_RR %>% group_by(sample, target) %>% 
   filter(!is.na(se)) %>% mutate(N=n()) %>%
   filter(N>=4)%>% group_by(sample, target) %>%
   do(poolRR(.)) 
 
-unadj_pool <- bind_rows(unadj_RR, res)
+res_adj <- adj_RR %>% group_by(sample, target) %>% 
+  filter(!is.na(se)) %>% mutate(N=n()) %>%
+  filter(N>=4)%>% group_by(sample, target) %>%
+  do(poolRR(.)) 
+
+unadj_pool <- bind_rows(unadj_RR, res_unadj)
 unadj_pool$study <- factor(unadj_pool$study, levels = rev(c(levels(unadj_RR$study),"Pooled")))
 
+adj_pool <- bind_rows(adj_RR, res_adj)
+adj_pool$study <- factor(adj_pool$study, levels = levels(unadj_pool$study))
+
 saveRDS(unadj_pool, file=here("results/unadjusted_aim1_RR_pooled.Rds"))
+saveRDS(adj_pool, file=here("results/adjusted_aim1_RR_pooled.Rds"))
 
