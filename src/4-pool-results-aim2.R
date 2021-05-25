@@ -77,14 +77,14 @@ res_RR_adj <- adj_RR %>% filter(Y%in%binary_Y) %>%
 res_cont_unadj <- unadj_RR %>% filter(Y%in%cont_Y) %>%
   group_by(Y, sample, target) %>% 
   filter(!is.na(se)) %>% mutate(N=n()) %>%
-  filter(N>=4)%>% group_by(sample, target) %>%
-  do(pool.cont(.)) 
+  filter(N>=4) %>% group_by(sample, target) %>%
+  do(res=try(pool.cont(.))) 
 
 res_cont_adj <- adj_RR %>% filter(Y%in%cont_Y) %>%
   group_by(Y, sample, target) %>% 
   filter(!is.na(se)) %>% mutate(N=n()) %>%
   filter(N>=4)%>% group_by(sample, target) %>%
-  do(pool.cont(.))
+  do(res=try(pool.cont(.))) 
 
 
 unadj_pool <- bind_rows(unadj_RR, res_cont_unadj, res_RR_unadj)

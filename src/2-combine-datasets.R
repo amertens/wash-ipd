@@ -40,7 +40,7 @@ colnames(mapsan)
 colnames(WBB)
 colnames(WBK)
 
-WBK <- WBK %>% rename( dataid=hhid, Nhh=num_hh, hhwealth=assetquintile, sampleid=soil_id) %>%
+WBK <- WBK %>% rename( dataid=compoundid, Nhh=num_hh, hhwealth=assetquintile, sampleid=soil_id) %>%
   mutate(round="el")
 
 WBB <- WBB %>% subset(., select = c(study, trial, sampleid, dataid, clusterid, tr, sample,  env_date,
@@ -48,8 +48,9 @@ WBB <- WBB %>% subset(., select = c(study, trial, sampleid, dataid, clusterid, t
                                     momedu, dadagri,landacre, hfiacat,watmin,  floor, hhwealth,
                                     roof, elec, walls)) 
 WBK <- WBK %>% subset(., select = c(study, trial, sampleid, dataid, clusterid, tr, sample, target, pos, abund, round, block, Nhh, 
-                                    #momage, momheight, momedu, dadagri,landacre, hfiacat,watmin,  
-                                    floor, hhwealth, env_date, roof, elec, walls))
+                                    momage, momedu, hfiacat,  
+                                    floor, hhwealth, env_date, roof, elec, walls)) %>%
+                mutate(hfiacat=factor(hfiacat))
 
 
 
@@ -193,17 +194,22 @@ d <- d %>% group_by(trial) %>%
            Nhh>8 ~ ">8"
          ), levels=c("5-8","<5",">8")),
          Nhh=fct_explicit_na(Nhh, na_level = "Missing"),
+         nrooms=as.numeric(nrooms),
          nrooms=factor(case_when(
            nrooms<3 ~ "1-2",
-           Nhh>2  ~ ">3",
-         ), levels=c("1-4",">3")),
+           nrooms>2  ~ ">3",
+         ), levels=c("1-2",">3")),
          nrooms=fct_explicit_na(nrooms, na_level = "Missing"),
          dadagri=factor(dadagri),
          dadagri=fct_explicit_na(dadagri, na_level = "Missing"),
          momedu=factor(momedu),
          momedu=fct_explicit_na(momedu, na_level = "Missing"),
+         hfiacat=factor(hfiacat),
+         hfiacat=fct_explicit_na(hfiacat, na_level = "Missing"),
          walls=factor(walls),
          walls=fct_explicit_na(walls, na_level = "Missing"),
+         roof=factor(roof),
+         roof=fct_explicit_na(roof, na_level = "Missing"),
          floor=factor(floor),
          floor=fct_explicit_na(floor, na_level = "Missing"),
          elec=factor(elec),
@@ -211,6 +217,8 @@ d <- d %>% group_by(trial) %>%
   )
 
 # 1.	Child birth order/parity -aim 2 only
+#-missing from all
+
 # 2.	Asset-based wealth index 
 table(d$study, d$hhwealth) #check Reese and Holcomb missing
 table(d$study, is.na(d$hhwealth))
@@ -220,6 +228,10 @@ table(d$study, d$Nhh) #check Reese and Holcomb missing
 table(d$study, is.na(d$Nhh))
 
 # 4.	Household food security -aim 2 only
+table(d$study, d$hfiacat) 
+table(d$study, is.na(d$hfiacat)) #add to reese and steinbaum
+
+
 # 5.	Household electrification and construction, including wall/roof material
 table(d$study, d$elec) #check missing in Holcomb
 table(d$study, is.na(d$elec))
@@ -227,7 +239,13 @@ table(d$study, d$walls) #check missing in Holcomb
 table(d$study, is.na(d$walls))
 table(d$study, d$floor) #check missing in Holcomb
 table(d$study, is.na(d$floor))
+
+table(d$study, d$nrooms) #check missing in WBB
+table(d$study, is.na(d$nrooms))
+
 # 6.	Parental age -aim 2 only
+table(d$study, d$momage)
+table(d$study, is.na(d$momage))
 # 7.	Parental education 
 table(d$study, d$momedu)
 table(d$study, is.na(d$momedu)) #add to Steinbaum and check Holcomb
@@ -314,14 +332,6 @@ save(d_any_pathogen, d_any_virus, d_any_protozoa, d_any_bacteria,
 # Merge covariates into aggregate outcomes
 #-----------------------------------------------
 
-
-# XXXXXXXXXXXXXXXXXXXXXX
-# Note:
-#   Need to keep covariates in the individual data frame because of sample-specific vars
-#   and just make a cov dataframe with hh-level vars merged into the aggregate dateset
-#  plus fix dataframe names
-#  Note 2: I updated code to do this, but causing duplicated in the aggregate dataframe... one covariate must vary across HH... check maybe maternal?
-# XXXXXXXXXXXXX
 
 #covariates
 dim(d)

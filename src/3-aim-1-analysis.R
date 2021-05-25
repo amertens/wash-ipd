@@ -23,10 +23,10 @@ table(d$study, d$target)
 table(d$sample, d$target, d$study)
 
 
-# 1.	Child birth order/parity 
+# 1.	Child birth order/parity -aim2 only
 # 2.	Asset-based wealth index 
 # 3.	Number of individuals and children in household
-# 4.	Household food security 
+# 4.	Household food security  -aim2 only
 # 5.	Household electrification and construction, including wall/roof material 
 # 6.	Parental age 
 # 7.	Parental education 
@@ -34,8 +34,8 @@ table(d$sample, d$target, d$study)
 # a.	Indicator for works in agriculture 
 # 9.	Land ownership 
 
-#TODO: need to add  Indicator for works in agriculture and Land ownership
-Wvars = c("hhwealth", "Nhh","nrooms","walls", "floor","elec","dadagri","landacre", "momedu")         
+colnames(d)
+Wvars = c("hhwealth", "Nhh","nrooms","walls", "floor","roof","elec","dadagri","landacre", "momedu", "momage")         
 
 
 

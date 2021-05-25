@@ -75,7 +75,7 @@ base_plot <- function(mydf, legend_labels=sample_cats, drop_full_sparse=F){
                   width = 0.3, size = 1) +
     scale_color_manual(breaks = legend_labels,
       values = colours, drop = FALSE) +
-    scale_shape_manual(values=c(16, 13,9), guide=FALSE) + 
+    scale_shape_manual(values=c(16, 13,18), guide=FALSE) + 
     geom_hline(yintercept = 1, linetype="dashed") +
     facet_grid(target_f~sample_type,  scales="free_y", space = "free_x") +
     scale_y_continuous(breaks=c(0.25, 0.5,1, 2, 4, 8), trans='log10', labels=scaleFUN)+ coord_flip()+
@@ -100,7 +100,7 @@ d <- unadj_RR %>%
 #Primary figure
 p_1 <- unadj_RR %>% 
   filter(target %in% c("Any pathogen","Any MST")) %>%
-  base_plot
+  base_plot(drop_full_sparse=T)
 p_1
 
 p_2 <- unadj_RR %>% 

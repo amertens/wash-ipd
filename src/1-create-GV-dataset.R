@@ -60,6 +60,12 @@ table(d2$sh_pos.1 )
 # rename covariates
 #----------------------------------------------------
 
+
+#Child sex/age
+table(d$hh_sex)
+table(d$dbmo)
+
+
 # 1.	Child birth order/parity 
 
 # 2.	Asset-based wealth index 
@@ -146,13 +152,6 @@ d2 <- d2 %>% mutate(landacre=factor(hh_agricown))
 # Season 
 # 996 - time.rain - rainy season, binary
 # Urban vs. rural 
-# Child sex 
-# 681 - hh.sex - Is [hh.name] male or female?
-#   1010 - respondent's sex
-
-
-# Child age 
-# 91 - dbmoc - Child age in months, categorical
 
 # 601 - hh.dbchk - DOB
 # 1026 - VA.3 - respondent's age
@@ -172,6 +171,8 @@ d2 <- d2 %>% mutate(landacre=factor(hh_agricown))
    mutate(sample="W",
      vc.pos=as.numeric(vc_kiit_pos), sh.pos=as.numeric(sh_kiit_pos),
      vc.pres.pos=as.numeric(vc_tcbs.1), sh.pres.pos=as.numeric(sh_pos.1),
+     sex=as.numeric(hh_sex),
+     age=as.numeric(dbmo),
      env_date=ymd(hh_st)) %>%
    rename(
      round=hh_rnd, 
@@ -179,7 +180,7 @@ d2 <- d2 %>% mutate(landacre=factor(hh_agricown))
      sampleid=ev_smp_id
    ) %>%
    subset(., select = c(
-     env_date, sampleid, hh_vid, round, hh_hid, hh_mid, hh_st, ic, sample, vc.pos, sh.pos, vc.pres.pos, sh.pres.pos, momedu, haz, whz, dia7, wealth_st,
+     env_date, sampleid, hh_vid, round, hh_hid, hh_mid, hh_st, ic, sample, vc.pos, sh.pos, vc.pres.pos, sh.pres.pos, momedu, haz, whz, sex, age, dia7, wealth_st,
      mnum4,mnum5,mnum6,mnum7,numcu5, elec,  dadagri, landacre
    ))
 head(dw)
@@ -188,6 +189,8 @@ sw <- d2 %>%
   mutate(sample="SW",
     vc.pos=as.numeric(vc_kiit_pos), sh.pos=as.numeric(sh_kiit_pos),
     vc.pres.pos=as.numeric(vc_tcbs.1), sh.pres.pos=as.numeric(sh_pos.1),
+    sex=as.numeric(hh_sex),
+    age=as.numeric(dbmo),
     env_date=ymd(hh_st)) %>%
   rename(
     round=hh_rnd, 
@@ -195,7 +198,7 @@ sw <- d2 %>%
     sampleid=ev_smp_id
   ) %>%
   subset(., select = c(
-    env_date, sampleid, hh_vid, round, hh_hid, hh_mid, ic, sample, vc.pos, sh.pos, vc.pres.pos, sh.pres.pos, momedu, haz, whz, dia7, wealth_st,
+    env_date, sampleid, hh_vid, round, hh_hid, hh_mid,  hh_st, ic, sample, vc.pos, sh.pos, vc.pres.pos, sh.pres.pos, momedu, haz, whz,  sex, age,dia7, wealth_st,
     mnum4,mnum5,mnum6,mnum7,numcu5, elec, dadagri, landacre
   ))
 head(sw)
@@ -219,8 +222,12 @@ df <- df %>%
         ic==1 ~ "Intervention"
       ),
       hhwealth=as.numeric(wealth_st),
-      Nhh=mnum4+mnum5+mnum6+mnum7+numcu5) %>%
+      Nhh=mnum4+mnum5+mnum6+mnum7+numcu5,
+      haz=as.numeric(haz),
+      whz=as.numeric(whz)) %>%
+  rename(clusterid=hh_vid) %>%
   subset(., select = -c(ic, wealth_st, mnum4,mnum5,mnum6,mnum7,numcu5))
+
 
 
 #Keep one obs per household
@@ -230,12 +237,11 @@ df <- df %>%
 df <- df %>% 
   gather(vc.pos:sh.pres.pos , key = target, value = pos ) %>%
   filter(!is.na(pos), target %in% c("sh.pos","vc.pos")) %>%
-  mutate(dataid=hh_vid, logquant=NA,
+  mutate(logquant=NA,
          target = case_when(
            target=="sh.pos" ~"shigella",
            target=="vc.pos" ~"vibrio_cholera"
-         )) %>%
-  rename(clusterid=hh_vid )
+         )) 
 
 head(df)
 
@@ -249,77 +255,16 @@ saveRDS(df, file=paste0(dropboxDir,"Data/Gram Vikas/GV_env_cleaned.rds"))
 
 
 
-# #-----------------------------------------------------------------------------------------------------------
-# # Check numbers with Reese dissertation
-# #-----------------------------------------------------------------------------------------------------------
-# 
-# # sample water (n=1583) and drinking water (n=2044) were assayed for E. coli, Shigella spp., and V. cholerae, 
-# # and children's hands (n=976)  for E. coli and Shigella spp.
-# dim(df)
-# 
-# #We collected samples of the sample water and drinking water for each household four times, once in each study round,
-# #and child hand rinse samples two times, in rounds 2 and 4. If a household randomly selected for sampling was absent, 
-# #field workers collected samples from the nearest enrolled household to the right.
-# 
-# table(df$round, df$vc.kiit)
-# table(df$round, df$sh.kiit)
-# 
-# df <- df %>% filter(round==4)
-# head(df)
-# 
-# table(df$ev.01b)
-# # 1 = Water samples
-# # 2 = Hand rinse samples
-# # 3 = Stool samples
-# # 4 = NA
-# 
-# table(df$tr, df$sh.kiit)
-# table(df$tr, df$vc.kiit)
-# 
-# head(df)
-# 
-# 
-# #V cholera presence
-# summary(df$vc.kiit)
-# 
-# #seperate strains
-# summary(df$vc.o1)
-# summary(df$vc.o139)
-# 
-# #Variables match
-# table(df$vc.kiit)
-# table(df$vc.o1==1 | df$vc.o1391==1)
-# 
-# #What is the difference between these 2 positive variables?
-# table(df$vc.kiit)
-# table(df$vc.tcbs)
-# 
-# 
-# #V cholera count
-# table(df$vc_tcno)
-# 
-# #What are the individual colony counts? Does the above make sense
-# 
-# 
-# #Shigella presence
-# 
-# 
-# #Shigella count
-# 
-# 
-# 
-# table(df$sh_bcno)
-# table(df$sh_bnote)
-# 
-# table(df$sh_dil1)
-# table(df$sh_dil2)
-# table(df$sh_dil3)
-# 
-# 
-# table(df$sh.dys)
-# table(df$sh.flx)
-# 
-# table(df$sh.sacnt1)
-# 
-# 
-# 
+#-----------------------------------------------------------------------------------------------------------
+# Check numbers with Reese dissertation
+#-----------------------------------------------------------------------------------------------------------
+
+# sample water (n=1583) and drinking water (n=2044) were assayed for E. coli, Shigella spp., and V. cholerae,
+# and children's hands (n=976)  for E. coli and Shigella spp.
+table(df$sample , df$pos, df$round, df$target)
+table(df$sample , df$pos, df$round, df$target)
+
+#We collected samples of the sample water and drinking water for each household four times, once in each study round,
+#and child hand rinse samples two times, in rounds 2 and 4. If a household randomly selected for sampling was absent,
+#field workers collected samples from the nearest enrolled household to the right.
+

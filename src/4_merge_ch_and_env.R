@@ -101,6 +101,22 @@ d <- d %>% mutate(
 
 
 #-----------------------------------------------------------
+# Check covariates
+#-----------------------------------------------------------
+table(d$study, d$hfiacat)
+table(d$study, is.na(d$hfiacat))
+table(d$study, d$hhwealth)
+table(d$study, is.na(d$hhwealth))
+table(d$study, d$momedu)
+table(d$study, is.na(d$momedu)) 
+table(d$study, is.na(d$momage)) 
+
+table(d$study, d$sex)
+table(d$study, is.na(d$sex))
+table(d$study, is.na(d$age))
+
+
+#-----------------------------------------------------------
 # Save
 #-----------------------------------------------------------
 saveRDS(d, file=paste0(dropboxDir,"Data/merged_env_CH_data.rds"))

@@ -8,9 +8,58 @@ library(rvest)
 
 
 d <- readRDS(paste0(dropboxDir,"Data/cleaned_ipd_env_data.rds"))
+unadj_diff <- readRDS(file=here("results/unadjusted_aim1_diff.Rds")) %>% mutate(sparse="no")
+adj_diff <- readRDS(file=here("results/adjusted_aim1_diff.Rds")) %>% mutate(sparse="no")
+
 
 d <- d %>% filter(!is.na(abund)) %>% droplevels(.)
 
+colnames(unadj_diff)
+head(unadj_diff)
+
+clean_tab = function(df){
+  df <- df %>% 
+    mutate(
+      coef=round(coef,2),
+      RR=round(RR,2),
+      ci.lb=round(ci.lb,2),
+      ci.ub=round(ci.ub,2),
+      pval=round(pval,3),
+      model=ifelse(model=="neg. binomial","*",""),
+      est=ifelse(model=="linear",
+                 paste0(coef, " (",ci.lb," ",ci.ub,")",model),
+                 paste0(RR, " (",ci.lb," ",ci.ub,")")),
+      mean_control=paste0(round(mean_control,1), " (",round(sd_control,1),")"), 
+      mean_int=paste0(round(mean_int,1), " (",round(sd_int,1),")"), 
+      sample =case_when(
+        sample == "SW" ~ "Source water",
+        sample == "W" ~ "Stored water",
+        sample == "CH" ~ "Child hands",
+        sample == "MH" ~ "Mother's hands",
+        sample == "FlyKitch" ~ "Flies in kitchen",
+        sample == "FlyLat" ~ "Flies in latrine",
+        sample == "LS" ~ "Latrine soil",
+        sample == "S" ~ "House soil"),
+      sample = factor(sample, 
+                          levels=c("Any sample","Source water","Stored water",
+                                   "Child hands", "Mother's hands", "Latrine soil",
+                                   "House soil", "Flies in kitchen",  "Flies in latrine", "Sparse data"))) %>%
+    subset(., select = c(study, sample,target, N, mean_control, mean_int, 
+                           est, pval)) %>% arrange(study, sample, target) %>%
+    group_by(study, sample) %>% mutate(sample = ifelse(row_number() == 1, as.character(sample), "-")) %>%
+    group_by(study) %>% mutate(study = ifelse(row_number() == 1, as.character(study), "-"))
+  
+  colnames(df)  <- c("Study",   "Sample", "Target", "N", "Control mean (SD)", "Intervention  mean (SD)", "Difference (95% CI)", "P value")
+  return(df)
+}
+
+tab_unadj_diff <- clean_tab(unadj_diff)
+tab_adj_diff <- clean_tab(adj_diff)
+
+save(tab_unadj_diff, tab_adj_diff, file=here("figures/abundance_tables.Rdata"))
+
+
+#Old abundance checking tables
 tab <- d %>% group_by(study, target, sample, qual) %>%
   droplevels(.) %>%
   summarise(N=n(), med=round(median(abund),1)) %>%

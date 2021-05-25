@@ -81,7 +81,8 @@ colnames(env2)
 colnames(enrol)
 enrol2 <- enrol %>% 
   mutate(env_date=dmy(ms_el_up_date)) %>%
-  subset(., select=c(hhid, env_date, momedu, Ncomp)) 
+  subset(., select=c(hhid, env_date, momedu, momage, Ncomp, HHS)) %>%
+  rename(hfiacat=HHS) %>%
   filter(!is.na(env_date)) %>% 
   distinct()
 

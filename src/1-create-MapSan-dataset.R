@@ -38,8 +38,10 @@ env <- env %>% mutate(
   round=case_when(survey=="0m"~"bl",
                    survey=="12m"~"ml"),
   env_date=paste0(env_date,"-15"),
-  env_date=ymd(env_date)
-) %>% filter(!is.na(env_date)) %>% subset(., select = -c(survey))
+  env_date=ymd(env_date),
+  censquant = censquant^10 #untransform abundance estimates
+) %>% 
+  filter(!is.na(env_date)) %>% subset(., select = -c(survey))
 
 
 #harmonize coding of sample types
@@ -116,6 +118,12 @@ table(is.na(env$clusterid))
 # merge in fly pathogen data
 #----------------------------------------
 
+# For the presence/absence dataset I used a Cq cutoff of 35. For the quantitative dataset I set all non-detects to the theoretical LOD (250 gc/fly) and for all detects I used a standard curve to determine the gene copy density.
+# 
+# These flies are from MapSan pre-intervention (baseline) and post-intervention (referred to as midline / 12-month). Due to a limited number of compounds where we caught flies at the 12-month phase, I tried to analyze 2 flies per compound, and to differentiate samples you will see a "_2" in the first column.
+# 
+# I've also included the fly mass (in grams), species (house or bottle), and where we caught the fly (latrine entrance or food prep area) that can be included as potential confounders. I prioritized analyzing house flies over bottle flies, and flies caught in the food prep area over the latrine entrance. However, we didn't always catch houseflies and sometimes we only caught flies from the latrine entrance.
+
 flypos <- read.csv(paste0(dropboxDir,"Data/MapSan/MapSan_flies_presence_absence_for AM.csv"))
 flyabund <- read.csv(paste0(dropboxDir,"Data/MapSan/MapSan_flies_quantitative_for AM.csv"))
 fly_dates <- read.csv(paste0(dropboxDir,"Data/MapSan/fly_samples_dates_to share.csv")) %>%
@@ -181,7 +189,8 @@ fly <- fly %>% subset(., select= -c(compound_phase)) %>%
   mutate(tr=case_when(tr==1~"I",tr==0 ~ "C"),
          sample=case_when(sample=="kitchen" ~ "FlyKitch",
                           sample=="latrine" ~ "FlyLat"))
-env <- env %>% rename(tr=trial_arm, pos=detect, abund=censquant) 
+env <- env %>% rename(tr=trial_arm, pos=detect, abund=censquant) %>%
+  mutate()
 head(env)
 head(flypos)
 
@@ -234,56 +243,57 @@ child <- child %>% mutate(child_date= ym(ch_surveydate_coarsed))
 
 
 child <- child %>% select(childid, actualPhase, clusterid, child_date,
-                   studyArm_binary, studyArm_ternary, age_months, age_sampMonths,
-                   carerEDU, breast,
+                   studyArm_binary, #studyArm_ternary, 
+                   age_months, #age_sampMonths,
+                   carerEDU, #breast,
                    diarrhea,
-                   Kkhas,
-                   Kkany,
-                   Kkasc,
-                   KKtrc,
-                   KKhkw,
+                   # Kkhas,
+                   # Kkany,
+                   # Kkasc,
+                   # KKtrc,
+                   # KKhkw,
                    Hhsize,
                    hhCement,
-                   drophole,
-                   ventpipe,
-                   pedestal,
-                   drinkWat,
+                   # drophole,
+                   # ventpipe,
+                   # pedestal,
+                   # drinkWat,
                    hhrooms,
-                   compLat,
-                   watPoint,
-                   latWall,
+                   # compLat,
+                   # watPoint,
+                   # latWall,
                    compElec,
                    compAnyAnimal,
-                   gpp_aden, gpp_noro, gpp_rota, gpp_cdif, 
-                   gpp_camp, gpp_o157, gpp_etec, gpp_salm, 
-                   gpp_stec, gpp_shig, gpp_chol, gpp_yers,
-                   gpp_cryp, gpp_enta, gpp_giar,
-                   gpp_prim,
-                   gpp_prim_noSal,
-                   gpp_numInf_noSal,
-                   gpp_coInf_noSal,
-                   gpp_vir,
-                   gpp_bact,
-                   gpp_par,
-                   gpp_Num_inf,
-                   gpp_anyInf,
-                   hl_den,
-                   hl_terc,
-                   rainfall_survey,
-                   rainfall_sample,
+                   # gpp_aden, gpp_noro, gpp_rota, gpp_cdif, 
+                   # gpp_camp, gpp_o157, gpp_etec, gpp_salm, 
+                   # gpp_stec, gpp_shig, gpp_chol, gpp_yers,
+                   # gpp_cryp, gpp_enta, gpp_giar,
+                   # gpp_prim,
+                   # gpp_prim_noSal,
+                   # gpp_numInf_noSal,
+                   # gpp_coInf_noSal,
+                   # gpp_vir,
+                   # gpp_bact,
+                   # gpp_par,
+                   # gpp_Num_inf,
+                   # gpp_anyInf,
+                   # hl_den,
+                   # hl_terc,
+                   # rainfall_survey,
+                   # rainfall_sample,
                    persons_room,
                    personsPerRoomCat,
-                   persons_latrine,
-                   households_latrine,
-                   householdLatCat,
-                   persons_waterpoint,
+                   # persons_latrine,
+                   # households_latrine,
+                   # householdLatCat,
+                   # persons_waterpoint,
                    CompPop,
                    sampDate_coarsed,
                    female,
                    totHHid,
                    ch_careEDUorig,
-                   ch_surveydate_coarsed,
-                   ch_exclbreast,
+                   # ch_surveydate_coarsed,
+                   # ch_exclbreast,
                    hh_walls,
                    hh_drinkwatorig,
                    povNormal,
@@ -381,9 +391,8 @@ d <- d %>%
   mutate(
     dataid=clusterid,
     tr=ifelse(studyArm_binary==1,"Sanitation","Control"),
-    tr = factor(tr, levels = c("Control", "Sanitation")),
-  abund = abund^10) #untransform abundance estimates
-
+    tr = factor(tr, levels = c("Control", "Sanitation"))
+  )
 table(is.na(d$env_date)) 
 table(is.na(d$child_date)) 
 
@@ -416,6 +425,7 @@ table(env_clean$target, env_clean$pos, env_clean$sample)
 saveRDS(env_clean, file=paste0(dropboxDir,"Data/MapSan/mapsan_env_cleaned.rds"))
 
 table(is.na(env_clean$env_date)) 
+table((env_clean$nrooms)) 
 
 df <- env_clean %>% group_by(sampleid, sample) %>% summarise(N=length(unique(tr))) 
   table(df$N)

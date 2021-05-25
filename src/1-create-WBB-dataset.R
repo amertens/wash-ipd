@@ -236,6 +236,15 @@ anthro <- read.csv(paste0(dropboxDir,"Data/WBB/washb-bangladesh-anthro.csv"))
 diar <- read.csv(paste0(dropboxDir,"Data/WBB/washb-bangladesh-diar.csv"))
 parasites <- read_dta(paste0(dropboxDir,"Data/WBB/wbb-parasite.dta"))
 
+head(diar)
+head(anthro)
+head(parasites)
+
+# 1.	Child birth order/parity -aim 2 only
+
+# 4.	Household food security -aim 2 only
+
+# 6.	Parental age -aim 2 only
 
 # Harmonizing anthro variable names with diar ahead of binding them
 anthro<-anthro%>%
@@ -247,65 +256,79 @@ anthro<-anthro%>%
 
 colnames(anthro)
 anthro<-anthro%>%
-  subset(., select = c("block","clusterid","dataid","svy","child_date_anthro", "childid", "laz","whz","waz"))
+  subset(., select = c(block,clusterid,dataid,svy,child_date_anthro,agedays, sex,childid, laz,whz,waz))
 colnames(diar)
 diar<-diar%>% rename(child_date=svydate) %>%
-  subset(., select = c("block","clusterid","dataid","svy", "child_date","childid", "diar7d"))
+  subset(., select = c(block,clusterid,dataid,svy, child_date, agedays, sex,childid, diar7d))
 colnames(diar)
 
-#Merge anthro and diar
-dim(anthro)
-dim(diar)
-anthro_diar <- full_join(diar, anthro, by=c("childid" ,"block","clusterid","dataid","svy"))
-dim(anthro_diar)
-table(is.na(anthro_diar$dataid))
+# #Merge anthro and diar
+# dim(anthro)
+# dim(diar)
+# anthro_diar <- full_join(diar, anthro, by=c("childid" ,"block","clusterid","dataid","svy"))
+# dim(anthro_diar)
+# table(is.na(anthro_diar$dataid))
+# 
+# anthro_diar <- anthro_diar %>%
+#   #filter(svy==2) %>%
+#   mutate(svy=as.character(svy))
 
-anthro_diar <- anthro_diar %>%
-  #filter(svy==2) %>%
-  mutate(svy=as.character(svy))
+
+anthro_diar <- bind_rows(diar, anthro)
+table(anthro_diar[is.na(anthro_diar$child_date),])
+anthro_diar$child_date[is.na(anthro_diar$child_date)] <- anthro_diar$child_date[is.na(anthro_diar$child_date_anthro)]
+table(anthro_diar[is.na(anthro_diar$child_date),])
 
 #----------------------------------------------------------------------------
 #Merge in STH data
 #----------------------------------------------------------------------------
 
 
-# Load Wash Benefits Bangladesh child soil transmitted helminth datasets
-sth <- read.csv(paste0(dropboxDir,"Data/WBB//washb-bangladesh-sth-public.csv"))
+# # Load Wash Benefits Bangladesh child soil transmitted helminth datasets
+# sth <- read.csv(paste0(dropboxDir,"Data/WBB//washb-bangladesh-sth-public.csv"))
+# 
+# # reading in public IDs
+# pub_ids <- read.csv(paste0(dropboxDir,"Data/WBB/public-ids.csv"))
+# 
+# 
+# # Harmonizing sth variable names to facilitate bind with anthro/diar/env
+# sth <- sth %>%
+#            rename(dataid_r=dataid,
+#                   clusterid_r=clusterid,
+#                   block_r=block,
+#                   childid=previousCid)
+# 
+# #merge in public IDs
+# sth <- left_join(sth, pub_ids, by=c("dataid_r","clusterid_r","block_r"))
+# sth <- sth %>% subset(., select = -c(dataid_r, block_r, clusterid_r)) 
+# head(sth)
+# 
+# #subset to needed variables
+# sth <- sth %>% subset(., select = c(dataid, childid, agem, logalepg, loghwepg, logttepg, al, tt, hw, sth)) %>%
+#   mutate(svy="2")
+# 
+# 
+# 
+# # binding child health outcomes
+# anthro_diar$measure = "anthro_diar"
+# sth$measure = "sth"
+# 
+# head(anthro_diar)
+# head(sth)
+# dim(diar)
+# dim(sth)
+# child_health <- left_join(anthro_diar, sth, by=c("childid" ,"dataid","svy"))
+# dim(child_health)
+# table(is.na(child_health$dataid))
+# 
+# 
+# head(child_health)
 
-# reading in public IDs
-pub_ids <- read.csv(paste0(dropboxDir,"Data/WBB/public-ids.csv"))
 
-
-# Harmonizing sth variable names to facilitate bind with anthro/diar/env
-sth <- sth %>%
-           rename(dataid_r=dataid,
-                  clusterid_r=clusterid,
-                  block_r=block,
-                  childid=previousCid)
-
-#merge in public IDs
-sth <- left_join(sth, pub_ids, by=c("dataid_r","clusterid_r","block_r"))
-sth <- sth %>% subset(., select = -c(dataid_r, block_r, clusterid_r)) 
-head(sth)
-
-#subset to needed variables
-sth <- sth %>% subset(., select = c(dataid, childid, agem, logalepg, loghwepg, logttepg, al, tt, hw, sth)) %>%
-  mutate(svy="2")
-
-
-
-# binding child health outcomes
-anthro_diar$measure = "anthro_diar"
-sth$measure = "sth"
-
-head(anthro_diar)
-head(sth)
-dim(diar)
-dim(sth)
-child_health <- left_join(anthro_diar, sth, by=c("childid" ,"dataid","svy"))
-dim(child_health)
-table(is.na(child_health$dataid))
-
-
-head(child_health)
-saveRDS(child_health, paste0(dropboxDir, "Data/WBB/Clean/WBB_child_health.RDS"))
+#Merge in child/HH specific covariates
+colnames(enrol)
+enrol <- enrol %>% subset(., select=c(dataid, momage, hfiacat))
+dim(anthro_diar)
+anthro_diar <- left_join(anthro_diar, enrol, by=c("dataid"))
+dim(anthro_diar)
+saveRDS(anthro_diar, paste0(dropboxDir, "Data/WBB/Clean/WBB_child_health.RDS"))

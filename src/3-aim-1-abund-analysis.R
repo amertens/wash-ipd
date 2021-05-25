@@ -7,14 +7,18 @@ d <- readRDS(paste0(dropboxDir,"Data/cleaned_ipd_env_data.rds"))
 head(d)
 d <- droplevels(d)
 
-#TODO: need to add  Indicator for works in agriculture and Land ownership
-Ws = Wvars = c("hhwealth", "Nhh","nrooms","walls", "floor","elec")         
+Wvars = c("hhwealth", "Nhh","nrooms","walls", "floor","roof","elec","dadagri","landacre", "momedu", "momage")         
+
+#drop aggregate groups
+d <- d %>% filter(sample!="any sample type", !grepl("Any ",target))
 
 #Separate STH from MST abundances
 d <- d %>% filter(!is.na(abund)) %>% droplevels(.)
 
-sth <- d %>% filter(target %in% c("Any STH","Ascaris","Trichuris"))
-d <- d %>% filter(!(target %in% c("Any STH","Ascaris","Trichuris")))
+table(d$sample, d$target)
+sth <- d %>% filter(target %in% c("Any STH","Ascaris","Trichuris") & sample!="FlyKitch")
+d <- d %>% filter(!(target %in% c("Any STH","Ascaris","Trichuris"))|sample=="FlyKitch")
+
 
 # 
 # outcome="abund"

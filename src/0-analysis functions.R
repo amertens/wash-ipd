@@ -32,17 +32,24 @@ aim1_glm <- function(d, Ws=NULL, outcome="pos", study="mapsan", sample="ds", tar
     }else{
       minN <- 0
     }
+    #Get cell counts
+    a <- sum(df$Y==1 & df$tr=="Intervention")
+    b <- sum(df$Y==0 & df$tr=="Intervention")
+    c <- sum(df$Y==1 & df$tr=="Control")
+    d <- sum(df$Y==0 & df$tr=="Control")
   }
   if(length(unique(df$Y))>2){
     minN <- length(unique(df$Y))
+    #Get cell counts
+    a <- mean(df$Y[df$tr=="Control"], na.rm=T)
+    b <- mean(df$Y[df$tr=="Intervention"], na.rm=T)
+    # c <- median(df$Y[df$tr=="Control"], na.rm=T)
+    # d <- median(df$Y[df$tr=="Intervention"], na.rm=T)
+    c <- sd(df$Y[df$tr=="Control"], na.rm=T)
+    d <- sd(df$Y[df$tr=="Intervention"], na.rm=T)
   }
   
-  #Get cell counts
-  a <- sum(df$Y==1 & df$tr=="Intervention")
-  b <- sum(df$Y==0 & df$tr=="Intervention")
-  c <- sum(df$Y==1 & df$tr=="Control")
-  d <- sum(df$Y==0 & df$tr=="Control")
-  
+
   if((minN>=10 & min(table(df$Y, df$tr))>1) | length(unique(df$Y)) > 2){
     
     if(!is.null(Ws)){
@@ -54,9 +61,19 @@ aim1_glm <- function(d, Ws=NULL, outcome="pos", study="mapsan", sample="ds", tar
           Wdf <- Wdf[,-nearZeroVar(Wdf)]
         }
         if(family=="neg.binom"){
-          Wvars <- washb_prescreen(Y=df$Y, W=Wdf, family="gaussian", print=F)
+          Wvars <- MICS_prescreen(Y=df$Y, W=Wdf, family="gaussian", print=F)
         }else{
-          Wvars <- washb_prescreen(Y=df$Y, W=Wdf, family=family, print=F)
+          Wvars <- MICS_prescreen(Y=df$Y, W=Wdf, family=family, print=T)
+        }
+        if(family!="gaussian" & !is.null(Wvars)){
+          nY<-floor(min(table(df$Y))/10) -1 #minus one because 10 variables needed to estimate coef. of X
+          if(nY>=1){
+            if(length(Wvars)>nY){
+              Wvars<-Wvars[1:nY]
+            }        
+          }else{
+            Wvars=NULL
+          }
         }
         if(identical(Wvars, character(0)) ){
           Wvars <- NULL
@@ -75,10 +92,12 @@ aim1_glm <- function(d, Ws=NULL, outcome="pos", study="mapsan", sample="ds", tar
     }
     
     #Get cell counts after dropping
+    if(length(unique(df$Y))<=2){
     a <- sum(df$Y==1 & df$tr=="Intervention")
     b <- sum(df$Y==0 & df$tr=="Intervention")
     c <- sum(df$Y==1 & df$tr=="Control")
     d <- sum(df$Y==0 & df$tr=="Control")
+    }
     
     #model formula
     f <- ifelse(is.null(Wvars),
@@ -128,16 +147,24 @@ aim1_glm <- function(d, Ws=NULL, outcome="pos", study="mapsan", sample="ds", tar
   if(length(unique(df$Y))<=2){
     res$minN <- minN
     res$n<-sum(df$Y, na.rm=T)
+    res$a <- a
+    res$b <- b
+    res$c <- c
+    res$d <- d
+  }else{
+    res$mean_control <- a
+    res$mean_int <- b
+    # res$med_control <- c
+    # res$median_int <- d
+    res$sd_control <- c
+    res$sd_int <- d
   }
   
-  res$a <- a
-  res$b <- b
-  res$c <- c
-  res$d <- d
+
   res$N<-nrow(df)
   res$W <-ifelse(is.null(Wvars), "unadjusted", paste(Wvars, sep="", collapse=", "))
   res$study <- study
-  
+
   return(res)
 }
 
@@ -259,9 +286,19 @@ aim2_glm <- function(d, Ws=NULL, outcome="pos", exposure, study="mapsan", sample
           Wdf <- Wdf[,-nearZeroVar(Wdf)]
         }
         if(family=="neg.binom"){
-          Wvars <- washb_prescreen(Y=df$Y, W=Wdf, family="gaussian", print=F)
+          Wvars <- MICS_prescreen(Y=df$Y, W=Wdf, family="gaussian", print=F)
         }else{
-          Wvars <- washb_prescreen(Y=df$Y, W=Wdf, family=family, print=F)
+          Wvars <- MICS_prescreen(Y=df$Y, W=Wdf, family=family, print=F)
+        }
+        if(family!="gaussian" & !is.null(Wvars)){
+          nY<-floor(min(table(df$Y))/10) -1 #minus one because 10 variables needed to estimate coef. of X
+          if(nY>=1){
+            if(length(Wvars)>nY){
+              Wvars<-Wvars[1:nY]
+            }        
+          }else{
+            Wvars=NULL
+          }
         }
         if(identical(Wvars, character(0)) ){
           Wvars <- NULL
@@ -334,4 +371,62 @@ aim2_glm <- function(d, Ws=NULL, outcome="pos", exposure, study="mapsan", sample
   res$study <- study
   #print(res)
   return(res)
+}
+
+
+
+#Prescreen function
+MICS_prescreen<-function (Y, Ws, family = "gaussian", pval = 0.2, print = TRUE){
+  require(lmtest)
+  if (pval > 1 | pval < 0) {
+    stop("P-value threshold not set between 0 and 1.")
+  }
+  Ws <- as.data.frame(Ws)
+  dat <- bind_cols(Ws, data.frame(Y=Y))
+  nW <- ncol(Ws)
+  LRp <- matrix(rep(NA, nW), nrow = nW, ncol = 1)
+  rownames(LRp) <- names(Ws)
+  colnames(LRp) <- "P-value"
+  for (i in 1:nW) {
+    dat$W <- dat[, i]
+    df <- data.frame(Y=dat$Y, W=dat$W)
+    df <- df[complete.cases(df), ]
+    
+    if (class(dat$W) == "factor" & dim(table(dat$W)) == 
+        1) {
+      fit1 <- fit0 <- glm(Y ~ 1, data = df, family = family)
+    }
+    else {
+      fit1 <- glm(Y ~ W, data = df, family = family)
+      fit0 <- glm(Y ~ 1, data = df, family = family)
+    }
+    LRp[i] <- lrtest(fit1, fit0)[2, 5]
+  }
+  
+  
+  p20 <- ifelse(LRp < pval, 1, 0)
+  if (print == TRUE) {
+    cat("\nLikelihood Ratio Test P-values:\n")
+    print(round(LRp, 5))
+  }
+  
+  if (sum(p20) > 0) {
+    LRps <- matrix(LRp[p20 == 1, ], ncol = 1)
+    rownames(LRps) <- names(Ws)[p20 == 1]
+    colnames(LRps) <- "P-value"
+    LRps <- LRps %>% as.data.frame() %>% arrange(`P-value`)
+    cat(paste("\n\nCovariates selected (P<", pval, 
+              "):\n", sep = ""))
+    print(LRps)
+  }else{
+    cat(paste("\nNo covariates were associated with the outcome at P<", 
+              pval))
+  }
+  
+  if(sum(p20) > 0){
+    return(rownames(LRps))
+  }else{
+    return(NULL)
+    
+  }
 }

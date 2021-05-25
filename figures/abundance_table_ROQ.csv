@@ -1,55 +1,63 @@
-,study,sample,target,N,mean,med,trans.mean,trans.med,trans.p,raw.p,ROQ,BLOQ,BLOD,Analyze
-1,Boehm et al. 2016,any sample type,Animal (BacR),497,192.3,15,1.5,1.2,0.00104,0,2.2 (11),20.1 (100),77.7 (386),No
-2,Boehm et al. 2016,any sample type,Avian (GFD),NA,NA,NA,NA,NA,NA,NA,0 (0),8.2 (41),91.8 (456),No
-3,Boehm et al. 2016,any sample type,General (GenBac3),492,166449.9,111.5,2.4,2,0,0,90.4 (445),9.6 (47),0 (0),linear regression - transformed
-4,Boehm et al. 2016,any sample type,Human (HumM2),497,52.8,50,1.7,1.7,0,0,100 (497),0 (0),0 (0),linear regression - transformed
-5,Boehm et al. 2016,any sample type,Rotavirus,497,38.2,38.2,1.5,1.5,NA,NA,0.4 (2),0.2 (1),99.4 (494),No
-6,Boehm et al. 2016,CH,Animal (BacR),493,18786.2,6738.4,4,3.8,0.00057,0,4.5 (22),49.7 (245),45.8 (226),No
-7,Boehm et al. 2016,CH,Avian (GFD),493,6547.6,6547.6,3.8,3.8,NA,NA,0.2 (1),15.4 (76),84.4 (416),No
-8,Boehm et al. 2016,CH,General (GenBac3),493,3112091.1,355751,5.6,5.6,0.00023,0,98 (483),0.6 (3),1.4 (7),linear regression - transformed
-9,Boehm et al. 2016,CH,Human (HumM2),482,12519.4,12519.4,4.1,4.1,NA,NA,0.2 (1),0 (0),99.8 (481),No
-10,Boehm et al. 2016,CH,Rotavirus,493,351201.6,17277.3,4.6,4.2,0.00575,0,3.7 (18),2.4 (12),93.9 (463),No
-11,Boehm et al. 2016,S,Animal (BacR),NA,NA,NA,NA,NA,NA,NA,0 (0),29.9 (138),70.1 (324),No
-12,Boehm et al. 2016,S,Avian (GFD),NA,NA,NA,NA,NA,NA,NA,0 (0),20.4 (100),79.6 (390),No
-13,Boehm et al. 2016,S,Human (HumM2),452,400,400,2.6,2.6,NA,NA,100 (452),0 (0),0 (0),linear regression - transformed
-14,Boehm et al. 2016,S,Rotavirus,496,88981.8,57235.3,4.8,4.7,0.81157,0.21674,0.8 (4),0.6 (3),98.6 (489),No
-15,Boehm et al. 2016,W,Animal (BacR),493,192.3,15,1.5,1.2,0.00104,0,2.2 (11),19.7 (97),78.1 (385),No
-16,Boehm et al. 2016,W,Avian (GFD),NA,NA,NA,NA,NA,NA,NA,0 (0),8.1 (40),91.9 (453),No
-17,Boehm et al. 2016,W,General (GenBac3),492,940.1,98.1,2.1,2,0,0,83.9 (413),9.6 (47),6.5 (32),linear regression - transformed
-18,Boehm et al. 2016,W,Human (HumM2),493,50,50,1.7,1.7,NA,NA,0 (0),0 (0),100 (493),No
-19,Boehm et al. 2016,W,Rotavirus,493,38.2,38.2,1.5,1.5,NA,NA,0.4 (2),0.2 (1),99.4 (490),No
-20,Steinbaum et al. 2019,any sample type,Any STH,2101,2,0,-0.7,-1,NA,0,100 (2101),0 (0),0 (0),negative binomial
-21,Steinbaum et al. 2019,any sample type,Ascaris,2101,1.8,0,-0.8,-1,NA,0,100 (2101),0 (0),0 (0),negative binomial
-22,Steinbaum et al. 2019,any sample type,Trichuris,2102,0.2,0,-0.9,-1,NA,0,100 (2102),0 (0),0 (0),negative binomial
-23,Steinbaum et al. 2019,S,Any STH,2101,2,0,-0.7,-1,NA,0,100 (2101),0 (0),0 (0),negative binomial
-24,Steinbaum et al. 2019,S,Ascaris,2101,1.8,0,-0.8,-1,NA,0,100 (2101),0 (0),0 (0),negative binomial
-25,Steinbaum et al. 2019,S,Trichuris,2102,0.2,0,-0.9,-1,NA,0,100 (2102),0 (0),0 (0),negative binomial
-26,Fuhrmeister et al. 2020,any sample type,Animal (BacCow),593,77158.1,13.3,2.3,1.1,0,0,100 (593),0 (0),0 (0),linear regression - transformed
-27,Fuhrmeister et al. 2020,CH,Animal (BacCow),365,127640.5,6914.8,3.5,3.8,0,0,100 (365),0 (0),0 (0),linear regression - transformed
-28,Fuhrmeister et al. 2020,MH,Animal (BacCow),725,41933.1,5201.9,3.2,3.7,0,0,100 (725),0 (0),0 (0),linear regression - transformed
-29,Fuhrmeister et al. 2020,S,Animal (BacCow),631,129712.2,13.8,2.6,1.1,0,0,100 (631),0 (0),0 (0),linear regression - transformed
-30,Fuhrmeister et al. 2020,W,Animal (BacCow),704,82.5,2.9,0.7,0.5,0,0,100 (704),0 (0),0 (0),linear regression - transformed
-31,Holcomb et al. 2020,any sample type,Avian (GFD),64,84155.9,38078.7,4.7,4.6,0,0,100 (64),0 (0),0 (0),linear regression - transformed
-32,Holcomb et al. 2020,any sample type,Human (Bacteriodes),64,5002854.1,1342181.2,6.2,6.1,0.0336,0,100 (64),0 (0),0 (0),linear regression - transformed
-33,Holcomb et al. 2020,any sample type,Human (M. smithii),64,2345940.4,985579.9,6,6,3.00E-05,0,100 (64),0 (0),0 (0),linear regression - transformed
-34,Holcomb et al. 2020,FP,Avian (GFD),96,152756.6,193164.5,5,5.3,0,0,100 (96),0 (0),0 (0),linear regression - transformed
-35,Holcomb et al. 2020,FP,Human (Bacteriodes),96,449443.3,162594.8,5.4,5.2,0,0,100 (96),0 (0),0 (0),linear regression - transformed
-36,Holcomb et al. 2020,FP,Human (M. smithii),94,339551.6,240071.9,5.5,5.4,0,0,100 (94),0 (0),0 (0),linear regression - transformed
-37,Holcomb et al. 2020,LS,Avian (GFD),60,27204.9,21178.7,4.4,4.3,0,0,100 (60),0 (0),0 (0),linear regression - transformed
-38,Holcomb et al. 2020,LS,Human (Bacteriodes),60,15688017.7,2954035.4,6.5,6.5,0.00013,0,100 (60),0 (0),0 (0),linear regression - transformed
-39,Holcomb et al. 2020,LS,Human (M. smithii),60,6868256.8,1999243.4,6.5,6.3,0,0,100 (60),0 (0),0 (0),linear regression - transformed
-40,Holcomb et al. 2020,S,Avian (GFD),83,79290.7,38452.9,4.7,4.6,0,0,100 (83),0 (0),0 (0),linear regression - transformed
-41,Holcomb et al. 2020,S,Human (Bacteriodes),83,7984386.9,1679952.8,6.4,6.2,8.00E-05,0,100 (83),0 (0),0 (0),linear regression - transformed
-42,Holcomb et al. 2020,S,Human (M. smithii),83,2321772.9,1017327.1,6.2,6,0,0,100 (83),0 (0),0 (0),linear regression - transformed
-43,Holcomb et al. 2020,SW,Avian (GFD),41,629,612.9,2.8,2.8,0,0,100 (41),0 (0),0 (0),linear regression - transformed
-44,Holcomb et al. 2020,SW,Human (Bacteriodes),41,47160,34470.2,4.6,4.5,0,0,100 (41),0 (0),0 (0),linear regression - transformed
-45,Holcomb et al. 2020,SW,Human (M. smithii),41,49980.3,45124.9,4.7,4.7,0,0,100 (41),0 (0),0 (0),linear regression - transformed
-46,Holcomb et al. 2020,W,Avian (GFD),94,613.5,576.5,2.7,2.8,0,0,100 (94),0 (0),0 (0),linear regression - transformed
-47,Holcomb et al. 2020,W,Human (Bacteriodes),94,42252.6,21541.3,4.4,4.3,0,0,100 (94),0 (0),0 (0),linear regression - transformed
-48,Holcomb et al. 2020,W,Human (M. smithii),94,50719.5,47918.7,4.7,4.7,0,0,100 (94),0 (0),0 (0),linear regression - transformed
-49,Kwong et al. 2021,any sample type,Any STH,1396,4.1,1.5,0.1,0.2,NA,0,100 (1396),0 (0),0 (0),negative binomial
-50,Kwong et al. 2021,any sample type,Ascaris,1396,2.3,0.7,-0.2,-0.1,NA,0,100 (1396),0 (0),0 (0),negative binomial
-51,Kwong et al. 2021,any sample type,Trichuris,1396,1.8,0.4,-0.3,-0.3,NA,0,100 (1396),0 (0),0 (0),negative binomial
-52,Kwong et al. 2021,S,Any STH,1396,4.1,1.5,0.1,0.2,NA,0,100 (1396),0 (0),0 (0),negative binomial
-53,Kwong et al. 2021,S,Ascaris,1396,2.3,0.7,-0.2,-0.1,NA,0,100 (1396),0 (0),0 (0),negative binomial
-54,Kwong et al. 2021,S,Trichuris,1396,1.8,0.4,-0.3,-0.3,NA,0,100 (1396),0 (0),0 (0),negative binomial
+"","study","sample","target","N","mean","med","trans.mean","trans.med","trans.p","raw.p","ROQ","BLOQ","BLOD"
+"1","Boehm et al. 2016","any sample type","Animal (BacR)",493,192.3,15,1.5,1.2,0.00104,0,"2.2 (11)","19.7 (97)","78.1 (385)"
+"2","Boehm et al. 2016","any sample type","General (GenBac3)",492,166449.9,111.5,2.4,2,0,0,"90.4 (445)","9.6 (47)","0 (0)"
+"3","Boehm et al. 2016","any sample type","Rotavirus",4,400,400,2.6,2.6,NA,NA,"100 (4)","0 (0)","0 (0)"
+"4","Boehm et al. 2016","CH","Animal (BacR)",493,18786.2,6738.4,4,3.8,0.00057,0,"4.5 (22)","49.7 (245)","45.8 (226)"
+"5","Boehm et al. 2016","CH","General (GenBac3)",493,3112091.1,355751,5.6,5.6,0.00023,0,"98 (483)","0.6 (3)","1.4 (7)"
+"6","Boehm et al. 2016","CH","Rotavirus",493,351201.6,17277.3,4.6,4.2,0.00575,0,"3.7 (18)","2.4 (12)","93.9 (463)"
+"7","Boehm et al. 2016","S","Rotavirus",496,88981.8,57235.3,4.8,4.7,0.81157,0.21674,"0.8 (4)","0.6 (3)","98.6 (489)"
+"8","Boehm et al. 2016","W","Animal (BacR)",493,192.3,15,1.5,1.2,0.00104,0,"2.2 (11)","19.7 (97)","78.1 (385)"
+"9","Boehm et al. 2016","W","General (GenBac3)",492,940.1,98.1,2.1,2,0,0,"83.9 (413)","9.6 (47)","6.5 (32)"
+"10","Steinbaum et al. 2019","any sample type","Any STH",2059,2,0,-0.7,-1,NA,0,"100 (2059)","0 (0)","0 (0)"
+"11","Steinbaum et al. 2019","any sample type","Ascaris",2059,1.8,0,-0.8,-1,NA,0,"100 (2059)","0 (0)","0 (0)"
+"12","Steinbaum et al. 2019","any sample type","Trichuris",2060,0.2,0,-0.9,-1,NA,0,"100 (2060)","0 (0)","0 (0)"
+"13","Steinbaum et al. 2019","S","Any STH",2101,2,0,-0.7,-1,NA,0,"100 (2101)","0 (0)","0 (0)"
+"14","Steinbaum et al. 2019","S","Ascaris",2101,1.8,0,-0.8,-1,NA,0,"100 (2101)","0 (0)","0 (0)"
+"15","Steinbaum et al. 2019","S","Trichuris",2102,0.2,0,-0.9,-1,NA,0,"100 (2102)","0 (0)","0 (0)"
+"16","Fuhrmeister et al. 2020","any sample type","Animal (BacCow)",593,77158.1,13.3,2.3,1.1,0,0,"100 (593)","0 (0)","0 (0)"
+"17","Fuhrmeister et al. 2020","CH","Animal (BacCow)",365,127640.5,6914.8,3.5,3.8,0,0,"100 (365)","0 (0)","0 (0)"
+"18","Fuhrmeister et al. 2020","MH","Animal (BacCow)",725,41933.1,5201.9,3.2,3.7,0,0,"100 (725)","0 (0)","0 (0)"
+"19","Fuhrmeister et al. 2020","S","Animal (BacCow)",631,129712.2,13.8,2.6,1.1,0,0,"100 (631)","0 (0)","0 (0)"
+"20","Fuhrmeister et al. 2020","W","Animal (BacCow)",704,82.5,2.9,0.7,0.5,0,0,"100 (704)","0 (0)","0 (0)"
+"21","Holcomb et al. 2020","any sample type","Adenovirus",82,98573429619328021282624608066642064800088086800,953674316406250018064446,25.1,24,0,0,"100 (82)","0 (0)","0 (0)"
+"22","Holcomb et al. 2020","any sample type","Animal (BacCan)",144,139885706702513475736606800240602248648206820040882824240626608,953674316406250018064446,33.6,24,0,0,"100 (144)","0 (0)","0 (0)"
+"23","Holcomb et al. 2020","any sample type","Animal (BacCow)",144,1412987063461093062500266046848204280846686024044048088640246824828262868,953674316406250018064446,28.7,24,0,0,"100 (144)","0 (0)","0 (0)"
+"24","Holcomb et al. 2020","any sample type","Avian (GFD)",119,115379.8,26552,4.7,4.4,0,0,"100 (119)","0 (0)","0 (0)"
+"25","Holcomb et al. 2020","any sample type","Giardia",82,168390226649309706826880646426282608808484884224202266284004466848666,953674316406250018064446,25.6,24,0,0,"100 (82)","0 (0)","0 (0)"
+"26","Holcomb et al. 2020","any sample type","Human (Bacteroides)",202,541043349721656565726884022420460280404064006800844284866028844804204802260,16708256.8,19.2,7.2,0,0,"100 (202)","0 (0)","0 (0)"
+"27","Holcomb et al. 2020","any sample type","Human (M. smithii)",119,10978881.7,2033223.3,6.5,6.3,0,0,"100 (119)","0 (0)","0 (0)"
+"28","Holcomb et al. 2020","any sample type","Norovirus",50,831709993952667293120860268428,953674316406250018064446,24.2,24,0,0,"100 (50)","0 (0)","0 (0)"
+"29","Holcomb et al. 2020","any sample type","Trichuris",50,796968292805682230808282668628648648808602288,953674316406250018064446,25.1,24,0,0,"100 (50)","0 (0)","0 (0)"
+"30","Holcomb et al. 2020","FlyKitch","Adenovirus",113,96283898264857749858664626680862862882682,953674316406250018064446,25.7,24,0,0,"100 (113)","0 (0)","0 (0)"
+"31","Holcomb et al. 2020","FlyKitch","Animal (BacCan)",113,178261431450346871984222082224484028062244286260800682404080240,953674316406250018064446,34.3,24,0,0,"100 (113)","0 (0)","0 (0)"
+"32","Holcomb et al. 2020","FlyKitch","Animal (BacCow)",113,1800620682640684794508068042202046482602840824026224848420886002800466066,953674316406250018064446,28.8,24,0,0,"100 (113)","0 (0)","0 (0)"
+"33","Holcomb et al. 2020","FlyKitch","Giardia",113,22872253143018052790882448846468440068882428000040228646600,953674316406250018064446,26,24,0,0,"100 (113)","0 (0)","0 (0)"
+"34","Holcomb et al. 2020","FlyKitch","Human (Bacteroides)",113,967174837554249894400424226826222466606404284420886044842882088044260446804,34908496225645408984608644044842802680204,38.7,40.5,0.00002,0,"100 (113)","0 (0)","0 (0)"
+"35","Holcomb et al. 2020","FlyKitch","Norovirus",113,242974974262724358544026624664024808626,953674316406250018064446,24.4,24,0,0,"100 (113)","0 (0)","0 (0)"
+"36","Holcomb et al. 2020","FlyKitch","Trichuris",113,667993899551452885322282280440864840628048886226264068600004000080666802464206,953674316406250018064446,26,24,0,0,"100 (113)","0 (0)","0 (0)"
+"37","Holcomb et al. 2020","FlyLat","Adenovirus",60,109328938220959814592464200862280046644826660604288,953674316406250018064446,25.7,24,0,0,"100 (60)","0 (0)","0 (0)"
+"38","Holcomb et al. 2020","FlyLat","Animal (BacCan)",60,192485874576589432240266460266246000464222604048844880,953674316406250018064446,30.3,24,0,0,"100 (60)","0 (0)","0 (0)"
+"39","Holcomb et al. 2020","FlyLat","Animal (BacCow)",60,190099458609970958106620062084688828204842266208442420,953674316406250018064446,27,24,0,0,"100 (60)","0 (0)","0 (0)"
+"40","Holcomb et al. 2020","FlyLat","Giardia",60,230133421854153222666808208000604662888400662208648064404684462428800,953674316406250018064446,26,24,0,0,"100 (60)","0 (0)","0 (0)"
+"41","Holcomb et al. 2020","FlyLat","Human (Bacteroides)",60,14754860932210841717886440042682666286442684204420808400424442604488826422840482,1892624783016457616000448286248664262402,39.8,39.2,0.00078,0,"100 (60)","0 (0)","0 (0)"
+"42","Holcomb et al. 2020","FP","Avian (GFD)",183,95662.7,37458.1,4.7,4.6,0,0,"100 (183)","0 (0)","0 (0)"
+"43","Holcomb et al. 2020","FP","Human (Bacteroides)",183,19713628.6,196071.2,5.4,5.3,0,0,"100 (183)","0 (0)","0 (0)"
+"44","Holcomb et al. 2020","FP","Human (M. smithii)",180,322323.8,236393.6,5.4,5.4,0,0,"100 (180)","0 (0)","0 (0)"
+"45","Holcomb et al. 2020","LS","Avian (GFD)",113,121410,29027.6,4.8,4.5,0,0,"100 (113)","0 (0)","0 (0)"
+"46","Holcomb et al. 2020","LS","Human (Bacteroides)",113,15035242.6,2330073.2,6.5,6.4,0,0,"100 (113)","0 (0)","0 (0)"
+"47","Holcomb et al. 2020","LS","Human (M. smithii)",113,11558804.6,2212017,6.6,6.3,0,0,"100 (113)","0 (0)","0 (0)"
+"48","Holcomb et al. 2020","S","Avian (GFD)",163,182530.7,65058.6,5,4.8,0,0,"100 (163)","0 (0)","0 (0)"
+"49","Holcomb et al. 2020","S","Human (Bacteroides)",163,15246019.5,3176667.9,6.5,6.5,0,0,"100 (163)","0 (0)","0 (0)"
+"50","Holcomb et al. 2020","S","Human (M. smithii)",162,3032447.4,2023564.6,6.3,6.3,0,0,"100 (162)","0 (0)","0 (0)"
+"51","Holcomb et al. 2020","SW","Avian (GFD)",84,5139.9,3966.7,3.3,3.6,0,0,"100 (84)","0 (0)","0 (0)"
+"52","Holcomb et al. 2020","SW","Human (Bacteroides)",84,51806.5,34470.2,4.5,4.5,0.00001,0,"100 (84)","0 (0)","0 (0)"
+"53","Holcomb et al. 2020","SW","Human (M. smithii)",84,75213.4,68972.5,4.8,4.8,0,0,"100 (84)","0 (0)","0 (0)"
+"54","Holcomb et al. 2020","W","Avian (GFD)",183,2398.8,1438.2,3.1,3.2,0,0,"100 (183)","0 (0)","0 (0)"
+"55","Holcomb et al. 2020","W","Human (Bacteroides)",183,225935.8,38061.7,4.7,4.6,0,0,"100 (183)","0 (0)","0 (0)"
+"56","Holcomb et al. 2020","W","Human (M. smithii)",182,68338.4,58936.2,4.8,4.8,0,0,"100 (182)","0 (0)","0 (0)"
+"57","Kwong et al. 2021","any sample type","Any STH",1396,4.1,1.5,0.1,0.2,NA,0,"100 (1396)","0 (0)","0 (0)"
+"58","Kwong et al. 2021","any sample type","Ascaris",1396,2.3,0.7,-0.2,-0.1,NA,0,"100 (1396)","0 (0)","0 (0)"
+"59","Kwong et al. 2021","any sample type","Trichuris",1396,1.8,0.4,-0.3,-0.3,NA,0,"100 (1396)","0 (0)","0 (0)"
+"60","Kwong et al. 2021","S","Any STH",1396,4.1,1.5,0.1,0.2,NA,0,"100 (1396)","0 (0)","0 (0)"
+"61","Kwong et al. 2021","S","Ascaris",1396,2.3,0.7,-0.2,-0.1,NA,0,"100 (1396)","0 (0)","0 (0)"
+"62","Kwong et al. 2021","S","Trichuris",1396,1.8,0.4,-0.3,-0.3,NA,0,"100 (1396)","0 (0)","0 (0)"
