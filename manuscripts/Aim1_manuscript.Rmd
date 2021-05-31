@@ -1,0 +1,142 @@
+---
+title: "Effect of water, sanitation and hygiene interventions on pathogens in the environment: Individual participant data meta-analysis"
+author: "Andrew Mertens, Jack Colford, Oliver Cumming, Joe Brown, Jill Stewart, David Holcomb, Jackie Knee, Tom Clasen, Heather Reese, Amy Pickering, Clair Null, Steve Luby, Jessica Grembi, Ben Arnold, Audrie Lin, Jade Benjamin-Chung, Laura Kwong, Lauren Steinbaum, Ali Boehm, Kara Nelson, Erica Fuhrmeister, Ayse Ercumen"
+output:
+  word_document: 
+      reference_docx: manuscript_format.docx
+  html_document: default
+header-includes:
+  - \setlength{\parindent}{4em}
+  - \setlength{\parskip}{0em}
+indent: true
+bibliography: WASH-IPD.bib
+bib-humanities: FALSE
+csl: nature.csl
+
+---
+
+
+```{r, include=F}
+knitr::opts_chunk$set(echo = TRUE)
+options(warn = -1) 
+library(janitor)
+library(knitr)
+library(here)
+# library(table1)
+# library(rvest)
+library(bibtex)
+library(citr)
+#source(here("0-config.R"))
+#citr:::insert_citation(bib_file ="references.bib", use_betterbiblatex =F)
+# 
+# tidy_bib_file(
+#   rmd_file = "Aim1_manuscript.Rmd"
+#   , messy_bibliography = "WASH-IPD.bib"
+#   , file = "tidy_references.bib"
+# )
+
+
+
+op = function(x, d=2) sprintf(paste0("%1.",d,"f"), x) 
+ library(pander)
+panderOptions('digits', 2)
+panderOptions('round', 2)
+panderOptions('keep.trailing.zeros', TRUE)
+panderOptions('graph.fontsize', 8)
+
+panderOptions('table.alignment.default', function(df)
+    ifelse(sapply(df, is.numeric), 'right', 'left'))
+panderOptions('table.split.table', Inf)
+panderOptions('big.mark', ",")
+panderOptions('keep.trailing.zeros', TRUE)
+
+#resRR <- readRDS(file=here("results/pooled_RR.Rds"))
+
+# load(here("figures/all_tables.Rdata"))
+# load(here("figures/agg_tables.Rdata"))
+# load(here("figures/abundance_tables.Rdata"))
+load(here("figures/all_figures.Rdata"))
+#load(here("figures/density_figures.Rdata"))
+load(here("figures/outcome_groups.Rdata"))
+
+#load(here("figures/abundance_table_ROQ.Rdata"))
+# abund_ROQ <- read.csv(here("figures/abundance_table_ROQ.csv"))
+# abund_ROQ <-abund_ROQ %>% subset(., select= c(-X))
+
+```
+
+# Abstract
+
+(to write)
+
+# Background
+
+Water, sanitation and hygiene (WASH) improvements aim to reduce childhood enteric infections, subsequent diarrheal disease and growth faltering by reducing child exposure to fecal-orally transmitted pathogens in the environment. Until recently, trials of WASH interventions have primarily focused on documenting health outcomes such as caregiver-reported diarrhea without quantifying intermediate outcomes along the causal chain, such as detection of pathogens in environmental samples and in human biological specimens. Without measuring these causal intermediates, trials are limited to a "black box" understanding, where underlying mechanisms of interventions are unknown and investigators can only speculate about reasons for intervention success or failure.  Inspecting the causal chain is especially important given the small or null effects on child diarrhea and growth achieved in recent well-conducted trials of WASH interventions.[@humphreyIndependentCombinedEffects2019a; @lubyEffectsWaterQuality2018; @nullEffectsWaterQuality2018]
+   
+Additionally, studies that have collected environmental samples to date have primarily focused on drinking water (and, to a smaller extent, hands and food) while other pathways such as soil and surfaces in the domestic environment have received less attention.4 Furthermore, most studies have relied on measuring indicator organisms in the environment as a proxy for pathogens; these indicators can originate from non-fecal sources,5 cannot differentiate between human vs. animal fecal contamination, 6 and correlate poorly with the presence of pathogen.7 Recent advances in DNA-based diagnostics now allow detection of a range of enteropathogens in human biological specimens and environmental samples,8 as well as distinction between human vs. animal fecal sources through molecular source tracking (MST) markers.9 
+   
+We aimed to assess the effect of WASH interventions on specific pathogens, pathogen types (viruses, bacteria, protozoa, helminths) and human vs. animal MST markers in the environment. We conducted a systematic review of WASH intervention studies that have measured pathogens and/or MST markers in environmental samples, and we conducted an individual participant data (IPD) meta-analysis of  WASH trials that have measured pathogens and/or MST markers in the environment to explore causal relationships between WASH interventions and pathogen and MST presence and abundance in the environment.
+
+
+
+# Methods
+
+  *  Prescreening
+  *  Clustering
+  *  Handling multiple rounds
+
+# Results
+
+  *  Studies included
+  
+1.	The WASH Benefits Bangladesh trial10
+2.	The WASH Benefits Kenya trial10
+3.	The MapSan trial in Mozambique11  
+4.	The Gram Vikas matched cohort study in India12 
+5.	Total Sanitation Campaign trial in India13 
+
+  
+  *  Data from each study (Targets, methods of)
+  *  Number of outcomes for each study, number of samples 
+  *  Prevalences for primary outcomes
+  *  PR's
+  *  Abundance results
+
+
+# Discussion
+
+* Limitations
+  * Sparse in many categories
+
+# Figures
+
+```{r, echo=F, warning=F, message=F, fig.width = 10, fig.height = 5}
+
+p_1
+
+```
+
+__Figure 1.__ Forest plots of intervention effects on any enteropathogen, and any  MST markers in different samples of environmental samples. Pooled estimates are presented when there are four or more study-specific estimates for a specific sample and target combination.
+
+```{r, echo=F, warning=F, message=F, fig.width = 10, fig.height = 5}
+
+p_s1
+
+```
+
+__Figure 2.__ Forest plots of intervention effects on any virus, any bacteria, any protozoa and any STH 
+
+```{r, echo=F, warning=F, message=F, fig.width = 10, fig.height = 5}
+
+p_2
+
+```
+
+__Figure 2.__ Forest plots of intervention effects on  any general, human and animal MST markers in different samples of environmental samples.
+
+# Tables
+
+# Supplimentary Figures
+
+
+# References

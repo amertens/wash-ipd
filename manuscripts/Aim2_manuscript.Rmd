@@ -1,0 +1,122 @@
+---
+title: "Effect of pathogens in the environment on diarrhea, child growth, and enteric infections: Individual participant data meta-analysis"
+author: "Andrew Mertens, Jack Colford, Oliver Cumming, Joe Brown, Jill Stewart, David Holcomb, Jackie Knee, Tom Clasen, Heather Reese, Amy Pickering, Clair Null, Steve Luby, Jessica Grembi, Ben Arnold, Audrie Lin, Jade Benjamin-Chung, Laura Kwong, Lauren Steinbaum, Ali Boehm, Kara Nelson, Erica Fuhrmeister, Ayse Ercumen"
+output:
+  word_document: 
+      reference_docx: manuscript_format.docx
+  html_document: default
+header-includes:
+  - \setlength{\parindent}{4em}
+  - \setlength{\parskip}{0em}
+indent: true
+bibliography: WASH-IPD.bib
+bib-humanities: FALSE
+csl: nature.csl
+
+---
+
+
+```{r, include=F}
+knitr::opts_chunk$set(echo = TRUE)
+options(warn = -1) 
+library(janitor)
+library(knitr)
+library(here)
+# library(table1)
+# library(rvest)
+library(bibtex)
+library(citr)
+#source(here("0-config.R"))
+#citr:::insert_citation(bib_file ="references.bib", use_betterbiblatex =F)
+# 
+# tidy_bib_file(
+#   rmd_file = "Aim1_manuscript.Rmd"
+#   , messy_bibliography = "WASH-IPD.bib"
+#   , file = "tidy_references.bib"
+# )
+
+
+
+op = function(x, d=2) sprintf(paste0("%1.",d,"f"), x) 
+ library(pander)
+panderOptions('digits', 2)
+panderOptions('round', 2)
+panderOptions('keep.trailing.zeros', TRUE)
+panderOptions('graph.fontsize', 8)
+
+panderOptions('table.alignment.default', function(df)
+    ifelse(sapply(df, is.numeric), 'right', 'left'))
+panderOptions('table.split.table', Inf)
+panderOptions('big.mark', ",")
+panderOptions('keep.trailing.zeros', TRUE)
+
+load(here("figures/aim2_figures.Rdata"))
+
+
+```
+
+# Abstract
+
+(to write)
+
+# Background
+
+
+
+
+# Methods
+
+  *  Prescreening
+  *  Clustering
+  *  Handling multiple rounds
+
+# Results
+
+  *  Studies included
+  
+1.	The WASH Benefits Bangladesh trial10
+2.	The WASH Benefits Kenya trial10
+3.	The MapSan trial in Mozambique11  
+4.	The Gram Vikas matched cohort study in India12 
+5.	Total Sanitation Campaign trial in India13 
+
+  
+  *  Data from each study (Targets, methods of)
+  *  Number of outcomes for each study, number of samples 
+  *  Prevalences for primary outcomes
+  *  PR's
+  *  Abundance results
+
+
+# Discussion
+
+* Limitations
+  * Sparse in many categories
+
+# Figures
+
+
+
+```{r, echo=F, warning=F, message=F, fig.width = 10, fig.height = 5}
+
+p_diar_1_adj
+
+```
+
+__Figure 1.__ Forest plots of the effects of any enteropathogen or any MST presence on diarrhea risk in different samples of environmental samples. Pooled estimates are presented when there are four or more study-specific estimates for a specific sample and target combination.
+
+```{r, echo=F, warning=F, message=F, fig.width = 10, fig.height = 5}
+
+p_haz_1_adj
+
+```
+
+__Figure 1.__ haz
+
+
+# Tables
+
+# Supplimentary Figures
+
+
+# References
