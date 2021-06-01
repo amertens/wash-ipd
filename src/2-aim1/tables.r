@@ -9,7 +9,25 @@ library(rvest)
 
 d <- readRDS(paste0(dropboxDir,"Data/cleaned_ipd_env_data.rds"))
 head(d)
-d <- droplevels(d)
+d <- d %>% mutate(
+  sample =case_when(
+              sample == "any sample type" ~ "Any sample",
+              sample == "SW" ~ "Source water",
+              sample == "W" ~ "Stored water",
+              sample == "CH" ~ "Child hands",
+              sample == "MH" ~ "Mother's hands",
+              sample == "FlyKitch" ~ "Flies in kitchen",
+              sample == "FlyLat" ~ "Flies in latrine",
+              sample == "LS" ~ "Latrine soil",
+              sample == "S" ~ "House soil"
+            ), 
+              sample = factor(sample, 
+                                levels=c("Any sample","Source water","Stored water",
+                                         "Child hands", "Mother's hands", "Latrine soil",
+                                         "House soil", "Flies in kitchen",  "Flies in latrine", "Sparse data"))) %>%
+            droplevels()
+
+
 d %>% arrange(study, sample, target) %>%
   distinct(study, sample, target)
 
@@ -21,7 +39,7 @@ WBB_tab <- d %>% group_by(tr, sample, target) %>% filter(study=="WBB", !is.na(po
 d <- d %>% filter(!is.na(target) & !is.na(sample) & !is.na(pos))
 
 #Drop baseline measure from mapsan
-d <- d %>% filter(round != "0m") %>% droplevels(.)
+d <- d %>% filter(round != "bl") %>% droplevels(.)
 table(d$study, d$round)
 table(d$sample, d$target, d$study)
 unique(d$target)
@@ -75,7 +93,7 @@ target_presence_MST[is.na(target_presence_MST)] <- ""
 
 
 #target presence by sample and study - longform
-target_presence_long <- d %>% filter(!grepl("Any ",target), !grepl("any ",sample)) %>%
+target_presence_long <- d %>% filter(!grepl("Any ",target), !grepl("any ",sample), !grepl("Any ",sample)) %>%
   group_by(study,sample, target, target_cat, target_type) %>% summarize(N=n(), n=sum(pos), perc=round(mean(pos, na.rm=T)*100,1)) %>% 
   ungroup() %>%
   #mutate(target=paste0(target," (",target_cat,", ",n,"/",N,")")) %>% 

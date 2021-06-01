@@ -2,8 +2,8 @@
 rm(list=ls())
 source(here::here("0-config.R"))
 
-unadj_diff <- readRDS(file=here("results/unadjusted_aim1_diff.Rds")) %>% mutate(sparse="no")
-adj_diff <- readRDS(file=here("results/adjusted_aim1_diff.Rds"))   %>% mutate(sparse="no")
+unadj_diff <- readRDS(file=here("results/unadjusted_aim1_diff.Rds")) %>% mutate(sparse="no") %>% filter(sample!="FP")
+adj_diff <- readRDS(file=here("results/adjusted_aim1_diff.Rds"))   %>% mutate(sparse="no")  %>% filter(sample!="FP")
 
 #---------------------------------------------------------------
 #function to clean results/order factors
@@ -107,7 +107,7 @@ base_plot <- function(mydf, legend_labels=sample_cats){
 
 
 # -	Fig S5. Abundance of specific pathogens
-p_s5 <- unadj_diff %>% 
+p_s5 <- adj_diff %>% 
   filter(target %in% any_pathogens, model=="linear") %>%
   droplevels(.) %>%
   #mutate(study=paste0(study,"-",round)) %>%
@@ -115,7 +115,7 @@ p_s5 <- unadj_diff %>%
 p_s5
 
 
-p_s5_sth <- unadj_diff %>% 
+p_s5_sth <- adj_diff %>% 
   filter(target %in% any_pathogens, model=="neg. binomial") %>%
   droplevels(.) %>%
   #mutate(study=paste0(study,"-",round)) %>%
@@ -124,7 +124,7 @@ p_s5_sth
 
 # -	Fig S6. Abundance of specific MST markers 
 
-p_s6 <- unadj_diff %>% 
+p_s6 <- adj_diff %>% 
   filter(target %in% any_MST, model=="linear") %>%
   droplevels(.) %>%
   #mutate(study=paste0(study,"-",round)) %>%

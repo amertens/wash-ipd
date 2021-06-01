@@ -9,10 +9,10 @@ rmarkdown::render(
   "Aim1_manuscript.Rmd",
   output_format = "word_document")
 
-#---- run this next part only once
-file1 <- googledrive::drive_upload(
-  "Aim1_manuscript.docx", 
-  type = "document")
+# #---- run this next part only once
+# file1 <- googledrive::drive_upload(
+#   "Aim1_manuscript.docx", 
+#   type = "document")
 
 # get the file id (copy this to your clipboard)
 #file1$id
@@ -31,9 +31,12 @@ googledrive::drive_update(
 rmarkdown::render(
   "Aim2_manuscript.Rmd",
   output_format = "word_document")
-file2 <- googledrive::drive_upload(
-  "Aim2_manuscript.docx", 
-  type = "document")
+
+# # #---- run this next part only once
+# file2 <- googledrive::drive_upload(
+#   "Aim2_manuscript.docx", 
+#   type = "document")
+
 # get the file id (copy this to your clipboard)
 #file2$id
 

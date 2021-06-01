@@ -26,9 +26,9 @@ clean_tab = function(df){
       ci.ub=round(ci.ub,2),
       pval=round(pval,3),
       model=ifelse(model=="neg. binomial","*",""),
-      est=ifelse(model=="linear",
-                 paste0(coef, " (",ci.lb," ",ci.ub,")",model),
-                 paste0(RR, " (",ci.lb," ",ci.ub,")")),
+      est=ifelse(model=="",
+                 paste0(coef, " (",ci.lb," ",ci.ub,")"),
+                 paste0(RR, " (",ci.lb," ",ci.ub,")",model)),
       mean_control=paste0(round(mean_control,1), " (",round(sd_control,1),")"), 
       mean_int=paste0(round(mean_int,1), " (",round(sd_int,1),")"), 
       sample =case_when(

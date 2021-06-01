@@ -177,43 +177,6 @@ p_unadj_s2
 
 
 
-base_plot_diff <- function(mydf, legend_labels=sample_cats){
-  
-  my_colors = c("grey20",carto_pal(12, "Prism"))
-  
-  colours <- c("Any sample" = my_colors[1],
-               "Source water" = my_colors[3],
-               "Stored water"  = my_colors[4],
-               "Child hands"  = my_colors[7],
-               "Mother's hands" = my_colors[8],
-               "Latrine soil" = my_colors[5],
-               "House soil" = my_colors[6],
-               "Flies in kitchen" = my_colors[9],
-               "Flies in latrine" = my_colors[10],
-               "Sparse data" = "grey50")
-  
-  mydf <- mydf %>% droplevels(.)
-  
-  ggplot(data = mydf, (aes(x=study, y=coef, group=sample_cat, color=sample_cat, shape=factor(sparse, levels=c("no","yes","pooled"))))) + 
-    geom_point(size=3, position = position_dodge(0.5)) +
-    geom_errorbar(aes(ymin=ci.lb, ymax=ci.ub), position = position_dodge(0.5),
-                  width = 0.3, size = 1) +
-    scale_color_manual(breaks = legend_labels,
-                       values = colours, drop = FALSE) +
-    scale_shape_manual(values=c(16, 13,9), guide=FALSE) + 
-    geom_hline(yintercept = 1, linetype="dashed") +
-    facet_grid(target_f~sample_type,  scales="free_y", space = "free_x") +
-    labs(color="Sample type") + xlab("") + ylab("Mean difference (Log10 transformed)") + 
-    theme_ki() + 
-    theme(axis.ticks.x=element_blank(),
-          legend.position = "bottom",
-          strip.placement = "outside",
-          strip.text.x = element_text(size=11, face = "bold"),
-          strip.text.y = element_text(size=11, angle = 270, face = "bold"),          plot.title = element_text(hjust = 0.5, face = "plain", size=9),
-          panel.spacing = unit(0, "lines")) 
-}
-
-
 
 # -	Fig S8-S10. Repeat of Fig 1, broken down by rural/urban, season, animal ownership 
 #rural/urban, 
