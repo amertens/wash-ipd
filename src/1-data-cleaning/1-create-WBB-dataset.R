@@ -27,8 +27,8 @@ head(soilSTH)
 head(WB)
 
 #Add date to PEC and QPCR
-PEC <- PEC %>% mutate(env_date=dmy(paste0(15,"-",Month.Collected,"-",2015)))
-qPCR <- qPCR %>% mutate(env_date=dmy(paste0(15,"-",Month.Collected,"-",2015)))
+PEC <- PEC %>% mutate(env_date=dmy(paste0(1,"-",Month.Collected,"-",2015)))
+qPCR <- qPCR %>% mutate(env_date=dmy(paste0(1,"-",Month.Collected,"-",2015)))
 
 #merge in abundance
 qPCR_quant <- read.csv(paste0(dropboxDir,"Data/WBB/Erica - washb_qPCR_quant_10_23_18_adjusted_var_abundance.csv"))  %>% select(Assay:log.LOQ.)

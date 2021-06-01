@@ -9,6 +9,8 @@ table(d$trial, d$pos)
 
 d <- d %>% filter(sample!="FP") %>% droplevels()
 
+# df <- d %>% filter(target=="Any human MST")
+# table(df$sample, df$diar7d, df$study)
 
 # 1.	Child birth order/parity 
 # 2.	Asset-based wealth index 
@@ -21,22 +23,21 @@ d <- d %>% filter(sample!="FP") %>% droplevels()
 # a.	Indicator for works in agriculture 
 # 9.	Land ownership 
 
-#TODO: need to add child health specific covariates
-Wvars = c("hhwealth", "Nhh","nrooms","walls", "floor","elec","dadagri","landacre", "momedu", "tr")         
+Wvars = c("sex","age","hfiacat","momage","hhwealth", "Nhh","nrooms","walls", "roof", "floor","elec","dadagri","landacre", "momedu", "tr")         
 
 
 #-----------------------------------
 # Unadjusted RR
 #-----------------------------------
 
-# outcome="diar7d"
-# exposure="pos"
-# study="Fuhrmeister et al. 2020"
-# #sample="any sample type"
-# sample="W"
-# target= "Any pathogen"
-# family="binomial"
-# Ws=NULL
+outcome="haz"
+exposure="pos"
+study="Fuhrmeister et al. 2020"
+sample="any sample type"
+sample="W"
+target= "Any pathogen"
+family="gaussian"
+Ws=Wvars
 
 
 fullres <- NULL
@@ -48,21 +49,21 @@ fullres <- bind_rows(fullres, res_diar)
 
 res_stunt<- d %>% group_by(study, sample, target) %>%
   do(aim2_glm(., outcome="stunt", exposure="pos", study=.$study[1], sample=.$sample[1], target=.$target[1], family="binomial")) 
-res_diar$sparse <- ifelse(is.na(res_diar$RR), "yes", "no")
-res_diar$RR[is.na(res_diar$RR)] <- 1
-fullres <- bind_rows(fullres, res_diar)
+res_stunt$sparse <- ifelse(is.na(res_stunt$RR), "yes", "no")
+res_stunt$RR[is.na(res_stunt$RR)] <- 1
+fullres <- bind_rows(fullres, res_stunt)
 
 res_wast<- d %>% group_by(study, sample, target) %>%
   do(aim2_glm(., outcome="wast", exposure="pos", study=.$study[1], sample=.$sample[1], target=.$target[1], family="binomial")) 
-res_diar$sparse <- ifelse(is.na(res_diar$RR), "yes", "no")
-res_diar$RR[is.na(res_diar$RR)] <- 1
-fullres <- bind_rows(fullres, res_diar)
+res_wast$sparse <- ifelse(is.na(res_wast$RR), "yes", "no")
+res_wast$RR[is.na(res_wast$RR)] <- 1
+fullres <- bind_rows(fullres, res_wast)
 
 res_underwt <- d %>% group_by(study, sample, target) %>%
   do(aim2_glm(., outcome="underwt", exposure="pos", study=.$study[1], sample=.$sample[1], target=.$target[1], family="binomial")) 
-res_diar$sparse <- ifelse(is.na(res_diar$RR), "yes", "no")
-res_diar$RR[is.na(res_diar$RR)] <- 1
-fullres <- bind_rows(fullres, res_diar)
+res_underwt$sparse <- ifelse(is.na(res_underwt$RR), "yes", "no")
+res_underwt$RR[is.na(res_underwt$RR)] <- 1
+fullres <- bind_rows(fullres, res_underwt)
 
 res_haz <- d %>% group_by(study, sample, target) %>%
    do(aim2_glm(., outcome="haz", exposure="pos", study=.$study[1], sample=.$sample[1], target=.$target[1], family="gaussian")) 

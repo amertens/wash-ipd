@@ -94,46 +94,85 @@ base_plot <- function(mydf, legend_labels=sample_cats, drop_full_sparse=F){
 # Plot figures
 #---------------------------------------------------------------
   
-d <- unadj_RR %>% 
+d <- adj_RR %>% 
   filter(target %in% c("Any pathogen","Any MST")) %>% filter(study=="Holcomb et al. 2020")
 
 #Primary figure
-p_1 <- unadj_RR %>% 
+p_adj_1 <- adj_RR %>% 
   filter(target %in% c("Any pathogen","Any MST")) %>%
   base_plot(drop_full_sparse=T)
-p_1
+p_adj_1
 
-p_2 <- unadj_RR %>% 
+p_adj_2 <- adj_RR %>% 
   filter(target %in% c("Any human MST","Any animal MST","Any general MST")) %>%
   base_plot
-p_2
+p_adj_2
 
-df <- unadj_RR %>% 
+df <- adj_RR %>% 
   filter(target %in% c("Any human MST"), study=="Holcomb et al. 2020") 
   
 
-p_s1 <- unadj_RR %>% 
+p_adj_3 <- adj_RR %>% 
   filter(target %in% c("Any bacteria", "Any protozoa", "Any STH", "Any virus")) %>%
   base_plot
-p_s1
+p_adj_3
 
 
 #-	Fig S2. Prevalence of pathogen with human hosts, and pathogen with human/animal hosts 
    #(same as fig 3)
 # -	Fig S3. Prevalence of specific pathogens 
-unique(unadj_RR$target_f)
-p_s3 <- unadj_RR %>% 
+unique(adj_RR$target_f)
+p_adj_s1 <- adj_RR %>% 
   filter(target %in% any_pathogens, !c(target %in% c("Any STH","any pathogen-improved","any pathogen-unimproved"))) %>%
   base_plot(drop_full_sparse=T)
-p_s3
+p_adj_s1
 
 
 
 # -	Fig S4. Prevalence of specific MST markers 
-p_s4 <- unadj_RR %>% 
+p_adj_s2 <- adj_RR %>% 
   filter(target %in% any_MST) %>%
   base_plot
-p_s4
+p_adj_s2
+
+
+#Primary figure
+p_unadj_1 <- unadj_RR %>% 
+  filter(target %in% c("Any pathogen","Any MST")) %>%
+  base_plot(drop_full_sparse=T)
+p_unadj_1
+
+p_unadj_2 <- unadj_RR %>% 
+  filter(target %in% c("Any human MST","Any animal MST","Any general MST")) %>%
+  base_plot
+p_unadj_2
+
+df <- unadj_RR %>% 
+  filter(target %in% c("Any human MST"), study=="Holcomb et al. 2020") 
+
+
+p_unadj_3 <- unadj_RR %>% 
+  filter(target %in% c("Any bacteria", "Any protozoa", "Any STH", "Any virus")) %>%
+  base_plot
+p_unadj_3
+
+
+#-	Fig S2. Prevalence of pathogen with human hosts, and pathogen with human/animal hosts 
+#(same as fig 3)
+# -	Fig S3. Prevalence of specific pathogens 
+unique(unadj_RR$target_f)
+p_unadj_s1 <- unadj_RR %>% 
+  filter(target %in% any_pathogens, !c(target %in% c("Any STH","any pathogen-improved","any pathogen-unimproved"))) %>%
+  base_plot(drop_full_sparse=T)
+p_unadj_s1
+
+
+
+# -	Fig S4. Prevalence of specific MST markers 
+p_unadj_s2 <- unadj_RR %>% 
+  filter(target %in% any_MST) %>%
+  base_plot
+p_unadj_s2
 
 
 
@@ -175,17 +214,6 @@ base_plot_diff <- function(mydf, legend_labels=sample_cats){
 }
 
 
-
-# -	Fig S7-8. Repeat of Fig 1, adjusted  
-p_s7 <- adj_RR %>% 
-  filter(target %in% c("Any pathogen","Any MST")) %>%
-  base_plot
-p_s7
-
-p_s8 <- adj_RR %>% 
-  filter(target %in% c("Any human MST","Any animal MST","Any general MST")) %>%
-  base_plot
-p_s8
 
 # -	Fig S8-S10. Repeat of Fig 1, broken down by rural/urban, season, animal ownership 
 #rural/urban, 

@@ -183,7 +183,11 @@ mpreg <- function(formula, df, vcv=FALSE, family) {
   # modified Poisson regression formula
   # dataset used to fit the model	
   if(family!="neg.binom"){
-    fit <- glm(as.formula(formula),family=family,  data=df)
+    if(family=="binomial"){
+      fit <- glm(as.formula(formula),family=poisson(link="log"),  data=df)
+    }else{
+      fit <- glm(as.formula(formula),family=family,  data=df)
+    }
   }else{
     fit <- MASS::glm.nb(as.formula(formula), data=df)
   }
@@ -258,24 +262,32 @@ aim2_glm <- function(d, Ws=NULL, outcome="pos", exposure, study="mapsan", sample
   minN<-NA
   
   if(length(unique(df$Y))<=2){
-    print(table(df$X, df$Y))
     if(length(unique(df$Y))>1 & length(unique(df$X))>1){
       minN <- min(table(df$Y))
     }else{
       minN <- 0
     }
-  }else{
-    if(length(unique(df$X))>1){
-      minN <- min(table(df$X))
-    }else{
-      minN <- 0
-    }
+    #Get cell counts
+    a <- sum(df$Y==1 & df$X==1)
+    b <- sum(df$Y==0 & df$X==1)
+    c <- sum(df$Y==1 & df$X==0)
+    d <- sum(df$Y==0 & df$X==0)
+  }
+  if(length(unique(df$Y))>2){
+    minN <- length(unique(df$Y))
+    #Get cell counts
+    a <- mean(df$Y[df$X==0], na.rm=T)
+    b <- mean(df$Y[df$X==1], na.rm=T)
+    # c <- median(df$Y[df$X==0], na.rm=T)
+    # d <- median(df$Y[df$X==1], na.rm=T)
+    c <- sd(df$Y[df$X==0], na.rm=T)
+    d <- sd(df$Y[df$X==1], na.rm=T)
   }
   
   cat(minN,"\n")
   
   #cat(minN>=10 | length(unique(df$Y)) > 2)
-  if((minN>=10 & min(table(df$Y, df$X))>1) | (length(unique(df$Y)) > 2 & length(unique(df$X)) == 2)){
+  if((minN>=10 & min(table(df$Y, df$X))>1) | (minN>=10 & length(unique(df$Y)) > 2 & length(unique(df$X)) == 2)){
     
     if(!is.null(Ws)){
       Wdf <- df %>% ungroup() %>% select(any_of(Ws)) %>% select_if(~sum(!is.na(.)) > 0)
@@ -314,6 +326,14 @@ aim2_glm <- function(d, Ws=NULL, outcome="pos", exposure, study="mapsan", sample
       cat("N before dropping missing: ", nrow(df),"\n")
       df <- df[complete.cases(df),]
       cat("N after dropping missing: ", nrow(df),"\n")
+    }
+    
+    #Get cell counts
+    if(length(unique(df$Y))<=2){
+      a <- sum(df$Y==1 & df$X==1)
+      b <- sum(df$Y==0 & df$X==1)
+      c <- sum(df$Y==1 & df$X==0)
+      d <- sum(df$Y==0 & df$X==0)
     }
     
     #model formula
@@ -361,9 +381,21 @@ aim2_glm <- function(d, Ws=NULL, outcome="pos", exposure, study="mapsan", sample
                       ci.ub=NA,
                       minN=minN)
   }
+  
   if(length(unique(df$Y))<=2){
     res$minN <- minN
     res$n<-sum(df$Y, na.rm=T)
+    res$a <- a
+    res$b <- b
+    res$c <- c
+    res$d <- d
+  }else{
+    res$mean_control <- a
+    res$mean_int <- b
+    # res$med_control <- c
+    # res$median_int <- d
+    res$sd_control <- c
+    res$sd_int <- d
   }
   
   res$N<-nrow(df)

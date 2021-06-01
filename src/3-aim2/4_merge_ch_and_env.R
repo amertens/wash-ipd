@@ -49,16 +49,37 @@ table(env$trial, is.na(env$env_date))
 # head(env)
 # head(ch)
 
-dim(env)
-dim(ch)
-d <- full_join(env, ch, by = c("trial","dataid","clusterid")) %>% filter(!is.na(pos), !is.na(diar7d))
+# dim(env)
+# dim(ch)
+# 
+# haz <- ch %>% filter(trial=="WBB", !is.na(haz))
+# mst <- env %>% filter(study=="Fuhrmeister et al. 2020", target=="Any MST")
+# d <- full_join(mst, haz, by = c("trial","dataid","clusterid"))# %>% filter(!is.na(pos), !is.na(diar7d))
+# 
+# d <- d %>% 
+#   filter(child_date>=(env_date))
+
+# table(d$pos,!is.na(d$haz))
+# table(d$pos,!is.na(d$haz), d$sample)
+# 
+# summary(d$env_date)
+# summary(d$child_date)
+# table(as.numeric(d$child_date-d$env_date))
+# table(as.numeric(d$child_date-d$env_date)> -91)
+
+
+d <- full_join(env, ch, by = c("trial","dataid","clusterid"))
 dim(d)
 table(d$sample,d$diar7d)
 table(ch$trial,ch$diar7d)
 table(d$trial,d$diar7d)
 
 table(d$pos,d$diar7d)
+table(d$pos,d$diar7d, d$study)
 
+table(d$pos,!is.na(d$haz), d$study)
+
+table(env$trial, env$study)
 
 #Notes to check! 
 #Why isn't odisha env. and diarrhea merging?

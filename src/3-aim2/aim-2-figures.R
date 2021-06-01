@@ -6,6 +6,8 @@ unadj_RR <- readRDS(file=here("results/unadjusted_aim2_pooled.Rds"))
 adj_RR <- readRDS(file=here("results/adjusted_aim2_pooled.Rds")) 
 d <- readRDS(paste0(dropboxDir,"Data/merged_env_CH_data.rds"))
 
+temp<-adj_RR%>%filter(Y=="diar7d", target=="Any MST")
+table(temp$sample_cat)
 
 #---------------------------------------------------------------
 # Clean results
@@ -33,8 +35,9 @@ sample_cats = levels(unadj_RR$sample_cat)[levels(unadj_RR$sample_cat)!="Any samp
 # mydf <- unadj_RR %>% 
 #   filter(Y=="diar7d", coef!=1)
 # 
-# mydf <- unadj_RR %>% 
-#   filter(Y=="haz", coef!=0)
+mydf <- unadj_RR %>% 
+  filter(target %in% c("Any MST"), Y=="diar7d") %>% 
+  filter(study=="Odagiri et al. 2016", target=="Any MST")
 
 
 base_plot <- function(mydf, legend_labels=sample_cats, drop_full_sparse=F){
@@ -58,7 +61,6 @@ base_plot <- function(mydf, legend_labels=sample_cats, drop_full_sparse=F){
   }
   
   mydf <- mydf %>% droplevels(.)
-  
   ggplot(data = mydf, (aes(x=study, y=RR, group=sample_cat, color=sample_cat, shape=factor(sparse, levels=c("no","yes","pooled"))))) + 
   geom_point(size=3, position = position_dodge(0.5)) +
     geom_errorbar(aes(ymin=ci.lb, ymax=ci.ub), position = position_dodge(0.5),
@@ -80,7 +82,7 @@ base_plot <- function(mydf, legend_labels=sample_cats, drop_full_sparse=F){
 }
 
 
-base_plot_diff <- function(mydf, legend_labels=sample_cats){
+base_plot_diff <- function(mydf, legend_labels=sample_cats, drop_full_sparse=F){
   
   my_colors = c("grey20",carto_pal(12, "Prism"))
   
@@ -95,6 +97,10 @@ base_plot_diff <- function(mydf, legend_labels=sample_cats){
                "Flies in latrine" = my_colors[10],
                "Sparse data" = "grey50")
   
+  if(drop_full_sparse){
+    mydf <- mydf %>% group_by(target) %>%
+      filter(n()!=sum(sparse=="yes")) %>% ungroup()
+  }
   mydf <- mydf %>% droplevels(.)
   
   ggplot(data = mydf, (aes(x=study, y=coef, group=sample_cat, color=sample_cat, shape=factor(sparse, levels=c("no","yes","pooled"))))) + 
@@ -129,120 +135,119 @@ base_plot_diff <- function(mydf, legend_labels=sample_cats){
 #Primary figure
 p_diar_1 <- unadj_RR %>% 
   filter(target %in% c("Any pathogen","Any MST"), Y=="diar7d") %>%
-  base_plot
-p_diar_1
+  base_plot(drop_full_sparse=T)
+
 
 p_stunt_1_adj <- adj_RR %>% 
   filter(target %in% c("Any pathogen","Any MST"), Y=="stunt") %>%
-  base_plot
+  base_plot(drop_full_sparse=T)
 
 
 p_wast_1_adj <- adj_RR %>% 
   filter(target %in% c("Any pathogen","Any MST"), Y=="wast") %>%
-  base_plot
+  base_plot(drop_full_sparse=T)
 
 
 p_underwt_1_adj <- adj_RR %>% 
   filter(target %in% c("Any pathogen","Any MST"), Y=="underwt") %>%
-  base_plot
+  base_plot(drop_full_sparse=T)
 
 
 
 
 p_diar_1_adj <- adj_RR %>% 
   filter(target %in% c("Any pathogen","Any MST"), Y=="diar7d") %>%
-  base_plot
+  base_plot(drop_full_sparse=T)
 
 
 p_diar_2_adj <- adj_RR %>% 
   filter(target %in% c("Any human MST","Any animal MST","Any general MST"), Y=="diar7d") %>%
-  base_plot
+  base_plot(drop_full_sparse=T)
 
 
 p_diar_s1_adj <- adj_RR %>% 
   filter(target %in% c("Any bacteria", "Any protozoa", "Any STH", "Any virus"), Y=="diar7d") %>%
-  base_plot
+  base_plot(drop_full_sparse=T)
 
 
 p_haz_1 <- unadj_RR %>% 
   filter(target %in% c("Any pathogen","Any MST"), Y=="haz") %>%
-  base_plot_diff
-p_haz_1
+  base_plot_diff(drop_full_sparse=T)
+
 
 p_haz_2 <- unadj_RR %>% 
   filter(target %in% c("Any human MST","Any animal MST","Any general MST"), Y=="haz") %>%
-  base_plot_diff
-p_haz_2
+  base_plot_diff(drop_full_sparse=T)
+
 
 p_haz_s1 <- unadj_RR %>% 
   filter(target %in% c("Any bacteria", "Any protozoa", "Any STH", "Any virus"), Y=="haz") %>%
-  base_plot_diff
-p_haz_s1
+  base_plot_diff(drop_full_sparse=T)
+
 
 
 p_haz_1_adj <- adj_RR %>% 
   filter(target %in% c("Any pathogen","Any MST"), Y=="haz") %>%
-  base_plot_diff
-p_haz_1_adj
+  base_plot_diff(drop_full_sparse=T)
+
 
 p_haz_2_adj <- adj_RR %>% 
   filter(target %in% c("Any human MST","Any animal MST","Any general MST"), Y=="haz") %>%
-  base_plot_diff
-p_haz_2_adj
+  base_plot_diff(drop_full_sparse=T)
+
 
 p_haz_s1_adj <- adj_RR %>% 
   filter(target %in% c("Any bacteria", "Any protozoa", "Any STH", "Any virus"), Y=="haz") %>%
-  base_plot_diff
-p_haz_s1_adj
+  base_plot_diff(drop_full_sparse=T)
+
 
 
 
 p_waz_1_adj <- adj_RR %>% 
   filter(target %in% c("Any pathogen","Any MST"), Y=="waz") %>%
-  base_plot_diff
-p_waz_1_adj
+  base_plot_diff(drop_full_sparse=T)
+
 
 p_waz_2_adj <- adj_RR %>% 
   filter(target %in% c("Any human MST","Any animal MST","Any general MST"), Y=="waz") %>%
-  base_plot_diff
-p_waz_2_adj
+  base_plot_diff(drop_full_sparse=T)
+
 
 p_waz_s1_adj <- adj_RR %>% 
   filter(target %in% c("Any bacteria", "Any protozoa", "Any STH", "Any virus"), Y=="waz") %>%
-  base_plot_diff
-p_waz_s1_adj
+  base_plot_diff(drop_full_sparse=T)
+
 
 
 p_whz_1 <- unadj_RR %>% 
   filter(target %in% c("Any pathogen","Any MST"), Y=="whz") %>%
-  base_plot_diff
-p_whz_1
+  base_plot_diff(drop_full_sparse=T)
+
 
 p_whz_2 <- unadj_RR %>% 
   filter(target %in% c("Any human MST","Any animal MST","Any general MST"), Y=="whz") %>%
-  base_plot_diff
-p_whz_2
+  base_plot_diff(drop_full_sparse=T)
+
 
 p_whz_s1 <- unadj_RR %>% 
   filter(target %in% c("Any bacteria", "Any protozoa", "Any STH", "Any virus"), Y=="whz") %>%
-  base_plot_diff
-p_whz_s1
+  base_plot_diff(drop_full_sparse=T)
 
 
 p_whz_1_adj <- adj_RR %>% 
   filter(target %in% c("Any pathogen","Any MST"), Y=="whz") %>%
-  base_plot_diff
-p_whz_1_adj
+  base_plot_diff(drop_full_sparse=T)
+
 
 p_whz_2_adj <- adj_RR %>% 
   filter(target %in% c("Any human MST","Any animal MST","Any general MST"), Y=="whz") %>%
-  base_plot_diff
-p_whz_2_adj
+  base_plot_diff(drop_full_sparse=T)
+
 
 p_whz_s1_adj <- adj_RR %>% 
   filter(target %in% c("Any bacteria", "Any protozoa", "Any STH", "Any virus"), Y=="whz") %>%
-  base_plot_diff
-p_whz_s1_adj
+  base_plot_diff(drop_full_sparse=T)
+
 
 
 #save figures

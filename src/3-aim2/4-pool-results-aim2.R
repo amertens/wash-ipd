@@ -4,8 +4,8 @@ source(here::here("0-config.R"))
 unadj_RR <- readRDS(here("results/unadjusted_aim2_res.Rds"))
 adj_RR <- readRDS(here("results/adjusted_aim2_res.Rds"))
 
-unadj_RR <- clean_res(unadj_RR)
-adj_RR <- clean_res(adj_RR)
+unadj_RR <- clean_res(unadj_RR) %>% distinct()
+adj_RR <- clean_res(adj_RR) %>% distinct()
 head(unadj_RR)
 table(unadj_RR$sample_cat)
 

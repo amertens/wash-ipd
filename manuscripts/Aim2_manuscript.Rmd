@@ -55,6 +55,15 @@ load(here("figures/aim2_figures.Rdata"))
 
 ```
 
+# Notes
+
+  *  Due to sparsity, consider moving all MST results to the appendix
+  *  Note serious sparsity in Fuhrmeister as almost all samples were taken after health samples
+  *  Consider changing requirements to allow for anthropometry outcomes taken within 1-month after env. outcomes (3 months?) because there isn't the reverse causation concern as for with diarrhea.
+  * As most of the primary results are null, do you think keeping the aims separate as 2 different manuscripts still makes sense? Combining into one manuscript would lead to a very long supplementary material, but could have just a few main figures with some more targeted presentations of results. 
+  * Aim 3 analysis- I don't see any contrast that is significant in both manuscripts. Could estimate just for any sample/any target?
+  * Should we add a sensitivity analysis imposing a time between samples and anthro measures?... I've included baseline samples so there could be a long gap in some cases. 
+
 # Abstract
 
 (to write)
@@ -69,6 +78,22 @@ load(here("figures/aim2_figures.Rdata"))
   *  Prescreening
   *  Clustering
   *  Handling multiple rounds
+  *  Handling time- 3 months for diarrhea
+  *  Covariate adjustment set:
+       *  Child sex
+       *  Child age
+       *  Treatment arm
+       *  Household food security
+       *  Maternal age
+       *  Maternal education
+       *  Asset-based household wealth
+       *  Number people in the household
+       *  Number of rooms
+       *  Household construction (walls, floor)
+       *  Electrification
+       *  Parent works in agriculture
+       *  Owns land
+  
 
 # Results
 
@@ -86,6 +111,7 @@ load(here("figures/aim2_figures.Rdata"))
   *  Prevalences for primary outcomes
   *  PR's
   *  Abundance results
+  *  Note no possible estimates of any-MST's and diarrhea due to sparsity (too few positives in households with children with diarrhea, or too many positives)
 
 
 # Discussion
@@ -111,12 +137,122 @@ p_haz_1_adj
 
 ```
 
-__Figure 1.__ haz
+__Figure 2.__ haz
 
+```{r, echo=F, warning=F, message=F, fig.width = 10, fig.height = 5}
+
+p_diar_2_adj
+
+```
+
+__Figure 3.__ diar-MST
+
+
+```{r, echo=F, warning=F, message=F, fig.width = 10, fig.height = 5}
+
+p_diar_s1_adj
+
+```
+
+__Figure 4.__ diar-pathogens
+
+
+```{r, echo=F, warning=F, message=F, fig.width = 10, fig.height = 5}
+
+p_haz_2_adj
+
+```
+
+__Figure 5.__ haz-MST
+
+
+```{r, echo=F, warning=F, message=F, fig.width = 10, fig.height = 5}
+
+p_haz_s1_adj
+
+```
+
+__Figure 6.__ haz-pathogens
 
 # Tables
 
 # Supplimentary Figures
+
+```{r, echo=F, warning=F, message=F, fig.width = 10, fig.height = 5}
+
+p_whz_1_adj
+
+```
+
+__Supplementary Figure 1.__ Weight-for-height
+
+```{r, echo=F, warning=F, message=F, fig.width = 10, fig.height = 5}
+
+p_whz_2_adj
+
+```
+
+__Supplementary Figure 1.__ Weight-for-height
+
+```{r, echo=F, warning=F, message=F, fig.width = 10, fig.height = 5}
+
+p_whz_s1_adj
+
+```
+
+__Supplementary Figure 1.__ Weight-for-height
+
+```{r, echo=F, warning=F, message=F, fig.width = 10, fig.height = 5}
+
+p_waz_1_adj
+
+```
+
+__Supplementary Figure 1.__ Weight-for-age
+
+```{r, echo=F, warning=F, message=F, fig.width = 10, fig.height = 5}
+
+p_waz_2_adj
+
+```
+
+__Supplementary Figure 1.__ Weight-for-age
+
+```{r, echo=F, warning=F, message=F, fig.width = 10, fig.height = 5}
+
+p_waz_s1_adj
+
+```
+
+__Supplementary Figure 1.__ Weight-for-age
+
+
+```{r, echo=F, warning=F, message=F, fig.width = 10, fig.height = 5}
+
+p_stunt_1_adj
+
+```
+
+__Supplementary Figure 1.__ Stunting
+
+```{r, echo=F, warning=F, message=F, fig.width = 10, fig.height = 5}
+
+p_wast_1_adj
+
+```
+
+__Supplementary Figure 1.__ Wasting
+
+```{r, echo=F, warning=F, message=F, fig.width = 10, fig.height = 5}
+
+p_underwt_1_adj
+
+```
+
+__Supplementary Figure 1.__ Underweight
+
+
+
 
 
 # References
