@@ -18,6 +18,19 @@ head(env)
 # labs$label[labs$name=="a2_1 "]
 # write.csv(labs, paste0(dropboxDir,"Data/WBK/wbk_STH_soil_codebook.csv"))
 
+#mark any animcals
+colnames(env)
+table(env$cow)
+table(env$poultry)
+
+env <- env %>% 
+  mutate(cow=ifelse(is.na(cow),0,cow),
+         goat=ifelse(is.na(goat),0,goat),
+         dog=ifelse(is.na(dog),0,dog),
+         poultry=ifelse(is.na(poultry),0,poultry),
+    animals = 1*(cow+goat+dog+poultry>0))
+table(is.na(env$dog))
+table((env$animals))
 
 #Make positive and log_quant longform datasets
 #(Don't use viable because PCR can't detect the difference)
@@ -53,6 +66,7 @@ cov <- env %>% subset(., select=c(hhid, vlgid, compoundid, clusterid, block_dc, 
                                   num_hh, 
                                   roof,
                                   elec,
+                                  animals,
                                   walls,floor,
                                   assetquintile,
                                   cow,goat,

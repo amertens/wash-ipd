@@ -11,6 +11,7 @@ source(here::here("0-config.R"))
 
 #Checking direct lab datasets
 
+
 d<-read.csv(paste0(dropboxDir,"Data/Gram Vikas/lab.dw_03212018.csv"))
 d2<-read.csv(paste0(dropboxDir,"Data/Gram Vikas/lab.sw_03212018.csv"))
 dim(d)
@@ -143,6 +144,12 @@ d2 <- d2 %>% mutate(landacre=factor(hh_agricown))
 # 12 - any.livest.lg - does the household have any large livestock (oxen, cattle)
 # 13 - any.livest.sm - does the household have any small livestock (goats, pigs, sheep)
 # 14 - any.poult - does the household have chickens, ducks, turkeys, or pigeons
+table(d$ls_any)
+table(d2$ls_any)
+
+d <- d %>% mutate(animals=as.numeric(ls_any))
+d2 <- d2 %>% mutate(animals=as.numeric(ls_any))
+
 
 # 478 - hc.G6 - how do you bring water home from the source?
 #   600 - hh.corral1 - if you or anyone in this household owns livestock, where are the animals corralled?
@@ -181,7 +188,7 @@ d2 <- d2 %>% mutate(landacre=factor(hh_agricown))
    ) %>%
    subset(., select = c(
      env_date, sampleid, hh_vid, round, hh_hid, hh_mid, hh_st, ic, sample, vc.pos, sh.pos, vc.pres.pos, sh.pres.pos, momedu, haz, whz, sex, age, dia7, wealth_st,
-     mnum4,mnum5,mnum6,mnum7,numcu5, elec,  dadagri, landacre
+     mnum4,mnum5,mnum6,mnum7,numcu5, elec,  dadagri, landacre, animals
    ))
 head(dw)
 
@@ -199,7 +206,7 @@ sw <- d2 %>%
   ) %>%
   subset(., select = c(
     env_date, sampleid, hh_vid, round, hh_hid, hh_mid,  hh_st, ic, sample, vc.pos, sh.pos, vc.pres.pos, sh.pres.pos, momedu, haz, whz,  sex, age,dia7, wealth_st,
-    mnum4,mnum5,mnum6,mnum7,numcu5, elec, dadagri, landacre
+    mnum4,mnum5,mnum6,mnum7,numcu5, elec, dadagri, landacre, animals
   ))
 head(sw)
 

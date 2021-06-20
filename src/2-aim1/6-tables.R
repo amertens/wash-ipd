@@ -66,13 +66,13 @@ unique(d$target)
 #Add target category
 d <- d %>% mutate(
   target_cat = case_when(
-    target %in% any_virus ~ "V",  
-    target %in% any_bacteria ~ "B",  
-    target %in% any_helminth ~ "H",  
-    target %in% any_protozoa ~ "P",  
-    target %in% animal_MST ~ "An",  
-    target %in% human_MST ~ "Hum",  
-    target %in% general_MST ~ "Gen" 
+    target %in% any_virus ~ "Virus",  
+    target %in% any_bacteria ~ "Bacteria",  
+    target %in% any_helminth ~ "Helminth",  
+    target %in% any_protozoa ~ "Protozoa",  
+    target %in% animal_MST ~ "Animal",  
+    target %in% human_MST ~ "Human",  
+    target %in% general_MST ~ "General" 
   ),
   target_type = case_when(
     target %in% any_pathogens ~ "P",  
@@ -104,23 +104,28 @@ target_presence_long <- d %>% filter(!grepl("Any ",target), !grepl("any ",sample
   mutate(n=row_number()) %>%
   group_by(study, sample, target_type) %>% 
   mutate(n2=row_number(),
-         study=ifelse(n==1,as.character(study),"")#,
-         #sample=ifelse(n2==1,as.character(sample),"-")
+         study=ifelse(n==1,as.character(study),"-")
          ) %>%
+  group_by(study, sample) %>% 
+  mutate(n3=row_number(),
+         sample=ifelse(n2==1,as.character(sample),"-")
+  ) %>%
   ungroup()
 
 
 target_presence_long_P <- target_presence_long %>% 
   filter(target_type=="P") %>%
-  select(study,sample, target, N_perc) 
+  select(study,sample, target, target_cat, N_perc) 
 colnames(target_presence_long_P) <- str_to_title(colnames(target_presence_long_P))
-colnames(target_presence_long_P)[4] <- "Percent positive (n/N)"
+colnames(target_presence_long_P)[4] <- "Pathogen type"
+colnames(target_presence_long_P)[5] <- "Percent positive (n/N)"
 
 target_presence_long_MST <- target_presence_long %>% 
   filter(target_type=="MST") %>%
-  select(study,sample, target, N_perc)
+  select(study,sample, target, target_cat , N_perc)
 colnames(target_presence_long_MST) <- str_to_title(colnames(target_presence_long_MST))
-colnames(target_presence_long_MST)[4] <- "Percent positive (n/N)"
+colnames(target_presence_long_MST)[4] <- "MST type"
+colnames(target_presence_long_MST)[5] <- "Percent positive (n/N)"
 
 
 

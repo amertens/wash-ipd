@@ -1,6 +1,7 @@
 
 rm(list=ls())
 source(here::here("0-config.R"))
+library(scales)
 
 unadj_RR <- readRDS(file=here("results/unadjusted_aim1_RR_pooled.Rds")) 
 unadj_RD <- readRDS(file=here("results/unadjusted_aim1_RD.Rds")) 
@@ -69,23 +70,28 @@ base_plot <- function(mydf, legend_labels=sample_cats, drop_full_sparse=F){
   
   mydf <- mydf %>% droplevels(.)
   
+  Y_breaks=c(.25, .5,1, 2, 4, 8)
+  Y_breaks2=c("1/4", "1/2","1", "2", "4", "8")
+  
   ggplot(data = mydf, (aes(x=study, y=RR, group=sample_cat, color=sample_cat, shape=factor(sparse, levels=c("no","yes","pooled"))))) + 
-  geom_point(size=3, position = position_dodge(0.5)) +
+  geom_point(size=2.5, position = position_dodge(0.5)) +
     geom_errorbar(aes(ymin=ci.lb, ymax=ci.ub), position = position_dodge(0.5),
                   width = 0.3, size = 1) +
     scale_color_manual(breaks = legend_labels,
       values = colours, drop = FALSE) +
     scale_shape_manual(values=c(16, 13,18), guide=FALSE) + 
     geom_hline(yintercept = 1, linetype="dashed") +
-    facet_grid(target_f~sample_type,  scales="free_y", space = "free_x") +
-    scale_y_continuous(breaks=c(0.25, 0.5,1, 2, 4, 8), trans='log10', labels=scaleFUN)+ coord_flip()+
+    facet_grid(target_f~sample_type,  scales="free_y", space = "free_x", labeller = label_wrap_gen(width = 10, multi_line = TRUE)) +
+    scale_y_continuous(#breaks=scales::breaks_pretty(c(0.25, 0.5,1, 2, 4, 8)),
+      breaks=Y_breaks, 
+                       trans='log10', 
+                       labels = Y_breaks2
+                       ) + coord_flip(ylim=c(0.25,5))+
     labs(color="Sample type") + xlab("") + ylab("Prevalence ratio") + 
     theme_ki() + 
     theme(axis.ticks.x=element_blank(),
           legend.position = "bottom",
           strip.placement = "outside",
-          strip.text.x = element_text(size=11, face = "bold"),
-          strip.text.y = element_text(size=11, angle = 270, face = "bold"),          plot.title = element_text(hjust = 0.5, face = "plain", size=9),
           panel.spacing = unit(0, "lines")) 
 }
 

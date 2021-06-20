@@ -31,7 +31,6 @@ head(child)
 colnames(village)
 colnames(child)
 
-
 #Transform env. data from wide to long
 env <- village %>% mutate(env_date=dmy(Date_of_sampling)) %>%
   subset(., select = c(env_date,villageID, interv, Year, Rate_BacUni_Pos_HH_OPT2_2012_2013_without_outlier:Rate_BacCow_Pos_HH_OPT2_2012_2013_without_outlier, Rate_improved_source_Pos_at_least_one_patho_incl_PathoEcoli, Rate_unimproved_source_Pos_at_least_one_patho_incl_PathoEcoli:At_least_one_VC_Pos_in_improved..0.No..1.Yes.))
@@ -60,5 +59,7 @@ env <- env %>% mutate(tr=ifelse(tr==1,"Intervention","Control"),
        round=factor(round))
 
 env$sampleid <- env %>% group_indices(clusterid, tr, round, sample) #%>% mutate()
+
+
 
 saveRDS(env, file=paste0(dropboxDir,"Data/Odisha/Odisha_env_cleaned.rds"))

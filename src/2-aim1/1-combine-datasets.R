@@ -21,8 +21,11 @@ gv2 <- gv %>% filter(pos==1)
 table(gv2$target, gv2$sample, gv2$round)
 
 #Mapsan
-mapsan <- readRDS(paste0(dropboxDir,"Data/MapSan/mapsan_env_cleaned.rds")) %>% mutate(study="Holcomb et al. 2020", trial="MapSan") %>%
-            mutate(momedu=factor(momedu))
+mapsan <- readRDS(paste0(dropboxDir,"Data/MapSan/mapsan_env_cleaned.rds")) %>% 
+  mutate(study="Holcomb et al. 2020",
+         trial="MapSan",
+         momedu=factor(momedu)) %>%
+  rename(animals=compAnyAnimal)
 
 
 #Wash benefits
@@ -46,9 +49,9 @@ WBK <- WBK %>% rename( dataid=compoundid, Nhh=num_hh, hhwealth=assetquintile, sa
 WBB <- WBB %>% subset(., select = c(study, trial, sampleid, dataid, clusterid, tr, sample,  env_date,
                                     target, pos, abund, qual, round, block, Nhh, momage, momheight, 
                                     momedu, dadagri,landacre, hfiacat,watmin,  floor, hhwealth,
-                                    roof, elec, walls)) 
+                                    roof, elec, walls, animals)) 
 WBK <- WBK %>% subset(., select = c(study, trial, sampleid, dataid, clusterid, tr, sample, target, pos, abund, round, block, Nhh, 
-                                    momage, momedu, hfiacat,  
+                                    momage, momedu, hfiacat,  animals,
                                     floor, hhwealth, env_date, roof, elec, walls)) %>%
                 mutate(hfiacat=factor(hfiacat))
 
@@ -268,7 +271,7 @@ d <- d %>% subset(., select=c(study,            trial,            sampleid,     
                               abund,            qual,             round,            Nhh,             
                               momage,           momedu,           dadagri,          landacre,        
                               hfiacat,          watmin,           floor,            hhwealth,         roof,            
-                              elec,             walls,            nrooms,           season,           compAnyAnimal))
+                              elec,             walls,            nrooms,           season,  animals))
 
 
 #-----------------------------------------------
@@ -278,10 +281,32 @@ d <- d %>% subset(., select=c(study,            trial,            sampleid,     
 agg_function <- function(targets, name){
   df <- d %>% group_by(study,  dataid, tr, clusterid, sample, round,  sampleid) %>%
     filter(target %in% !!(targets)) %>%
-    select(pos, target)
-  table(df$target)
+    select(pos, target) %>%
+    group_by(study,  dataid, tr, clusterid, sample, round, sampleid,  target)# %>%
+    # mutate(perc_pos = mean(pos, na.rm=T), N_neg=sum(pos==0,na.rm=T)) %>%
+    # ungroup()
+  
+  #Drop too-positive strata
+  df <- df %>% filter(!(study=="Odagiri et al. 2016" & sample=="W" & target=="Animal (BacCow)"), 
+                      !(study=="Boehm et al. 2016" & sample=="CH" & target=="General (GenBac3)"),
+                      !(study=="Fuhrmeister et al. 2020" & sample=="CH" & target=="Animal (BacCow)"),
+                      !(study=="Holcomb et al. 2020" & sample=="FlyLat" & target=="Human (Bacteroides)"))
   
   
+  
+  # if(any(df$perc_pos>0.85)){
+  #   cat("Dropping too positive:\n")
+  #   df_dropped <- df %>% filter(perc_pos>0.9 | N_neg<10)
+  #   print(df_dropped %>% distinct(study, sample, target, perc_pos,N_neg))
+  #   df <- df %>% filter(perc_pos<=0.9 & N_neg>=10)
+  # }
+    
+  # summary(df$perc_pos)
+  # table(df$target, df$perc_pos)
+  # table(df$study, df$target, df$pos)
+  # 
+  # df %>% distinct(study,  target, perc_pos) %>% arrange(-perc_pos)
+  # 
   d_agg <- df %>% group_by(study,  dataid, tr, clusterid, sample, round, sampleid) %>%
     summarise(
       any_pos = 1*(sum(pos==1)>0), N=n()) %>% 
@@ -298,8 +323,6 @@ agg_function <- function(targets, name){
     arrange(target) %>%
     pivot_wider(id_cols = study, names_from = target, values_from = N)
   
-  
-  
   return(list(df=d_agg, tab=tab))
 }
 
@@ -313,6 +336,10 @@ d_any_MST <- agg_function(any_MST, "Any MST")
 d_any_general_MST <- agg_function(general_MST, "Any general MST")
 d_any_human_MST <- agg_function(human_MST, "Any human MST")
 d_any_animal_MST <- agg_function(animal_MST, "Any animal MST")
+
+
+#Specifically, BacCow MST markers from Odagiri et al. 2016, GenBac3 in Boehm et al. 2016, and human Bacteroides in Holcomb et al. 2020 had close to 100% prevalence, also leading to high positivity in aggregate targets. 
+
 
 as.data.frame(d_any_protozoa$tab)
 
@@ -377,10 +404,18 @@ table(is.na(d$pos))
 
 df <- d %>% 
   group_by(study, clusterid, dataid, tr, target, round) %>%
-  mutate(pos=max(pos, na.rm = TRUE), sample="any sample type") %>% 
+  #Drop too-positive strata
+  filter(!(study=="Odagiri et al. 2016" & sample=="W" & target=="Animal (BacCow)"), 
+                      !(study=="Boehm et al. 2016" & sample=="CH" & target=="General (GenBac3)"),
+                      !(study=="Fuhrmeister et al. 2020" & sample=="CH" & target=="Animal (BacCow)"),
+                      !(study=="Holcomb et al. 2020" & sample=="FlyLat" & target=="Human (Bacteroides)")) %>%
+  mutate(pos=max(pos, na.rm = TRUE), sample="any sample type", animals=max(animals, na.rm=T)) %>% 
   slice(1)
 dim(df)
 table(df$pos)
+
+df$animals[is.infinite(df$animals)] <- NA 
+table(df$animals)
 table(df$target, df$pos, df$study)
 df %>% tabyl(target, pos, study, show_na = T, show_missing_levels = F)
 df %>% tabyl(target, tr, study, show_na = T, show_missing_levels = F)
@@ -388,16 +423,44 @@ df %>% tabyl(target, tr, study, show_na = T, show_missing_levels = F)
 d <- bind_rows(d , df)
 
 
+#Add in seasonality variable
+d <- d %>%
+  mutate(
+    month=month(env_date),
+    wet=
+      case_when(
+        #bangladesh monsoon may to october: https://www.weather-atlas.com/en/bangladesh/mymensingh-climate
+        #India is may to october https://www.weather-atlas.com/en/india/bhubaneswar-climate#rainfall
+        trial%in% c("WBB","Gram Vikas","Odisha") & month>=5 & month<=10  ~ 1,
+        trial%in% c("WBB","Gram Vikas","Odisha") & (month<5 | month>10)  ~ 0,
+        # Kenya has two peaks, march-may and oct-dec:  https://www.weather-atlas.com/en/kenya/kakamega-climate
+        trial=="WBK" & month %in% c(3,4,5,10,11,12)  ~ 1,
+        trial=="WBK" & month %in% c(1,2,6,7,8,9)  ~ 0,
+        #Maputo is November to april: https://www.weather-atlas.com/en/mozambique/maputo-climate#rainfall
+        trial=="MapSan" & month %in% c(11,12,1,2,3,4)  ~ 1,
+        trial=="MapSan" & month %in% c(5,6,7,8,9,10)  ~ 0
+      )
+  )
+table(d$trial, d$wet)
+#table(d$env_date[d$trial=="Odisha"]) #note no variation in Odisha seasonality
+table(d$sample, d$wet)
+table(d$target, d$wet)
+
+
+table(d$trial, d$animals)
+table(d$sample, d$animals)
+table(d$target, d$animals)
+
 
 saveRDS(d, file=paste0(dropboxDir,"Data/cleaned_ipd_env_data.rds"))
 
-#Check covariates
-table(d$trial, (d$hhwealth))
-table(d$trial, (d$Nhh))
-
-table(d$trial, (d$nrooms))
-table(d$trial, (d$walls))
-table(d$trial, (d$floor))
-table(d$trial, (d$elec))
+# #Check covariates
+# table(d$trial, (d$hhwealth))
+# table(d$trial, (d$Nhh))
+# 
+# table(d$trial, (d$nrooms))
+# table(d$trial, (d$walls))
+# table(d$trial, (d$floor))
+# table(d$trial, (d$elec))
 
 

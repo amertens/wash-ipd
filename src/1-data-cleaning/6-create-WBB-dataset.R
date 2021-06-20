@@ -111,7 +111,7 @@ pos <- soilSTH %>% subset(., select=c(dataid, sampleid, env_date,
            target=="sth" ~ "sth",
            target=="al" ~ "ascaris",
            target=="tt"  ~ "trichuris"
-         )) %>% distinct(.)
+         )) #%>% distinct(.)
 
 quant <- soilSTH %>% subset(., select=c(dataid, sampleid, 
                                         epgal, epgtt, epgsth)) %>%
@@ -120,7 +120,7 @@ quant <- soilSTH %>% subset(., select=c(dataid, sampleid,
     target=="epgsth" ~ "sth",
     target=="epgal" ~ "ascaris",
     target=="epgtt"  ~ "trichuris"
-  )) %>% distinct(.)
+  )) #%>% distinct(.)
 
 dim(pos)
 dim(quant)
@@ -133,6 +133,8 @@ soilSTH$sample="S"
 soilSTH$dataid <- as.numeric(soilSTH$dataid)
 soilSTH$sampleid <- as.numeric(soilSTH$sampleid)
 head(soilSTH)
+
+
 
 #----------------------------------------------------------------------------
 #Merge env datasets
@@ -199,9 +201,39 @@ colnames(enrol)
 env <- left_join(env2, enrol, by=c("dataid"))
 env <- left_join(env, tr, by=c("block","clusterid"))
 dim(env)
-
 table(env$tr)
 table(is.na(env$tr))
+
+env <- env %>% rename(hhid=hhid.y) 
+table(is.na(env$hhid))
+
+#Make animsls binary
+table(env$animals)
+table(env$animalno)
+table(is.na(env$animals), is.na(env$animalno))
+env$animals[is.na(env$animals)] <- as.numeric(env$animalno[is.na(env$animals)]>0)
+table(env$animals)
+table(is.na(env$animals))
+
+# #get animal ownership from other datasets for the sth dataset
+# animals <- env %>% filter(!is.na(animals)) %>% distinct(dataid, .keep_all = T) %>% select(dataid, animals) %>% rename(animals_temp=animals)
+# env <- left_join(env, animals, by="dataid")
+# env$animals[is.na(env$animals)] <- env$animals_temp[is.na(env$animals)]
+
+animals <- read.csv(paste0(dropboxDir,"Data/WBB/1. WASHB_Baseline_main_survey.csv")) %>% select(dataid, q4016, starts_with("q4114")) %>% rename(hhid=q4016) %>%
+  mutate(animals2=as.numeric(q4114_1com + q4114_2com+ q4114_3com+ q4114_1h+ q4114_2h+ q4114_3h > 0), dataid=as.numeric(dataid)) %>% select(dataid, hhid, animals2)
+  #mutate(animals2=as.numeric(q4114_2com+ q4114_3com+ q4114_1h+ q4114_2h+ q4114_3h > 0), dataid=as.numeric(dataid)) %>% select(dataid, hhid, animals2)
+head(animals)
+
+env <- left_join(env, animals, by=c("dataid","hhid"))
+table(env$animals2)
+table(is.na(env$animals2))
+table(env$animals, env$animals2)
+table(is.na(env$animals), is.na(env$animals2))
+
+#Use baseline animal ownership
+env <- env %>% subset(., select = -c(animals)) %>% rename(animals=animals2)
+
 
 #The one compound with dataid for WSH is sanitation arm based on Amy's positivity dataset
 env$tr[env$tr=="WSH"] <- "Sanitation"

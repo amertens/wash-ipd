@@ -204,6 +204,8 @@ water_LF <- d %>%
 water_LF$sample[water_LF$sample=="SW"] <- "W"
 head(water_LF)
 
+table(water_LF$target, water_LF$sample, water_LF$detect>0)
+
 
 #----------------------------------------------------------------------------
 # Convert cp/ul to correct abundance units
@@ -240,6 +242,7 @@ summary(df$abund[df$qual=="DNQ" & df$sample=="S"])
 # table(df$target, df$qual)
 # table(df$target, df$detect )
 
+table(df$target, df$sample, df$detect>0)
 
 #----------------------------------------------------------------------------
 # Load and clean positivity data
@@ -266,8 +269,7 @@ WB2 <- WB %>% subset(., select = c(
   WDATEDDMMYYYY,
   Ssample,
   arm,
-  ruminant_0_1,
-  birds_0_1,
+  animals,
   W_br_1_0,
   H_br_1_0,
   S_br_1_0_combo,
@@ -323,12 +325,16 @@ WB4 <- WB3 %>% mutate(
   subset(., select = -c(WDATEDDMMYYYY, WUNIQUENUMERICALID, HUNIQUENUMERICALID, Ssample))
 head(WB4)
 
+
+table(WB4$target, WB4$sample, WB4$pos)
+
+
 #----------------------------------------------------------------------------
 # merge positivity and abundance data
 #----------------------------------------------------------------------------
 
 d1 <- WB4 %>% arrange(dataid) %>% subset(., select = -c(abund))
-d2 <- df %>% mutate(hhid=as.numeric(hhid),
+d2 <- df %>% mutate(dataid=as.numeric(hhid),
                           sample=ifelse(sample=="SW","W",sample))  %>% 
   filter(!is.na(hhid)) %>%
   arrange(hhid) 
@@ -337,10 +343,30 @@ dim(d2)
 table(d1$sample, d1$target)
 table(d2$sample, d2$target)
 #df <- inner_join(d1, d2, by=c("uniqueID","target","sample"))
-df <- right_join(d1, d2, by=c("uniqueID","target","sample"))
-head(df)
-dim(df)
+
+dim(d1)
+dim(d1 %>% distinct(uniqueID,target,sample))
+dim(d2)
+dim(d2 %>% distinct(uniqueID,target,sample))
+d2 %>% arrange(uniqueID,target,sample) %>% 
+  group_by(uniqueID,target,sample) %>% 
+  filter(n()>1)
+head(d1)
+
+
+df <- full_join(d1, d2, by=c("dataid","uniqueID","target","sample"))
+
+
+#mark positives for gbc
+df$pos[df$target=="gbc"] <- ifelse(df$detect[df$target=="gbc"]==0,0,1)
+df$pos[df$target=="gbc" & is.na(df$detect)] <- NA
+table(df$pos[df$target=="gbc"])
+
 table(df$sample, df$target)
+table(df$sample, df$target, is.na(df$pos))
+
+table(d1$target, d1$sample, d1$pos)
+table(df$target, df$sample, df$pos)
 #Note: one hand sample not merging, and a few water GBC
 table(df$detect, df$pos, df$sample)
 table(df$detect, df$pos, df$target)
@@ -349,8 +375,8 @@ table(df$detect, df$pos, df$target)
 df[df$hhid!=df$dataid,] %>% select(hhid, dataid)
 
 #rows failing to merge
-d1f <- anti_join(d1, d2, by=c("uniqueID","target","sample"))
-d2f <- anti_join(d2, d1, by=c("uniqueID","target","sample"))
+d1f <- anti_join(d1, d2, by=c("dataid","uniqueID","target","sample"))
+d2f <- anti_join(d2, d1, by=c("dataid","uniqueID","target","sample"))
 dim(d1f)
 dim(d2f)
 head(d1f)
@@ -362,15 +388,12 @@ table(d2f$target)
 table(d1f$sample)
 table(d2f$sample)
 
-#mark positives for gbc
-df$pos[df$target=="gbc"] <- ifelse(df$detect[df$target=="gbc"]==0,0,1)
-df$pos[df$target=="gbc" & is.na(df$detect)] <- NA
-table(df$pos[df$target=="gbc"])
 
-#mark missing dataid
-temp<-sapply(strsplit(df$sampleid, "-"), "[", 2)
-temp<-as.numeric(sapply(strsplit(temp, "\\."), "[", 1))
-df$dataid[is.na(df$dataid)] <- temp[is.na(df$dataid)]
+
+# #mark missing dataid
+# temp<-sapply(strsplit(df$sampleid, "-"), "[", 2)
+# temp<-as.numeric(sapply(strsplit(temp, "\\."), "[", 1))
+# df$dataid[is.na(df$dataid)] <- temp[is.na(df$dataid)]
 
 
 #----------------------------------------------------------------------------

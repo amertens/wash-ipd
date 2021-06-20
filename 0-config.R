@@ -12,6 +12,7 @@ library(modelr)
 library(caret)
 library(rcartocolor)
 library(metafor)
+library(washb)
 
 #set data directories
 
@@ -29,16 +30,18 @@ if(dir.exists("C:/Users/ruwan/Dropbox/IPD WASH/")){
 source(here("src/0-analysis functions.R"))
 
 
-theme_ki <- function() {
+theme_ki <- function(){
   theme_bw() %+replace%
     theme(
       strip.background = element_blank(),
       legend.position="none",
-      plot.title = element_text(size = 16, face = "bold"),
-      strip.text = element_text(size=14),
-      axis.title = element_text(size=12),
-      axis.text.y = element_text(size=10),
-      axis.text.x = element_text(size=10, angle = 0, hjust = 0.5, vjust=.1)
+      axis.text.x=element_text(size=7),
+      axis.text.y=element_text(size=7),
+      legend.text=element_text(size=7),
+      axis.title = element_text(size = 10),
+      strip.text.x = element_text(size=9, face = "bold"),
+      strip.text.y = element_text(size=9, angle = 270, face = "bold"),          
+      plot.title = element_text(hjust = 0.5, face = "plain", size=9)
     )
 }
 
@@ -153,4 +156,14 @@ clean_res <- function(d, target_lev=target_levels){
   }
   
   return(d)
+}
+
+
+
+#strict_left_join function - will throw error instead of increasing dataframe size
+strict_left_join <- function(x, y, by = NULL, ...){
+  by <- common_by(by, x, y)
+  if(any(duplicated(y[by$y]))) {
+    stop("Duplicate values in foreign key")
+  } else left_join(x, y, by = by, ...)
 }

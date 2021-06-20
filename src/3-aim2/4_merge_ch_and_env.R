@@ -103,6 +103,12 @@ d <- d %>% filter(!is.na(env_date) & !is.na(child_date))
 df <- d %>% filter(trial=="Gram Vikas")
 table(df$child_date-df$env_date)
 
+prop.table(table(d$trial[!is.na(d$haz)], d$child_date[!is.na(d$haz)]-d$env_date[!is.na(d$haz)]>=0),1)*100  #Where is WBK anthro?
+prop.table(table(d$trial[!is.na(d$diar7d)], d$child_date[!is.na(d$diar7d)]-d$env_date[!is.na(d$diar7d)] < 93),1)*100
+
+#prop.table(table(d$study[!is.na(d$haz)], d$child_date[!is.na(d$haz)]-d$env_date[!is.na(d$haz)]>=0),1)*100
+prop.table(table(d$study[!is.na(d$diar7d)], d$child_date[!is.na(d$diar7d)]-d$env_date[!is.na(d$diar7d)] < 93),1)*100
+
 d <- d %>% 
   filter(child_date>=env_date) %>%
   mutate(

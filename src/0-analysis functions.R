@@ -462,3 +462,207 @@ MICS_prescreen<-function (Y, Ws, family = "gaussian", pval = 0.2, print = TRUE){
     
   }
 }
+
+
+
+
+
+#Regression function 
+aim1_subgroup <- function(d, Vvar, Ws=NULL, outcome="pos", study="mapsan", sample="ds", target="Mnif", family="binomial"){
+  
+  
+  df <- d %>% filter(study=={{study}}, sample=={{sample}}, target=={{target}}) %>% droplevels(.)
+  
+  cat(df$study[1],", ", sample,", ", target,"\n")
+  cat("N before dropping missing: ", nrow(df),"\n")
+  
+  df$Y <- df[[outcome]]
+  df <- df %>% filter(!is.na(Y))
+  df$V <- df[[Vvar]]
+  df <- df %>% filter(!is.na(V))
+  #print(summary(df$Y))
+  
+  Wvars<-NULL
+  minN<-NA
+  
+  if(length(unique(df$Y))<=2){
+    if(length(unique(df$Y))>1 & length(unique(df$tr))>1 & length(unique(df$V))>1){
+      #minN <- min(table(df$Y))
+      minN <- min(table(df$Y, df$tr, df$V))
+    }else{
+      minN <- 0
+    }
+    #Get cell counts
+    a <- sum(df$Y==1 & df$tr=="Intervention")
+    b <- sum(df$Y==0 & df$tr=="Intervention")
+    c <- sum(df$Y==1 & df$tr=="Control")
+    d <- sum(df$Y==0 & df$tr=="Control")
+  }
+  if(length(unique(df$Y))>2){
+    minN <- length(unique(df$Y))
+    #Get cell counts
+    a <- mean(df$Y[df$tr=="Control"], na.rm=T)
+    b <- mean(df$Y[df$tr=="Intervention"], na.rm=T)
+    # c <- median(df$Y[df$tr=="Control"], na.rm=T)
+    # d <- median(df$Y[df$tr=="Intervention"], na.rm=T)
+    c <- sd(df$Y[df$tr=="Control"], na.rm=T)
+    d <- sd(df$Y[df$tr=="Intervention"], na.rm=T)
+  }
+  
+  
+  #if((minN>=10 & min(table(df$Y, df$tr, df$V))>1) | length(unique(df$Y)) > 2){
+  if((minN>=1 & min(table(df$Y, df$tr))>1) | length(unique(df$Y)) > 2){
+    
+    if(!is.null(Ws)){
+      Wdf <- df %>% ungroup() %>% select(any_of(Ws)) %>% select_if(~sum(!is.na(.)) > 0)
+      
+      if(ncol(Wdf)>0){
+        #drop covariates with near zero variance
+        if(length(nearZeroVar(Wdf))>0){
+          Wdf <- Wdf[,-nearZeroVar(Wdf)]
+        }
+        if(family=="neg.binom"){
+          Wvars <- MICS_prescreen(Y=df$Y, W=Wdf, family="gaussian", print=F)
+        }else{
+          Wvars <- MICS_prescreen(Y=df$Y, W=Wdf, family=family, print=T)
+        }
+        if(family!="gaussian" & !is.null(Wvars)){
+          nY<-floor(min(table(df$Y))/10) -1 #minus one because 10 variables needed to estimate coef. of X
+          if(nY>=1){
+            if(length(Wvars)>nY){
+              Wvars<-Wvars[1:nY]
+            }        
+          }else{
+            Wvars=NULL
+          }
+        }
+        if(identical(Wvars, character(0)) ){
+          Wvars <- NULL
+        }
+      }else{
+        Wvars <- NULL
+      }
+      df <- df %>% subset(., select =c("Y","tr","V","clusterid", Wvars))
+      df <- df[complete.cases(df),]
+      cat("N after dropping missing: ", nrow(df),"\n")
+    }else{
+      df <- df %>% subset(., select =c("Y","tr","V","clusterid"))
+      df <- df[complete.cases(df),]
+      cat("N after dropping missing: ", nrow(df),"\n")
+    }
+    
+    #Get cell counts after dropping
+    if(length(unique(df$Y))<=2){
+      a <- sum(df$Y==1 & df$tr=="Intervention")
+      b <- sum(df$Y==0 & df$tr=="Intervention")
+      c <- sum(df$Y==1 & df$tr=="Control")
+      d <- sum(df$Y==0 & df$tr=="Control")
+    }
+    
+    #model formula
+    f <- ifelse(is.null(Wvars),
+                "Y ~ tr +V",
+                paste0("Y ~ tr + V +", paste(Wvars, collapse = " + ")))
+    #fit model
+    fullfit <- mpreg(formula = as.formula(f), df = df, vcv=TRUE, family=family)
+    #coef <- as.data.frame(t(fit[2,]))
+    fit <- fullfit$fit
+    
+    contrasts1 <- contrasts2 <- rep(0, nrow(fit))
+    contrasts1[2] <- 1
+    contrasts2[2:3] <- 1
+    
+    meas <- ifelse(family=="gausian","RD","RR")
+    v1 <- suppressWarnings(lincom(lc = contrasts1, fit = fullfit$fit, vcv = fullfit$vcovCL, measure = meas, flag = 1))
+    v2 <- suppressWarnings(lincom(lc = contrasts2, fit = fullfit$fit, vcv = fullfit$vcovCL, measure = meas, flag = 1))
+    res <- bind_rows(data.frame(v1),data.frame(v2))
+    res$Vlevel<-c(0,1)
+    res$nV <- NA
+    res$nV[1] <- sum(df$V==0)
+    res$nV[2] <- sum(df$V==1)
+    res$int.p <- fit[3,4]
+    
+  
+      res <- data.frame(Y=outcome,
+                        V=Vvar,
+                        sample=sample,
+                        target=target,
+                        res)
+    
+  }else{
+    res <- data.frame(Y=outcome,
+                      sample=sample,
+                      target=target,
+                      V=Vvar,
+                      coef=NA,
+                      RR=NA,
+                      se=NA,
+                      Zval=NA,
+                      pval=NA,
+                      ci.lb=NA,
+                      ci.ub=NA)
+  }
+  
+  if(length(unique(df$Y))<=2){
+    res$minN <- minN
+    res$n<-sum(df$Y, na.rm=T)
+    res$a <- a
+    res$b <- b
+    res$c <- c
+    res$d <- d
+  }else{
+    res$mean_control <- a
+    res$mean_int <- b
+    # res$med_control <- c
+    # res$median_int <- d
+    res$sd_control <- c
+    res$sd_int <- d
+  }
+  
+  
+  res$N<-nrow(df)
+  res$W <-ifelse(is.null(Wvars), "unadjusted", paste(Wvars, sep="", collapse=", "))
+  res$study <- study
+  
+  return(res)
+}
+
+
+
+lincom <- function (lc = NULL, fit, vcv, measure = "RR", flag = NULL){
+  x <- fit
+  if (!is.null(lc)) {
+    coef <- paste(rownames(x)[which(lc != 0)], collapse = " + ")
+  }
+  else {
+    stop("Specify lc")
+  }
+  if (measure == "RD") {
+    est <- (t(lc) %*% x[, 1])
+    se <- sqrt(t(lc) %*% vcv %*% lc)
+    Z <- (est)/se
+    P <- 2 * pnorm(-abs(Z))
+    lb <- est - 1.96 * se
+    ub <- est + 1.96 * se
+    res <- matrix(c(est, se, lb, ub, P), nrow = 1)
+    colnames(res) <- c("coef", "se", "ci.lb", 
+                       "ci.ub", "pval")
+  }
+  else {
+    coef <- (t(lc) %*% x[, 1])
+    est <- exp(t(lc) %*% x[, 1])
+    se <- sqrt(t(lc) %*% vcv %*% lc)
+    Z <- log(est)/se
+    P <- 2 * pnorm(-abs(Z))
+    lb <- exp(log(est) - 1.96 * se)
+    ub <- exp(log(est) + 1.96 * se)
+    res <- matrix(c(coef,est, se, lb, ub, P), nrow = 1)
+    colnames(res) <- c("coef","RR", "se", "ci.lb", 
+                       "ci.ub", "pval")
+  }
+  if (is.null(flag)) {
+    cat("\nLinear combination of coefficients:\n")
+    print(coef)
+  }
+  return(res)
+}
