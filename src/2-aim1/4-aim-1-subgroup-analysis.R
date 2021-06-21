@@ -14,12 +14,12 @@ table(is.na(d$round))
 d <- d %>% filter(round!="bl", sample!="FP", trial!="Odisha") %>% droplevels()
 Wvars = c("hhwealth", "Nhh","nrooms","walls", "floor","roof", "elec","dadagri","landacre", "momedu", "momage")         
 
-d_wet <- d %>% filter(!is.na(wet))%>% filter(study=="Kwong et al. 2021") %>% droplevels() 
+d_wet <- d %>% filter(!is.na(wet))%>% filter(study=="Kwong 2021") %>% droplevels() 
 d_animals <- d %>% filter(!is.na(animals)) %>% droplevels()
 
 
 # #check Kwong numbers
-# df <- d %>% filter(study=="Kwong et al. 2021")
+# df <- d %>% filter(study=="Kwong 2021")
 # table(df$tr, df$target)
 # table(df$tr, df$target, df$sample) 
 # table(df$tr, df$target, df$sample, df$wet) 
@@ -31,7 +31,7 @@ d_animals <- d %>% filter(!is.na(animals)) %>% droplevels()
 
 # table(d$study, d$trial)
 # outcome="pos"
-# study="Boehm et al. 2016"
+# study="Boehm 2016"
 # sample="any sample type"
 # target="Any pathogen"
 # Ws=Wvars

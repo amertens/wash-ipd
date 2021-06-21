@@ -83,7 +83,7 @@ save(tab_unadj_diff, tab_adj_diff, file=here("figures/abundance_tables.Rdata"))
 # 
 # head(d)
 # 
-# #d <- d %>% filter(study=="Boehm et al. 2016", sample=="Ascaris", target=="Ascaris")
+# #d <- d %>% filter(study=="Boehm 2016", sample=="Ascaris", target=="Ascaris")
 # 
 # norm_fun <- function(d){
 #   

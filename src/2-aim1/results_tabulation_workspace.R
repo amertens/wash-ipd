@@ -19,7 +19,7 @@ table(df$study)
 d %>% filter(!grepl("Any",sample),!grepl("any",sample),!grepl("Any",target), !is.na(pos)) %>% ungroup() %>% distinct(study, target) %>% as.data.frame()
 
 
-df2 <- df[df$study=="Fuhrmeister et al. 2020",]
+df2 <- df[df$study=="Fuhrmeister 2020",]
 df2 <- df2 %>% group_by(sampleid) %>% mutate(N=n()) %>% filter(N>1) %>% arrange(sampleid) 
 df3 <- d %>% distinct(study, sampleid)
 table(df3$study)
@@ -28,7 +28,7 @@ table(df3$study)
 num_samples_by_study <- d %>% filter(!grepl("Any",sample),!grepl("any",sample),!grepl("Any",target), !is.na(pos)) %>% 
   group_by(study, sample, clusterid, dataid, round, sampleid) %>% slice(1) %>%
   group_by(study) %>%
-  summarize(N=n()) %>% mutate(study=gsub(" et al.","",as.character(study))) %>% arrange(N)
+  summarize(N=n()) %>% mutate(study=gsub("","",as.character(study))) %>% arrange(N)
 num_samples_by_study
 
 #Distinct samples
@@ -46,6 +46,9 @@ FP %>% ungroup() %>% distinct(sampleid) %>% summarise(N=n())
 
 #Load adjusted results
 adj_RR <- readRDS(file=here("results/adjusted_aim1_RR_pooled.Rds")) 
+sig <- adj_RR %>% ungroup() %>% filter(ci.lb<1 & ci.ub<1 | ci.lb>1 & ci.ub>1) %>% select(sample, target, RR, ci.lb, ci.ub, study)
+sig
+
 pooled_adj_RR <- adj_RR %>% filter(study=="Pooled")
 adj_RR <- adj_RR %>% filter(study!="Pooled")
 perc_no_pos = round(prop.table(table((adj_RR$minN==0)))*100,1)[2]
@@ -56,4 +59,5 @@ num_sparse_pos = paste0(as.character(sum(is.na(adj_RR$coef), na.rm=T)),"/",as.ch
 res<- pooled_adj_RR %>% filter(target=="Any pathogen")
 
 
+adj_RR %>% ungroup() %>% filter(sample=="any sample type", target=="Any pathogen")  %>% select(sample, target, RR, ci.lb, ci.ub, study)
           

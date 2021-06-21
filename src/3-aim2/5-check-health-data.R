@@ -12,8 +12,8 @@ env <- readRDS(paste0(dropboxDir,"Data/cleaned_ipd_env_data.rds"))
 #Why 7 cases of diarrhea for any sample type, but 10 for water? Check into merging
 d <- d %>% filter(trial=="WBB")
 ch <- ch %>% filter(trial=="WBB")
-env1 <- env %>% filter(study=="Fuhrmeister et al. 2020", sample=="any sample type", target== "Any pathogen")
-env2 <- env %>% filter(study=="Fuhrmeister et al. 2020", sample=="W", target== "Any pathogen")
+env1 <- env %>% filter(study=="Fuhrmeister 2020", sample=="any sample type", target== "Any pathogen")
+env2 <- env %>% filter(study=="Fuhrmeister 2020", sample=="W", target== "Any pathogen")
 
 table(ch$diar7d)
 table(env1$pos)
@@ -21,18 +21,18 @@ table(env2$pos)
 sum(!is.na(env1$pos))
 sum(!is.na(env2$pos)) #why are there more water samples than "any sample type"?
 
-env %>% filter(study=="Fuhrmeister et al. 2020", target== "Any pathogen", sample!="any sample type") %>%
+env %>% filter(study=="Fuhrmeister 2020", target== "Any pathogen", sample!="any sample type") %>%
   group_by(study, clusterid, dataid, tr, target) %>% slice(1) %>% ungroup() %>%
   summarize(N=n())
-env %>% filter(study=="Fuhrmeister et al. 2020", target== "Any pathogen", sample!="any sample type") %>%
+env %>% filter(study=="Fuhrmeister 2020", target== "Any pathogen", sample!="any sample type") %>%
   group_by(study,  target, sample)  %>%
   summarize(N=n())
-env %>% filter(study=="Fuhrmeister et al. 2020", target== "Any pathogen", sample!="any sample type") %>%
+env %>% filter(study=="Fuhrmeister 2020", target== "Any pathogen", sample!="any sample type") %>%
   group_by(study,  target, sample, dataid)  %>% 
   summarize(N=n()) %>% ungroup() %>% summarize(min(N), mean(N), max(N))
 
 
-df <- env %>% filter(study=="Fuhrmeister et al. 2020") %>%
+df <- env %>% filter(study=="Fuhrmeister 2020") %>%
   group_by(study, clusterid, dataid, tr, target) %>%
   mutate(pos=max(pos, na.rm = TRUE), sample="any sample type") %>% 
   slice(1)

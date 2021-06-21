@@ -32,7 +32,7 @@ Wvars = c("sex","age","hfiacat","momage","hhwealth", "Nhh","nrooms","walls", "ro
 
 outcome="haz"
 exposure="pos"
-study="Fuhrmeister et al. 2020"
+study="Fuhrmeister 2020"
 sample="any sample type"
 sample="W"
 target= "Any pathogen"

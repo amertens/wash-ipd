@@ -239,7 +239,7 @@ cl   <- function(df,fm, cluster){
 # Ws=NULL
 # outcome="diar7d"
 # exposure="pos"
-# study="Fuhrmeister et al. 2020"
+# study="Fuhrmeister 2020"
 # sample="S"
 # target="Any pathogen"
 # family="binomial"

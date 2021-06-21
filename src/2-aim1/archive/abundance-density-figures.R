@@ -5,7 +5,7 @@ source(here::here("0-config.R"))
 d <- readRDS(paste0(dropboxDir,"Data/cleaned_ipd_env_data.rds"))
 d <- d %>% filter(!is.na(abund))
 
-df <- d %>% filter(target=="Avian", study=="Boehm et al. 2016")
+df <- d %>% filter(target=="Avian", study=="Boehm 2016")
 table(df$abund)
 
 #make list of density plots

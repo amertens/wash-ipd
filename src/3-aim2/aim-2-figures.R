@@ -27,9 +27,9 @@ sample_cats = levels(unadj_RR$sample_cat)[levels(unadj_RR$sample_cat)!="Any samp
 # 
 # unique(unadj_RR$study)
 # mydf <- unadj_RR %>% 
-#   filter(target %in% c("Any pathogen","Any MST"), Y=="diar7d", study=="Fuhrmeister et al. 2020")
+#   filter(target %in% c("Any pathogen","Any MST"), Y=="diar7d", study=="Fuhrmeister 2020")
 # d <- d %>% 
-#   filter(target %in% c("Any pathogen","Any MST"),  study=="Fuhrmeister et al. 2020")
+#   filter(target %in% c("Any pathogen","Any MST"),  study=="Fuhrmeister 2020")
 # table(d$pos, d$diar7d, d$sample, d$target)
 # 
 # mydf <- unadj_RR %>% 
@@ -37,7 +37,7 @@ sample_cats = levels(unadj_RR$sample_cat)[levels(unadj_RR$sample_cat)!="Any samp
 # 
 mydf <- unadj_RR %>% 
   filter(target %in% c("Any MST"), Y=="diar7d") %>% 
-  filter(study=="Odagiri et al. 2016", target=="Any MST")
+  filter(study=="Odagiri 2016", target=="Any MST")
 
 
 base_plot <- function(mydf, legend_labels=sample_cats, drop_full_sparse=F){
@@ -130,7 +130,7 @@ base_plot_diff <- function(mydf, legend_labels=sample_cats, drop_full_sparse=F){
 #---------------------------------------------------------------
   
 # d <- unadj_RR %>% 
-#   filter(target %in% c("Any pathogen","Any MST")) %>% filter(study=="Holcomb et al. 2020")
+#   filter(target %in% c("Any pathogen","Any MST")) %>% filter(study=="Holcomb 2020")
 
 #Primary figure
 p_diar_1 <- unadj_RR %>% 

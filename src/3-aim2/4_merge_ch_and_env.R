@@ -20,11 +20,11 @@ table(ch$trial, ch$svy)
 #env data
 env <- readRDS(paste0(dropboxDir,"Data/cleaned_ipd_env_data.rds"))
 env <- env %>% mutate(
-  trial = case_when(study %in% c("Fuhrmeister et al. 2020", "Kwong et al. 2021", "Boehm et al. 2016") ~ "WBB",
-                    study=="Steinbaum et al. 2019" ~ "WBK",
-                    study=="Holcomb et al. 2020" ~ "MapSan",
-                    study=="Reese et al. 2017" ~ "Gram Vikas",
-                    study=="Odagiri et al. 2016" ~ "Odisha")) 
+  trial = case_when(study %in% c("Fuhrmeister 2020", "Kwong 2021", "Boehm 2016") ~ "WBB",
+                    study=="Steinbaum 2019" ~ "WBK",
+                    study=="Holcomb 2020" ~ "MapSan",
+                    study=="Reese 2017" ~ "Gram Vikas",
+                    study=="Odagiri 2016" ~ "Odisha")) 
 table(env$trial)  
 #Drop baseline measure from mapsan
 env <- env %>% filter(round != "0m") %>% droplevels(.)
@@ -53,7 +53,7 @@ table(env$trial, is.na(env$env_date))
 # dim(ch)
 # 
 # haz <- ch %>% filter(trial=="WBB", !is.na(haz))
-# mst <- env %>% filter(study=="Fuhrmeister et al. 2020", target=="Any MST")
+# mst <- env %>% filter(study=="Fuhrmeister 2020", target=="Any MST")
 # d <- full_join(mst, haz, by = c("trial","dataid","clusterid"))# %>% filter(!is.na(pos), !is.na(diar7d))
 # 
 # d <- d %>% 

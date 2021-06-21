@@ -5,7 +5,7 @@ source(here::here("0-config.R"))
 
 #Gram vikas
 gv <- readRDS(paste0(dropboxDir,"Data/Gram Vikas/GV_env_cleaned.rds")) %>% 
-  mutate(study="Reese et al. 2017",
+  mutate(study="Reese 2017",
          trial="Gram Vikas",
          #dataid=hh_hid*10000 + dataid,
          dataid=as.numeric(factor(hh_mid))*10+round,
@@ -22,7 +22,7 @@ table(gv2$target, gv2$sample, gv2$round)
 
 #Mapsan
 mapsan <- readRDS(paste0(dropboxDir,"Data/MapSan/mapsan_env_cleaned.rds")) %>% 
-  mutate(study="Holcomb et al. 2020",
+  mutate(study="Holcomb 2020",
          trial="MapSan",
          momedu=factor(momedu)) %>%
   rename(animals=compAnyAnimal)
@@ -30,14 +30,14 @@ mapsan <- readRDS(paste0(dropboxDir,"Data/MapSan/mapsan_env_cleaned.rds")) %>%
 
 #Wash benefits
 WBB <- readRDS(paste0(dropboxDir, "Data/WBB/Clean/WBB_env.RDS"))
-WBB <- WBB %>% mutate(study=case_when(round=="" & target %in% c("sth","ascaris","trichuris") ~ "Kwong et al. 2021",
-                                      round=="" ~ "Fuhrmeister et al. 2020",
-                                      round=="World Bank" ~ "Boehm et al. 2016"
+WBB <- WBB %>% mutate(study=case_when(round=="" & target %in% c("sth","ascaris","trichuris") ~ "Kwong 2021",
+                                      round=="" ~ "Fuhrmeister 2020",
+                                      round=="World Bank" ~ "Boehm 2016"
                                       ),
                       trial="WBB")
 
 WBK <- readRDS(paste0(dropboxDir, "Data/WBK/Clean/WBK_env.RDS"))
-WBK <- WBK %>% mutate(study="Steinbaum et al. 2019", trial="WBK")
+WBK <- WBK %>% mutate(study="Steinbaum 2019", trial="WBK")
 
 colnames(mapsan)
 colnames(WBB)
@@ -58,7 +58,7 @@ WBK <- WBK %>% subset(., select = c(study, trial, sampleid, dataid, clusterid, t
 
 
 #Odisha
-odisha <- readRDS(file=paste0(dropboxDir,"Data/Odisha/Odisha_env_cleaned.rds")) %>% mutate(study="Odagiri et al. 2016", trial="Odisha")
+odisha <- readRDS(file=paste0(dropboxDir,"Data/Odisha/Odisha_env_cleaned.rds")) %>% mutate(study="Odagiri 2016", trial="Odisha")
 
 
 
@@ -75,7 +75,7 @@ odisha$sampleid<-as.character(odisha$sampleid)
 
 d <- bind_rows(WBB, WBK, mapsan, gv, odisha) %>%
   mutate(study=factor(study, 
-            levels=c("Odagiri et al. 2016", "Boehm et al. 2016", "Reese et al. 2017", "Steinbaum et al. 2019", "Fuhrmeister et al. 2020", "Holcomb et al. 2020",  "Kwong et al. 2021")))
+            levels=c("Odagiri 2016", "Boehm 2016", "Reese 2017", "Steinbaum 2019", "Fuhrmeister 2020", "Holcomb 2020",  "Kwong 2021")))
 head(d)
 table(d$study, is.na(d$sampleid))
 table(d$study, is.na(d$sampleid), d$pos)
@@ -287,10 +287,10 @@ agg_function <- function(targets, name){
     # ungroup()
   
   #Drop too-positive strata
-  df <- df %>% filter(!(study=="Odagiri et al. 2016" & sample=="W" & target=="Animal (BacCow)"), 
-                      !(study=="Boehm et al. 2016" & sample=="CH" & target=="General (GenBac3)"),
-                      !(study=="Fuhrmeister et al. 2020" & sample=="CH" & target=="Animal (BacCow)"),
-                      !(study=="Holcomb et al. 2020" & sample=="FlyLat" & target=="Human (Bacteroides)"))
+  df <- df %>% filter(!(study=="Odagiri 2016" & sample=="W" & target=="Animal (BacCow)"), 
+                      !(study=="Boehm 2016" & sample=="CH" & target=="General (GenBac3)"),
+                      !(study=="Fuhrmeister 2020" & sample=="CH" & target=="Animal (BacCow)"),
+                      !(study=="Holcomb 2020" & sample=="FlyLat" & target=="Human (Bacteroides)"))
   
   
   
@@ -338,7 +338,7 @@ d_any_human_MST <- agg_function(human_MST, "Any human MST")
 d_any_animal_MST <- agg_function(animal_MST, "Any animal MST")
 
 
-#Specifically, BacCow MST markers from Odagiri et al. 2016, GenBac3 in Boehm et al. 2016, and human Bacteroides in Holcomb et al. 2020 had close to 100% prevalence, also leading to high positivity in aggregate targets. 
+#Specifically, BacCow MST markers from Odagiri 2016, GenBac3 in Boehm 2016, and human Bacteroides in Holcomb 2020 had close to 100% prevalence, also leading to high positivity in aggregate targets. 
 
 
 as.data.frame(d_any_protozoa$tab)
@@ -404,11 +404,12 @@ table(is.na(d$pos))
 
 df <- d %>% 
   group_by(study, clusterid, dataid, tr, target, round) %>%
+  filter(!is.na(pos)) %>%
   #Drop too-positive strata
-  filter(!(study=="Odagiri et al. 2016" & sample=="W" & target=="Animal (BacCow)"), 
-                      !(study=="Boehm et al. 2016" & sample=="CH" & target=="General (GenBac3)"),
-                      !(study=="Fuhrmeister et al. 2020" & sample=="CH" & target=="Animal (BacCow)"),
-                      !(study=="Holcomb et al. 2020" & sample=="FlyLat" & target=="Human (Bacteroides)")) %>%
+  filter(!(study=="Odagiri 2016" & sample=="W" & target=="Animal (BacCow)"),
+                      !(study=="Boehm 2016" & sample=="CH" & target=="General (GenBac3)"),
+                      !(study=="Fuhrmeister 2020" & sample=="CH" & target=="Animal (BacCow)"),
+                      !(study=="Holcomb 2020" & sample=="FlyLat" & target=="Human (Bacteroides)")) %>%
   mutate(pos=max(pos, na.rm = TRUE), sample="any sample type", animals=max(animals, na.rm=T)) %>% 
   slice(1)
 dim(df)
@@ -453,6 +454,12 @@ table(d$target, d$animals)
 
 
 saveRDS(d, file=paste0(dropboxDir,"Data/cleaned_ipd_env_data.rds"))
+
+table(is.na(d$clusterid))
+table((d$pos))
+
+d[is.infinite(d$pos),]
+WBB[is.infinite(WBB$pos),]
 
 # #Check covariates
 # table(d$trial, (d$hhwealth))

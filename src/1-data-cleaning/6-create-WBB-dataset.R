@@ -25,6 +25,8 @@ head(PEC)
 head(qPCR)
 head(soilSTH)
 head(WB)
+table(WB$pos)
+
 
 #Add date to PEC and QPCR
 PEC <- PEC %>% mutate(env_date=dmy(paste0(1,"-",Month.Collected,"-",2015)))
@@ -194,11 +196,19 @@ enrol <-  enrol %>% subset(., select= -c(cement,asset_radio,
                                     n_asset_wardrobe,n_asset_table,   n_asset_chair,  
                                     n_asset_khat,  n_asset_chouki,  n_asset_mobile)) 
 
+
 #Merge in covariates
 env2 <-env
 dim(env)
 colnames(enrol)
 env <- left_join(env2, enrol, by=c("dataid"))
+table(is.na(env$clusterid))
+env[is.na(env$clusterid),] #Missing is dataid 28698
+
+WB[WB$dataid==28608,]
+WB[WB$dataid==28698,]
+
+
 env <- left_join(env, tr, by=c("block","clusterid"))
 dim(env)
 table(env$tr)

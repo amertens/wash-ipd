@@ -74,9 +74,9 @@ base_plot <- function(mydf, legend_labels=sample_cats, drop_full_sparse=F){
   Y_breaks2=c("1/4", "1/2","1", "2", "4", "8")
   
   ggplot(data = mydf, (aes(x=study, y=RR, group=sample_cat, color=sample_cat, shape=factor(sparse, levels=c("no","yes","pooled"))))) + 
-  geom_point(size=2.5, position = position_dodge(0.5)) +
+  geom_point(size=2, position = position_dodge(0.5)) +
     geom_errorbar(aes(ymin=ci.lb, ymax=ci.ub), position = position_dodge(0.5),
-                  width = 0.3, size = 1) +
+                  width = 0.3, size = 0.75) +
     scale_color_manual(breaks = legend_labels,
       values = colours, drop = FALSE) +
     scale_shape_manual(values=c(16, 13,18), guide=FALSE) + 
@@ -101,7 +101,7 @@ base_plot <- function(mydf, legend_labels=sample_cats, drop_full_sparse=F){
 #---------------------------------------------------------------
   
 d <- adj_RR %>% 
-  filter(target %in% c("Any pathogen","Any MST")) %>% filter(study=="Holcomb et al. 2020")
+  filter(target %in% c("Any pathogen","Any MST")) %>% filter(study=="Holcomb 2020")
 
 #Primary figure
 p_adj_1 <- adj_RR %>% 
@@ -115,7 +115,7 @@ p_adj_2 <- adj_RR %>%
 p_adj_2
 
 df <- adj_RR %>% 
-  filter(target %in% c("Any human MST"), study=="Holcomb et al. 2020") 
+  filter(target %in% c("Any human MST"), study=="Holcomb 2020") 
   
 
 p_adj_3 <- adj_RR %>% 
@@ -154,7 +154,7 @@ p_unadj_2 <- unadj_RR %>%
 p_unadj_2
 
 df <- unadj_RR %>% 
-  filter(target %in% c("Any human MST"), study=="Holcomb et al. 2020") 
+  filter(target %in% c("Any human MST"), study=="Holcomb 2020") 
 
 
 p_unadj_3 <- unadj_RR %>% 

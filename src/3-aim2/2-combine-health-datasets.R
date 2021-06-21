@@ -138,7 +138,7 @@ head(odisha)
 
 #Note that the GV lab data had diarrhea/anthro merged in, but 
 gv <- readRDS(paste0(dropboxDir,"Data/Gram Vikas/GV_env_cleaned.rds")) %>% 
-  mutate(study="Reese et al. 2017",
+  mutate(study="Reese 2017",
          trial="Gram Vikas",
          dataid=as.numeric(factor(hh_mid))*10+round,
          #dia7=ifelse(dia7==99,NA,dia7),

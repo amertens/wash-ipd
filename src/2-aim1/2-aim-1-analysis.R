@@ -45,7 +45,7 @@ Wvars = c("hhwealth", "Nhh","nrooms","walls", "floor","roof","elec","dadagri","l
 # 
 # table(d$study, d$trial)
 # outcome="pos"
-# study="Boehm et al. 2016"
+# study="Boehm 2016"
 # sample="any sample type"
 # target="Any general MST"
 # Ws=Wvars
@@ -63,8 +63,7 @@ Wvars = c("hhwealth", "Nhh","nrooms","walls", "floor","roof","elec","dadagri","l
 #-----------------------------------
 
 # d <- d %>% 
-#   filter(target %in% c("Any pathogen","Any MST")) %>% filter(study=="Holcomb et al. 2020")
-
+#   filter(target %in% c("Any pathogen","Any MST")) %>% filter(study=="Holcomb 2020")
 
 
 res <- d %>% group_by(study, sample, target, aggregate_Y) %>%

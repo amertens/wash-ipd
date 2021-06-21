@@ -342,6 +342,18 @@ dim(d1)
 dim(d2)
 table(d1$sample, d1$target)
 table(d2$sample, d2$target)
+
+#Fix one dataid==28698 (which doesn't exist as a compound) to dataid==28608
+d1[d1$dataid==28608,]
+d2[d2$dataid==28608,]
+d2[d2$dataid==28698,]
+d2$dataid[d2$dataid==28698] <- 28608
+
+unique(d1$uniqueID)
+unique(d2$uniqueID)
+
+
+
 #df <- inner_join(d1, d2, by=c("uniqueID","target","sample"))
 
 dim(d1)
@@ -355,7 +367,7 @@ head(d1)
 
 
 df <- full_join(d1, d2, by=c("dataid","uniqueID","target","sample"))
-
+head(df)
 
 #mark positives for gbc
 df$pos[df$target=="gbc"] <- ifelse(df$detect[df$target=="gbc"]==0,0,1)
