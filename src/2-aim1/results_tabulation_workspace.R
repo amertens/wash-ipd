@@ -48,6 +48,12 @@ FP %>% ungroup() %>% distinct(sampleid) %>% summarise(N=n())
 adj_RR <- readRDS(file=here("results/adjusted_aim1_RR_pooled.Rds")) 
 sig <- adj_RR %>% ungroup() %>% filter(ci.lb<1 & ci.ub<1 | ci.lb>1 & ci.ub>1) %>% select(sample, target, RR, ci.lb, ci.ub, study)
 sig
+n_per_sig <- paste0(round(nrow(sig)/nrow(adj_RR %>% filter(!is.na(coef))) * 100, 1),"% (",nrow(sig),"/",nrow(adj_RR %>% filter(!is.na(coef))),")")
+
+#protective <- adj_RR %>% ungroup() %>% filter(!is.na(coef),round(RR,1)<=1) %>% select(sample, target, RR, ci.lb, ci.ub, study)
+protective <- adj_RR %>% ungroup() %>% filter(!is.na(coef),RR<=1) %>% select(sample, target, RR, ci.lb, ci.ub, study)
+n_protective <- paste0(round(nrow(protective)/nrow(adj_RR %>% filter(!is.na(coef))) * 100, 1),"% (",nrow(protective),"/",nrow(adj_RR %>% filter(!is.na(coef))),")")
+n_protective
 
 pooled_adj_RR <- adj_RR %>% filter(study=="Pooled")
 adj_RR <- adj_RR %>% filter(study!="Pooled")
@@ -60,4 +66,29 @@ res<- pooled_adj_RR %>% filter(target=="Any pathogen")
 
 
 adj_RR %>% ungroup() %>% filter(sample=="any sample type", target=="Any pathogen")  %>% select(sample, target, RR, ci.lb, ci.ub, study)
-          
+
+
+
+#Load adjusted results
+adj_RR <- readRDS(file=here("results/adjusted_aim1_RR_pooled.Rds")) 
+unadj_RR <- readRDS(file=here("results/unadjusted_aim1_RR_pooled.Rds")) 
+
+d<- left_join(adj_RR, unadj_RR, by=c("Y","sample","target","study"))
+head(d)
+
+d <- d %>% 
+  mutate(log.diff= coef.x-coef.y, log.abs.diff=abs(coef.x-coef.y), diff= RR.x-RR.y, abs.diff=abs(RR.x-RR.y))
+
+summary(d$log.diff)
+summary(d$log.abs.diff)
+summary(d$diff)
+summary(d$abs.diff)
+
+ggplot(d, aes(x=log.diff)) + geom_density()
+ggplot(d, aes(x=log.abs.diff)) + geom_density()
+ggplot(d, aes(x=exp(log.abs.diff))) + geom_density()
+
+
+d %>% select(RR.x, RR.y)
+
+

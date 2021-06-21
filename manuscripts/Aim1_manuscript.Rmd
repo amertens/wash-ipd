@@ -102,8 +102,17 @@ load(here("figures/subgroup_figures.Rdata"))
 #load(here("figures/density_figures.Rdata"))
 load(here("figures/outcome_groups.Rdata"))
 adj_RR <- readRDS(file=here("results/adjusted_aim1_RR_pooled.Rds")) 
+unadj_RR <- readRDS(file=here("results/unadjusted_aim1_RR_pooled.Rds")) 
 pooled_adj_RR <- adj_RR %>% filter(study=="Pooled")
 adj_RR <- adj_RR %>% filter(study!="Pooled")
+
+#Study-specific estimates
+protective <- adj_RR %>% ungroup() %>% filter(!is.na(coef),RR<=1) %>% select(sample, target, RR, ci.lb, ci.ub, study)
+n_protective <- paste0(round(nrow(protective)/nrow(adj_RR %>% filter(!is.na(coef))) * 100, 1),"% (",nrow(protective),"/",nrow(adj_RR %>% filter(!is.na(coef))),")")
+
+sig <- adj_RR %>% ungroup() %>% filter(ci.lb<1 & ci.ub<1 | ci.lb>1 & ci.ub>1) %>% select(sample, target, RR, ci.lb, ci.ub, study)
+n_per_sig <- paste0(round(nrow(sig)/nrow(adj_RR %>% filter(!is.na(coef))) * 100, 1),"% (",nrow(sig),"/",nrow(adj_RR %>% filter(!is.na(coef))),")")
+
 perc_no_pos = round(prop.table(table((adj_RR$minN==0)))*100,1)[2]
 num_no_pos = paste0(as.character(sum(adj_RR$minN==0, na.rm=T)),"/",as.character(nrow(adj_RR)))
 adj_RR <- adj_RR %>% filter(minN!=0)
@@ -111,7 +120,18 @@ num_sparse_pos = paste0(as.character(sum(is.na(adj_RR$coef), na.rm=T)),"/",as.ch
 adj_sparse <- adj_RR %>% filter(is.na(coef)) %>% mutate(inv_n = N-n)
 too_neg=round(mean(adj_sparse$n <= 10 | adj_sparse$a < 2 | adj_sparse$c < 2) * 100, 1)
 too_pos=round(mean(adj_sparse$inv_n <= 10 | adj_sparse$b < 2 | adj_sparse$d < 2) * 100, 1)
-temp<-adj_sparse[adj_sparse$inv_n <= 10 | adj_sparse$b < 2 | adj_sparse$d < 2,]
+
+MST_protect  <- adj_RR %>% filter(grepl("MST", target))
+round(prop.table(table(MST_protect$RR<1))[2]*100,1)
+#Pvalue adjustment
+#min(p.adjust(adj_RR$pval, method="BH"), na.rm=T)
+
+#difference between adjusted and unadjusted
+
+d<- left_join(adj_RR, unadj_RR, by=c("Y","sample","target","study"))
+d <- d %>% mutate(log.diff= coef.x-coef.y, log.abs.diff=abs(coef.x-coef.y), diff= RR.x-RR.y, abs.diff=abs(RR.x-RR.y))
+med_unadj_diff<-median(d$log.abs.diff, na.rm=T)
+
 
 #Clean results function
 clean_est <- function(res, outcome="binomial"){
@@ -137,6 +157,10 @@ FitFlextableToPage <- function(ft, pgwidth = 6){
   ft_out <- width(ft_out, width = dim(ft_out)$widths*pgwidth /(flextable_dim(ft_out)$widths))
   return(ft_out)
 }
+
+
+#adj_RR %>% filter(target=="Any virus", sample!="any sample type") %>% select(sample, target, RR, ci.lb, ci.ub, study, a,b,c,d) %>% arrange(sample) %>% as.data.frame()
+
 
 ```
 
@@ -171,22 +195,11 @@ cmt <- function(txt, cm, author, date = "2021-01-01", comN = commentN){
 
    
 ## Abstract
+`r cmt("Finish drafting", "Finish after finishing discussion", "Andrew", "Date")`
 
-#### Background
-
-Sanitation improvements may reduce enteric infections, a leading cause of death of young children in low- and middle-income countries, by reducing the  spread of enteric pathogens in the environment. Several recent randomized controlled trials of sanitation interventions have had disappointing effects on improving child health, possible because they fail to reduce environmental pathogen contamination from humans and animals. In this study, we conduct of systematic review and individual participant data meta-analysis of intervention studies that measure pathogens or human and animal fecal bacterial target genes detected through microbial source tracking (MST) methods.
-
-#### Methods
-
-We estimated the impact of interventions on the prevalence of any pathogen or of any MST target and on the prevalence and abundance of specific pathogens or MST targets. We used covariate-adjusted regression models with robust standard errors to account for the clustering of samples in the compound or intervention cluster.
-
-
-#### Findings
-
-We identified and received data from 5 different randomized or quasi-randomized sanitation intervention studies, 
+Sanitation improvements may reduce enteric infections, a leading cause of death of young children in low- and middle-income countries, by reducing the  spread of enteric pathogens in the environment. Several recent randomized controlled trials of sanitation interventions have had disappointing effects on improving child health, possible because they fail to reduce environmental pathogen contamination from humans and animals. In this study, we conduct of systematic review and individual participant data meta-analysis of intervention studies that measure pathogens or human and animal fecal bacterial target genes detected through microbial source tracking (MST) methods. We estimated the impact of interventions on the prevalence of any pathogen or of any MST target and on the prevalence and abundance of specific pathogens or MST targets. We used covariate-adjusted regression models with robust standard errors to account for the clustering of samples in the compound or intervention cluster. We identified and received data from 5 different randomized or quasi-randomized sanitation intervention studies, 
 There was a small but significant effect of sanitation interventions on reducing the prevalence of any pathogen, with an adjusted relative risk of `r clean_est(pooled_adj_RR %>% filter(target=="Any pathogen"))`, but (oTHER RESULTS)...
-
-#### Interpretation
+(Interpretation)
 
 ## Introduction
 
@@ -215,7 +228,7 @@ The primary outcomes analyzed were the prevalence of any enteropathogen, and of 
 
 We estimated prevalence ratios and abundance differences between intervention and control arms for each pathogen and microbial target by sample type, and also aggregated across samples collected from the same household during the same sampling round. We also estimated prevalence ratios and abundance differences  between intervention and control arms for any pathogen presence, any MST marker, any bacteria, any virus, any protozoa, any helminth, any general MST, any human MST, or any animal MST. 
 
-For pathogen or MST abundances, we imputed values for samples below the limit of quantification (LOQ) and the limit of detection (LOD) with... (`r cmt("Provide details on abundance imputation", "Finish providing details", "Andrew", "Date")`. More than 4 unique values to avoid analyzing targets where most of the data was imputed. Note that I use the original study's imputation strategy if available, then imputed myself if not available.
+For pathogen or MST abundances, we imputed values for samples below the limit of quantification (LOQ) and the limit of detection (LOD) with... (`r cmt("Provide details on abundance imputation", "Finish providing details", "Andrew", "Date")`. We only estimated differences between targets with more than 4 unique abundance values to avoid analyzing targets where most of the data was imputed. We used the original study's imputation strategy if available, and imputed ourselves if the original study did not impute non-quantifiable abundances`r cmt(".", "Note which studies I imputed for and how", "Andrew", "Date")`
 
 
 All analyses were adjusting for potential confounders. While estimated effects of WASH interventions from randomized controlled trials should be unconfounded due to randomization, covariate adjustment may increase statistical efficiency, and improve exchangeability in comparing matched cohorts and non-randomized trials.[@cochranCombinationEstimatesDifferent1954] Potential confounders were prescreened using likelihood ratio tests, and only variables associated with the outcome with a P-value < 0.2 were included in the model. We included the following variables in the prescreening set if they were measured within an included study: asset-based household wealth, number people in the household, number of rooms, household construction (walls, floor, roof), electrification, age and education of primary caregiver in the household, if anyone in the household works in agriculture, and land ownership. For rare binary outcomes, we only included one independent variable in the model (including the treatment arm) per 10 positive samples (or per 10 negative samples if >50% of samples were positive). We therefore did not estimate prevalence ratios for sample-target combinations with less than 10 positives or negatives and to avoid extreme estimated we did not estimate contrasts if there was less than two positives or negatives in the intervention or control arm. Because of repeated sampling or clustered designs in some studies, we used the Huber Sandwich Estimator to calculate robust standard errors for all estimates.[@freedmanSoCalledHuberSandwich2006] We used the compound (group of households with shared sanitation) as the independent unit in non-cluster-randomized studies and the cluster in cluster-randomized trials. 
@@ -241,7 +254,7 @@ All analyses were conducted in R 4.0, and analysis scripts are publicly availabl
 
   Data was shared by the primary investigators of the first 5 studies, but the authors of the  CHoBI7 Trial declined to share the data. Only village-level source water quality data was shared from the Total Sanitation Campaign study. The WASH Benefits Kenya and Bangladesh trials were cluster-randomized, multi-armed factorial designed trials of water, hygiene, sanitation, and nutrition interventions, but environmental samples were only collected from the control and sanitation arms. The sanitation intervention was the construction of a double-pit pour flush improved latrine latrine and the provision of a child potty and sani-scoop for feces removal. The MapSan (Maputo Sanitation) study was a controlled before and after trial of a decentralized sanitation intervention in an urban setting. The intervention was the construction of flush toilets to enrollment tanks, shared by a minimum of 15 people. The intervention delivery was not randomized, but control sites were matched based on both size of the compound and time of enrollment. The Gram Vikas study was a matched cohort evaluating the effect of a piped water and sanitation intervention provided by the Gram Vikas non-governmental organization. Gram Vikas built and water tank and piped distribution system, and provided materials for the construction of pour-flush toilets in each household. After each household in the village completed latrine construction, the water system was turned on. The interventions were delivered at a household level in selected villages, and the control villages were matches on matched on pre-intervention characteristics. The Total Sanitation Campaign study in Odisha, India, was a cluster-randomized trial assessing the Government of India's Total Sanitation Campaign, which included latrine promotion and construction of a pour-flush latrine with a single pit and Y-joint for a future second pit.
   
-Seven unique studies on pathogen or MST presence in the environment were nested within the 5 randomized and quasi-randomized interventions with shared data. Pathogen and MST detection results was reported in single publications for the Wash Benefits Kenya,[@steinbaumEffectSanitationIntervention2019] MapSan[@holcombHumanFecalContamination2020] Gram Vikas,[@reeseEffectivenessCombinedSanitation] and Odisha studies,[@odagiriHumanFecalPathogen2016] but the WASH Benefits Bangladesh study included three separate publications documenting intervention effects on pathogens and MST markers. These publications were separated by the effect of the sanitation intervention on soil transmitted helminths (STH, [@kwongEffectSanitationImprovements2020]) and on MST markers and other pathogens in two different sets of households collect less than one year ([@boehmOccurrenceHostAssociatedFecal2016]) and X years ([@fuhrmeisterEffectSanitationImprovements2020]) after intervention. We report results from these three studies separately due to differences in type and timing of sample collections. We received unpublished data on fly pathogens detected on flies caught in the household from the MapSan study, which we include within the Holcomb et. al 2020 study in the reported results. 
+Seven unique studies on pathogen or MST presence in the environment were nested within the 5 randomized and quasi-randomized interventions with shared data. Pathogen and MST detection results was reported in single publications for the Wash Benefits Kenya,[@steinbaumEffectSanitationIntervention2019] MapSan[@holcombHumanFecalContamination2020] Gram Vikas,[@reeseEffectivenessCombinedSanitation2017a] and Odisha studies,[@odagiriHumanFecalPathogen2016] but the WASH Benefits Bangladesh study included three separate publications documenting intervention effects on pathogens and MST markers. These publications were separated by the effect of the sanitation intervention on soil transmitted helminths (STH, [@kwongEffectSanitationImprovements2020]) and on MST markers and other pathogens in two different sets of households collect less than one year ([@boehmOccurrenceHostAssociatedFecal2016]) and X years ([@fuhrmeisterEffectSanitationImprovements2020]) after intervention. We report results from these three studies separately due to differences in type and timing of sample collections. We received unpublished data on fly pathogens detected on flies caught in the household from the MapSan study, which we include within the Holcomb 2020 study in the reported results. 
   
   There were `r Print(nrow(pos %>% group_by(study, sample, clusterid, dataid, round, sampleid) %>% slice(1)))` total samples in the shared data across the 5 trials, with `r Print(nrow(pos))` total pathogen/MST target prevalences assessed across all samples. Table 1 shows the specific pathogen prevalence by study and sample type. Table 2 shows the specific MST prevalence by study and sample type. Number of samples by study varied, from only `r num_samples_by_study$N[1]` village water source samples from `r num_samples_by_study$study[1]` to `r num_samples_by_study$N[7]` samples from `r num_samples_by_study$study[7]`. `r num_samples_by_study$study[2]` had `r num_samples_by_study$N[2]` samples, `r num_samples_by_study$study[3]` had `r num_samples_by_study$N[3]` samples, `r num_samples_by_study$study[4]` had `r num_samples_by_study$N[4]` samples, `r num_samples_by_study$study[5]` had `r num_samples_by_study$N[5]` samples, and `r num_samples_by_study$study[6]` had `r num_samples_by_study$N[6]` samples. 
 Odigari 2016 sampled village water sources, Reese 2017 sampled household water sources and stored household water,and Holcomb 2020 sampled household and latrine soil, food, source and stored water, and flies caught in the compounds latrine and kitchen. Of the WASH Benefits trial studies, Wash Benefits Kenya only sampled STH in soil, while WASH Benefits Bangladesh included samples from soil, child and mother hands, and drinking water. Steinbaum 2019 and Kwong 2021 sampled household soil for STH in Kenya and Bangladesh, respectively, Boehm 2016 collected a rinse of child hands, stored household drinking water, and household soil, and Fuhrmeister 2020 collected both mother and child hand rinses, stored household drinking water, and household soil.
@@ -250,98 +263,56 @@ Across the seven studies, three only measured pathogens and not MST markers; two
 
 Boehm 2016 measured Rotavirus as well as general, human, and animal fecal genetic markers, Fuhrmeister 2020 measured pathogenic *E. coli*, *Giardia*, Norovirus, and human and animal fecal markers,[@fuhrmeisterEffectSanitationImprovements2020], and Odagiri 2016 measured *V. cholerae*, rotavirus, adenovirus, and general, human, and animal fecal genetic markers. Holcomb 2020 measured the largest number of targets, including pathogenic *E. coli*, *V. cholerae*, *Shigella*, Adenovirus, Astrovirus, *Cryptosporidium*, *Entamoeba histolytica*,  Rotavirus, *Salmonella*, *Yersinia*, *C. difficile*, Norovirus, Sapovirus, *Campylobacter*, pan-enterovirus, *Giardia*, STH, and general, human, and animal fecal genetic markers (Tables 1,2).
 
-Many targets had very low or no variation in prevalence, with `r num_no_pos` target-sample combinations having no variation in prevalence, and `r num_sparse_pos` of the remaining combinations having too little variation to estimate a prevalence ratio. Most (`r too_neg`%) of the sparse contasts had too few positive samples, but `r too_pos`% of sparse contrasts had too few negative samples. Specifically, BacCow MST markers from Odagiri 2016, GenBac3 in Boehm 2016, and human Bacteroides in Holcomb 2020 had close to 100% prevalence, also leading to high positivity in aggregate targets. To keep the targets with close to 100% positivity from preventing the estimation of prevalence ratios in the aggregate outcomes, we did not include these three targets in calculating the aggregate outcomes for their respective studies. Reese 2017 measured human (Bacteroides and M. smithii) and avian (GFD) MST targets in `r `df %>% ungroup() %>% distinct(sampleid) %>% summarise(N=n())` food samples, but there were no samples positive for GFD, 2 samples positive for M. smithii, and 7 samples positive for Bacteroides, so there are no estimates from food samples reported in the figures. 
+Many targets had very low or no variation in prevalence, with `r num_no_pos` target-sample combinations having no variation in prevalence, and `r num_sparse_pos` of the remaining combinations having too little variation to estimate a prevalence ratio. Most (`r too_neg`%) of the sparse contrasts had too few positive samples, but `r too_pos`% of sparse contrasts had too few negative samples. Specifically, BacCow MST markers from Odagiri 2016, GenBac3 in Boehm 2016, and human Bacteroides in Holcomb 2020 had close to 100% prevalence, also leading to high positivity in aggregate targets. To keep the targets with close to 100% positivity from preventing the estimation of prevalence ratios in the aggregate outcomes, we did not include these three targets in calculating the aggregate outcomes for their respective studies. Reese 2017 measured human (Bacteroides and M. smithii) and avian (GFD) MST targets in `r df %>% ungroup() %>% distinct(sampleid) %>% summarise(N=n())` food samples, but there were no samples positive for GFD, 2 samples positive for M. smithii, and 7 samples positive for Bacteroides, so there are no estimates from food samples reported in the figures. 
+
+Among the sample-target combinations with sufficient data, interventions mostly decreased prevalences by a non-significant amount, with `r n_protective` protective estimated study-specific effects of interventions and `r n_per_sig` insignificant study-specific estimates. Overall, there was a decreased risk of detecting any pathogen within any sample collected within the compound, with an adjusted RR of `r clean_est(pooled_adj_RR %>% filter(target=="Any pathogen"))`, when pooled across all studies using random effects models (Figure 1). Interventions decreased the risk of any pathogen presence across all specific studies except for Boehm 2016, but the decrease was only significant in Fuhrmeister 2020 with an adjusted RR of `r clean_est(adj_RR %>% filter(target=="Any pathogen", sample=="any sample type", study=="Fuhrmeister 2020"))`. Among specific samples types, sanitation interventions had no significant effects (Figure 1). Sanitation interventions also had no effects on MST marker prevalences when aggregated across any sample type or within specific sample types.
 
 
-Interventions mostly decreased prevalences by a non-significant ammount, with X% (n/N) estimated protective effects of interventions and X% (n/N) insignificant estimates. `r cmt("XXXX", "Fill in these numbers", "Andrew", "Date")` 
+When examining prevalences of types of pathogens, interventions reduced the prevalence of bacterial pathogens in any sample type, with an adjusted, pooled RR of `r clean_est(pooled_adj_RR %>% filter(target=="Any bacteria"))`, though the effect was not significant in any individual study (Figure 2). Interventions did not reduce the presence of viruses, protozoa, or STH overall or within specific types of samples, though point estimates were protective for all combinations except for viruses on child and mother's hands. Among specific pathogens, interventions reduced prevalences within any sample type for Pathogenic *E. coli* in Fuhrmeister 2020 (Adjusted RR: `r clean_est(adj_RR %>% filter(target=="Pathogenic E. coli", sample=="any sample type", study=="Fuhrmeister 2020"))`) and for Adenovirus, *Ascaris*, and *Shigella* in Holcomb 2020 (Adenovirus adjusted RR: `r clean_est(adj_RR %>% filter(target=="Adenovirus", sample=="any sample type", study=="Holcomb 2020"))`, *Ascaris* adjusted RR: `r clean_est(adj_RR %>% filter(target=="Ascaris", sample=="any sample type", study=="Holcomb 2020"))`, *Shigella* adjusted RR: `r clean_est(adj_RR %>% filter(target=="Shigella", sample=="any sample type", study=="Holcomb 2020"))`, supplementary figure 1). These reductions were driven specifically by significant reductions in soil samples in Holcomb 2020 and by non-significant reductions in all sample types in Fuhrmeister 2020.
 
-
-Overall, there was a decreased risk of any pathogen across any sample, with an adjusted RR of `r clean_est(pooled_adj_RR %>% filter(target=="Any pathogen"))`, when pooled across all studies using random effects models (Figure 1). Interventions decreased the risk of any pathogen presence across all specific studies except for Boehm 2016, but the decrease was only significant in Fuhrmeister 2020 `r clean_est(adj_RR %>% filter(target=="Any pathogen", sample=="any sample type", study=="Fuhrmeister 2020"))`.
-
--discuss specific pathogen samples
-
--discuss overall MST
--note no overall in Boehm 2016 because of too much positivity in (X)
--discuss specific MST samples
+Among types of MST markers, effects of interventions were inconsistent and largely null, with only `r round(prop.table(table(MST_protect$RR<1))[2]*100,1)`% of estimated study-specific prevalence ratios indicating a protective effect of interventions (Figure 3). The only significant estimates was for any animal MST in stored water samples in Boehm 2016 with and adjusted RR of `r clean_est(adj_RR %>% filter(target=="Any animal MST", sample=="W", study=="Boehm 2016"))`, driven primarily by a significant effect of the sanitation intervention on the Bac-Ruminant (BacR) animal MST markers (supplementary figure 2, adjusted RR: `r clean_est(adj_RR %>% filter(target=="Animal (BacR)", sample=="W", study=="Boehm 2016"))`). 
 
 
 
-1 any sample type Any pathogen 0.800 0.450 1.42  Odagiri 2016    
-2 any sample type Any pathogen 1.21  0.579 2.51  Boehm 2016      
-3 any sample type Any pathogen 0.845 0.668 1.07  Reese 2017      
-4 any sample type Any pathogen 0.892 0.710 1.12  Steinbaum 2019  
-5 any sample type Any pathogen 0.919 0.859 0.984 Fuhrmeister 2020
-6 any sample type Any pathogen 0.909 0.751 1.10  Holcomb 2020    
-7 any sample type Any pathogen 0.984 0.911 1.06  Kwong 2021    
+(Talk about abundance, table 3)
+General (GenBac3) abundance is significantly lower in the intervention arm in Boehm 2016 (add specific estimate), note no PR because too high abundances.
 
-interventions  (are any individual significant?)
+Fuhrmeister 2020 Mother's hands	Animal (BacCow)
+Holcomb 2020 stored water Human (Bacteroides) and House soil	Avian (GFD) + Human (Bacteroides) + Human (M. smithii)
+Holcomb 2020 LatFly Human (Bacteroides)
 
 
-- no significant increase in risk in any estimate
+Supplementary figure 3 shows the effects of interventions on any pathogen and any MST prevalence, stratified by wet and dry season. The wet season was May through October in Wash Benefits Bangladesh and the Gram Vikas and Odisha studies in India. The wet season in the MapSan study in Maputo, Mozambique was November through April. Western Kenyan has two distinct periods of high rain, so the wet season was defined as March-May and October-December for WASH Benefits Kenya. Interventions had significantly different effects by season in several study-specific sample types, but the direction of the effect was inconsistent. `r cmt("Note significant interactions.", "Add", "Andrew", "Date")` Seasonality effect, but inconsistent direction. There was no effect modification by animals in the compounds, however there were few compounds without animals (supplementary figures 4). There were no significant differences between urban (Holcomb 2020) and rural (all other) studies or between trial and matched cohorts designs for sample-target combinations with at least 4 study-specific estimates. Overall, unadjusted estimates did not vary greatly from adjusted estimates with a median absolute difference in log-relative risks of `r round(med_unadj_diff,4)` (supplementary figures 5-7).
 
 
-   sample          target                RR  ci.lb ci.ub study           
-   <chr>           <chr>              <dbl>  <dbl> <dbl> <fct>           
- 1 W               Animal (BacR)      0.604 0.414  0.880 Boehm 2016      
- 2 W               Any animal MST     0.673 0.485  0.934 Boehm 2016      
- 4 any sample type Any pathogen       0.919 0.859  0.984 Fuhrmeister 2020
- 5 any sample type Pathogenic E. coli 0.922 0.858  0.990 Fuhrmeister 2020
- 6 any sample type Adenovirus         0.200 0.0638 0.627 Holcomb 2020    
- 7 any sample type Shigella           0.318 0.109  0.928 Holcomb 2020    
- 8 S               Adenovirus         0.209 0.0643 0.681 Holcomb 2020    
- 9 S               Ascaris            0.599 0.409  0.878 Holcomb 2020    
-10 S               Shigella           0.279 0.0994 0.784 Holcomb 2020    
-11 any sample type Any bacteria       0.911 0.853  0.973 Pooled          
-
-
-
-##### Any bacteria - pooled
-`r clean_est(pooled_adj_RR %>% filter(target=="Any bacteria"))`
-
-
-Protective, not significant
-`r clean_est(pooled_adj_RR %>% filter(target=="Any MST"))`
-
-(Notable cohort-specific significant PRs)
-
-### Sentence citing each of the figures
-
-(Figure 2.)
-(Figure 3.)
-(Table 3.)
-(Supplementary figure 1.)
-(Supplementary figure 2.)
-(Supplementary figure 3.)
-(Supplementary figure 4.)
-(Supplementary figure 5.)
-
-
-Supplementary figure 6. shows the effects of interventions on any pathogen and any MST prevalence, stratified by wet and dry season. The wet season was May through October in Wash Benefits Bangladesh and the Gram Vikas and Odisha studies in India. The wet season in the MapSan study in Maputo, Mozambique was November through April. Western Kenyan has two distinct periods of high rain, so the wet season was defined as March-May and October-December for WASH Benefits Kenya. Interventions had significantly different effects by season in several study-specific sample types, but the direction of the effect was inconsistent. 
-
-(Supplementary figure 7.)
-
-
-
-  * Note the n and percent of all contrasts that were too sparse but had at least one positive. Note dropping food prep in mapsan
-  * (Note all interventions included sanitation, give details)
-  *  Data from each study (Targets, methods of ascertainment, number of sample types, number of samples)
-  *  Number of outcomes for each study, number of samples 
-  *  Prevalences for primary outcomes
-  *  PR's
-  *  Abundance results (Table 3)
-  *  Effect modification results
-  *  N and percent in wet season and with animals in the compound. Note significant interactions. Seasonality effect, but inconsistent direction. No effect of animals, but few compounds without animals. (Note bimodal in Kenya).
-  *  There were no significant differences between urban/rural or trial/matched cohorts
 
   
 #### Results notes:
 
+(delete section after incorporating notes)
+* Before discussing prevalence rations, give absolute prevalences for primary outcomes
 * Add somewhere the number of RE vs. FE. estimates
 * note dropping of baseline (pre-intervention) measures from mapsan
+* note no overall in Boehm 2016 because of too much positivity in GenBac
+* add study-specific methods of detecting/quantifying targets
+* N and percent in wet season and with animals in the compound. 
+* give all the pooled estimates (even insignificant)
+* animal vs. human hosts for different pathogens (re-run analysis without, ascaris, giardia, clostoridim, stec and etec E.coli's, camplobacter, crypto, and (maybe) entomebia hystolitica as they have animal hosts)
+   * can go back and recode the human-pathogenic ecoli from Erica and MapSan different types of E.coli data. 
+   *Let Ayse know how mapsan did pathogenic E.coli
+  * remake fig1 with the estimates offset from each other
+
 
 ## Discussion
 
-We obtained individual participant data from identified studies for an IPD analysis. Unlike conventional meta-analyses that statistically pool reported summary estimates from different studies, IPD analysis pools raw data from individual studies and then estimates the effect of interest.14 The IPD approach has several advantages over pooling independently derived effect estimates from different studies. While effect estimates are often reported differently across studies (e.g., odds ratio vs. relative risk), individual participant data allow direct derivation of the effect estimate of interest, regardless of how it was reported in the original studies. The statistical analysis approach can also be standardized across studies, including adjusting for baseline factors consistently and using consistent statistical models. Additionally, the IPD approach allows estimating effects in subgroups of participants and exploration of factors that mediate any intervention/treatment effects.15-17
+We obtained individual participant data from identified studies for an IPD analysis. Unlike conventional meta-analyses that statistically pool reported summary estimates from different studies, IPD analysis pools raw data from individual studies and then estimates the effect of interest.[@rileyMetaanalysisIndividualParticipant2010a] The IPD approach has several advantages over pooling independently derived effect estimates from different studies. While effect estimates are often reported differently across studies (e.g., odds ratio vs. relative risk), individual participant data allow direct derivation of the effect estimate of interest, regardless of how it was reported in the original studies. The statistical analysis approach can also be standardized across studies, including adjusting for baseline factors consistently and using consistent statistical models. 
+
+-note that we detected some pooled significant effects that were protective but insignificant within individual studies/samples due to increased power/sample size
+
+-no strong variations in study specific estimated, 
+
+  * Limitations
+  * Multiple comparisons, no estimate would be singificant after Bonferonni or Benjamini-Hotchberg FDR corrections, though the consistency of the direction of effect and the most aggregate outcome being singificant implies a small effect of sanitation interventions on reducing environmental pathogens, but not MST markers. Also no significant increase in risk in any estimate
 
   *  Discuss significant results and any consistencies across studies. 
   *  Discuss differences in interventions across studies
@@ -354,6 +325,13 @@ We obtained individual participant data from identified studies for an IPD analy
     * Urban vs. rural
   * Future research needs?
   * discuss that most estimates were underpowered due to small sample sizes
+  
+  
+  -despite differences across markedly different setting and interventions, remarkably consistent results
+  
+  -note that these pathogen/MST methods are harder than FIB/ e. coli sampling
+  -studies aren't going to have funds to do many samples. Note the sample size from these studies compared to the total number of households enrolled.
+  -even with the added power of WASH IPD, many sparse estimates, but enough data to detect and overall small effect on reducing environmental contamination.
   
 #### Discussion Notes
 
@@ -389,7 +367,10 @@ p_adj_2
 
 __Figure 3.__ Forest plots of intervention effects on  any general, human and animal MST markers in different types of environmental samples.
 
+
+
 ## Tables
+
 
 ### Table 1. Prevalence of pathogens by sample type tested in each study 
 
@@ -399,6 +380,8 @@ __Figure 3.__ Forest plots of intervention effects on  any general, human and an
 FitFlextableToPage(flextable(target_presence_long_P))
 
 ```
+
+
 
 ### Table 2. Prevalence of microbial source tracking markers by sample type tested in each study
 
@@ -410,6 +393,8 @@ FitFlextableToPage(flextable(target_presence_long_MST))
 
 ```
 
+
+
 ### Table 3. Mean (SD) abundances by study arm  arm and adjusted abundance differences between intervention and control arms
 
 ```{r, echo=F, results = 'asis'}
@@ -417,6 +402,8 @@ FitFlextableToPage(flextable(tab_adj_diff))
 
 ```
 *Marks estimates from negative binomial models.
+
+
 
 
 
@@ -441,38 +428,13 @@ __Supplementary Figure 2.__ Prevalence of specific MST markers.
 
 
 
-
-```{r, echo=F, warning=F, message=F, fig.width = 7, fig.height = 4.5}
-
-p_unadj_1
-
-```
-
-__Supplementary Figure 3.__ Forest plots of unadjusted intervention effects on any enteropathogen, and any  MST markers in different types of environmental samples. Pooled estimates are presented when there are four or more study-specific estimates for a specific sample and target combination. Empty, grey, crossed points denote contrasts where data existed but with either too low or too high a prevalence to estimate a prevalence ratio. All estimated are adjusted for potential confounders. 
-
-```{r, echo=F, warning=F, message=F, fig.width = 7, fig.height = 5}
-
-p_unadj_3
-
-```
-
-__Supplementary Figure 4.__ Forest plots of unadjusted intervention effects on any virus, any bacteria, any protozoa and any STH prevalences in different types of environmental samples.
-
-```{r, echo=F, warning=F, message=F, fig.width = 7, fig.height = 5}
-
-p_unadj_2
-
-```
-
-__Supplementary Figure 5.__ Forest plots of unadjusted intervention effects on  any general, human and animal MST markers in different types of environmental samples.
-
 ```{r, echo=F, warning=F, message=F, fig.width = 7, fig.height = 5}
 
 p_wet_1
 
 ```
 
-__Supplementary Figure 6.__ Forest plots of intervention effects on any enteropathogen, and any MST markers in different types of environmental samples, stratified by if the sample wast collected suring the wet versus the dry season (defined by the 6 months of highest average rainfall). Significant effect modification, as determined by the P-values on the regression model interaction term, is marked with asterisks (P < 0.05 = "\*", P < 0.01 = "\*\*", P < 0.001 = "\*\*\*"). 
+__Supplementary Figure 3.__ Forest plots of intervention effects on any enteropathogen, and any MST markers in different types of environmental samples, stratified by if the sample wast collected suring the wet versus the dry season (defined by the 6 months of highest average rainfall). Significant effect modification, as determined by the P-values on the regression model interaction term, is marked with asterisks (P < 0.05 = "\*", P < 0.01 = "\*\*", P < 0.001 = "\*\*\*"). 
 
 ```{r, echo=F, warning=F, message=F, fig.width = 7, fig.height = 5}
 
@@ -480,11 +442,39 @@ p_animals_1
 
 ```
 
-__Supplementary Figure 7.__ Forest plots of intervention effects on any enteropathogen, and any MST markers in different types of environmental samples, stratified by the presence of any animals in the compound.  Significant effect modification, as determined by the P-values on the regression model interaction term, is marked with asterisks (P < 0.05 = "\*", P < 0.01 = "\*\*", P < 0.001 = "\*\*\*"). 
+__Supplementary Figure 4.__ Forest plots of intervention effects on any enteropathogen, and any MST markers in different types of environmental samples, stratified by the presence of any animals in the compound.  Significant effect modification, as determined by the P-values on the regression model interaction term, is marked with asterisks (P < 0.05 = "\*", P < 0.01 = "\*\*", P < 0.001 = "\*\*\*"). 
+
+
+
+```{r, echo=F, warning=F, message=F, fig.width = 7, fig.height = 4.5}
+
+p_unadj_1
+
+```
+
+__Supplementary Figure 5.__ Forest plots of unadjusted intervention effects on any enteropathogen, and any  MST markers in different types of environmental samples. Pooled estimates are presented when there are four or more study-specific estimates for a specific sample and target combination. Empty, grey, crossed points denote contrasts where data existed but with either too low or too high a prevalence to estimate a prevalence ratio. All estimated are adjusted for potential confounders. 
+
+```{r, echo=F, warning=F, message=F, fig.width = 7, fig.height = 5}
+
+p_unadj_3
+
+```
+
+__Supplementary Figure 6.__ Forest plots of unadjusted intervention effects on any virus, any bacteria, any protozoa and any STH prevalences in different types of environmental samples.
+
+```{r, echo=F, warning=F, message=F, fig.width = 7, fig.height = 5}
+
+p_unadj_2
+
+```
+
+__Supplementary Figure 7.__ Forest plots of unadjusted intervention effects on any general, human and animal MST markers in different types of environmental samples.
 
 
 ## Supplementary Tables
 
 (Add baseline adjustment covariate table by study using table1 function)
+
+(Add the actual)
 
 ## References

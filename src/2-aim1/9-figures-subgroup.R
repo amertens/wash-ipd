@@ -106,7 +106,7 @@ base_plot <- function(mydf, legend_labels=sample_cats, drop_full_sparse=F, ylimi
 #---------------------------------------------------------------
 p_wet_1 <- adj_RR %>% 
   filter(target %in% c("Any pathogen","Any MST"), V=="wet") %>%
-  base_plot(drop_full_sparse=T, ylimits=c(0.5,3))
+  base_plot(drop_full_sparse=F, ylimits=c(0.5,3))
 p_wet_1
 
 p_animals_1 <- adj_RR %>% 

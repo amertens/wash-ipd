@@ -14,7 +14,7 @@ table(is.na(d$round))
 d <- d %>% filter(round!="bl", sample!="FP", trial!="Odisha") %>% droplevels()
 Wvars = c("hhwealth", "Nhh","nrooms","walls", "floor","roof", "elec","dadagri","landacre", "momedu", "momage")         
 
-d_wet <- d %>% filter(!is.na(wet))%>% filter(study=="Kwong 2021") %>% droplevels() 
+d_wet <- d %>% filter(!is.na(wet))%>% droplevels() 
 d_animals <- d %>% filter(!is.na(animals)) %>% droplevels()
 
 

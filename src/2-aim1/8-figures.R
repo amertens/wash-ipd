@@ -48,7 +48,10 @@ drop_full_sparse=T
 legend_labels=sample_cats
 
 
-base_plot <- function(mydf, legend_labels=sample_cats, drop_full_sparse=F){
+base_plot <- function(mydf, legend_labels=sample_cats, drop_full_sparse=F,
+                      # Y_breaks=c(.25, .5,1, 2, 4, 8),
+                      # Y_labs=c("1/4", "1/2","1", "2", "4", "8")){
+                      Y_range=c(.25, 4)){
   
   my_colors = c("grey20",carto_pal(12, "Prism"))
   
@@ -70,8 +73,9 @@ base_plot <- function(mydf, legend_labels=sample_cats, drop_full_sparse=F){
   
   mydf <- mydf %>% droplevels(.)
   
-  Y_breaks=c(.25, .5,1, 2, 4, 8)
-  Y_breaks2=c("1/4", "1/2","1", "2", "4", "8")
+  axis_range <- range(Y_range)
+  axis_range[1] <- axis_range[1]/1.1
+  axis_range[2] <- axis_range[2]*1.1
   
   ggplot(data = mydf, (aes(x=study, y=RR, group=sample_cat, color=sample_cat, shape=factor(sparse, levels=c("no","yes","pooled"))))) + 
   geom_point(size=2, position = position_dodge(0.5)) +
@@ -83,10 +87,10 @@ base_plot <- function(mydf, legend_labels=sample_cats, drop_full_sparse=F){
     geom_hline(yintercept = 1, linetype="dashed") +
     facet_grid(target_f~sample_type,  scales="free_y", space = "free_x", labeller = label_wrap_gen(width = 10, multi_line = TRUE)) +
     scale_y_continuous(#breaks=scales::breaks_pretty(c(0.25, 0.5,1, 2, 4, 8)),
-      breaks=Y_breaks, 
+      breaks=c(0.0625, 0.125,.25, .5,1, 2, 4, 8, 16), 
                        trans='log10', 
-                       labels = Y_breaks2
-                       ) + coord_flip(ylim=c(0.25,5))+
+                       labels = c("1/16","1/8","1/4", "1/2","1", "2", "4", "8", "16")
+                       ) + coord_flip(ylim=axis_range)+
     labs(color="Sample type") + xlab("") + ylab("Prevalence ratio") + 
     theme_ki() + 
     theme(axis.ticks.x=element_blank(),
@@ -106,7 +110,7 @@ d <- adj_RR %>%
 #Primary figure
 p_adj_1 <- adj_RR %>% 
   filter(target %in% c("Any pathogen","Any MST")) %>%
-  base_plot(drop_full_sparse=T)
+  base_plot(drop_full_sparse=T, Y_range=c(0.25,4))
 p_adj_1
 
 p_adj_2 <- adj_RR %>% 
@@ -114,9 +118,6 @@ p_adj_2 <- adj_RR %>%
   base_plot
 p_adj_2
 
-df <- adj_RR %>% 
-  filter(target %in% c("Any human MST"), study=="Holcomb 2020") 
-  
 
 p_adj_3 <- adj_RR %>% 
   filter(target %in% c("Any bacteria", "Any protozoa", "Any STH", "Any virus")) %>%
@@ -130,7 +131,8 @@ p_adj_3
 unique(adj_RR$target_f)
 p_adj_s1 <- adj_RR %>% 
   filter(target %in% any_pathogens, !c(target %in% c("Any STH","any pathogen-improved","any pathogen-unimproved"))) %>%
-  base_plot(drop_full_sparse=T)
+  base_plot(drop_full_sparse=T,
+            Y_range=c(0.125,8))
 p_adj_s1
 
 
@@ -153,10 +155,6 @@ p_unadj_2 <- unadj_RR %>%
   base_plot
 p_unadj_2
 
-df <- unadj_RR %>% 
-  filter(target %in% c("Any human MST"), study=="Holcomb 2020") 
-
-
 p_unadj_3 <- unadj_RR %>% 
   filter(target %in% c("Any bacteria", "Any protozoa", "Any STH", "Any virus")) %>%
   base_plot
@@ -169,7 +167,7 @@ p_unadj_3
 unique(unadj_RR$target_f)
 p_unadj_s1 <- unadj_RR %>% 
   filter(target %in% any_pathogens, !c(target %in% c("Any STH","any pathogen-improved","any pathogen-unimproved"))) %>%
-  base_plot(drop_full_sparse=T)
+  base_plot(drop_full_sparse=T, Y_range=c(0.125,8))
 p_unadj_s1
 
 
