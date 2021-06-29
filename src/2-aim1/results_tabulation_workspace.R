@@ -92,3 +92,9 @@ ggplot(d, aes(x=exp(log.abs.diff))) + geom_density()
 d %>% select(RR.x, RR.y)
 
 
+adj_emm <- readRDS(file=here("results/adjusted_aim1_emm.Rds")) 
+sig_emm <- adj_emm %>% filter(int.p<0.05, target %in% c("Any pathogen","Any MST"))
+sig_emm
+sig_emm2 <- sig_emm %>% filter(pval<0.05)
+sig_emm2
+
