@@ -3,6 +3,7 @@ rm(list=ls())
 source(here::here("0-config.R"))
 library(scales)
 
+adj_zoo <- readRDS(file=here("results/adjusted_aim1_RR_pooled.Rds")) %>% filter(target %in% c("Any zoonotic","Any non-zoonotic"))
 adj_RR <- readRDS(file=here("results/adjusted_aim1_emm.Rds")) 
 target_lev=target_levels
 
@@ -37,6 +38,9 @@ table(adj_RR$Vlevel, adj_RR$int.p)
 #see if any levels are missing
 adj_RR$target[is.na(adj_RR$target_f)]
 sample_cats = levels(adj_RR$sample_cat)[levels(adj_RR$sample_cat)!="Any sample"]
+
+#Clean zoonotic results
+adj_zoo <- clean_res(adj_zoo)
 
 
 #---------------------------------------------------------------
@@ -154,6 +158,17 @@ p_animals_s2 <- adj_RR %>%
   filter(target %in% any_MST, V=="animals") %>%
   base_plot
 
+
+# Supplimentary figure: zoonotic stratified
+p_zoo <- adj_zoo %>% 
+  filter(target %in% c("Any zoonotic","Any non-zoonotic"), 
+         sample_cat=="Any sample") %>% 
+  group_by(study) %>% #mutate(N=n()) %>% filter(N==2) %>%
+  mutate(Vlevel=target, target_f="Any pathogen", int.p="") %>%
+  # group_by() %>% #drop when only one target
+  # filter(N==2) %>%
+  base_plot(.)
+p_zoo
 
 
 

@@ -4,11 +4,22 @@ source(here::here("0-config.R"))
 unadj_RR <- readRDS(here("results/unadjusted_aim1_RR.Rds"))
 adj_RR <- readRDS(here("results/adjusted_aim1_RR.Rds"))
 
+#clean results
 unadj_RR <- clean_res(unadj_RR)
 adj_RR <- clean_res(adj_RR)
 head(unadj_RR)
 table(unadj_RR$sample_cat)
 
+#make sure zoonotic origin targets have both zoo and not zoo in a study
+zoo_RR <- adj_RR %>%
+  filter(target %in% c("Any zoonotic","Any non-zoonotic")) %>%
+  group_by(sample, study) %>% mutate(N=n()) %>%
+  filter(N==2)
+unadj_RR <- unadj_RR %>% filter(!(target %in% c("Any zoonotic","Any non-zoonotic")))
+adj_RR <- adj_RR %>% filter(!(target %in% c("Any zoonotic","Any non-zoonotic")))
+adj_RR <- bind_rows(adj_RR, zoo_RR)
+
+#pooling function
 poolRR<-function(d, method="REML"){
 
    d <- d %>% rename(untransformed_estimate=coef, untransformed_se=se)  
@@ -23,8 +34,8 @@ poolRR<-function(d, method="REML"){
     
     #confint(fit)
  
-      est<-data.frame(fit$b, fit$se, fit$I2)
-      colnames(est)<-c("logRR.psi","logSE", "I2")
+      est<-data.frame(fit$b, fit$se, fit$I2, fit$QEp)
+      colnames(est)<-c("logRR.psi","logSE", "I2","QEp")
       
       est$RR<-exp(est$logRR)
       est$ci.lb<-exp(est$logRR - 1.96 * est$logSE)
@@ -73,7 +84,7 @@ res_trial <- adj_RR %>% group_by(sample, target) %>%
 res_trial
 
 #Check if unadjusted are different
-unadj_RR$trial <- ifelse(unadj_RR$study=="Holcomb 2020"| adj_RR$study=="Reese 2017", "Matched Cohort", "Trial")
+unadj_RR$trial <- ifelse(unadj_RR$study=="Holcomb 2020"| unadj_RR$study=="Reese 2017", "Matched Cohort", "Trial")
 res_trial_unadj <- unadj_RR %>% group_by(sample, target) %>% 
   filter(!is.na(se)) %>% mutate(N=n()) %>%
   filter(N>=4)%>% group_by(sample, target, trial) %>%

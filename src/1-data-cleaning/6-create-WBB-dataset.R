@@ -26,6 +26,8 @@ head(qPCR)
 head(soilSTH)
 head(WB)
 table(WB$pos)
+table(WB$sample, WB$target, !is.na(WB$abund))
+
 
 
 #Add date to PEC and QPCR
@@ -36,6 +38,18 @@ qPCR <- qPCR %>% mutate(env_date=dmy(paste0(1,"-",Month.Collected,"-",2015)))
 qPCR_quant <- read.csv(paste0(dropboxDir,"Data/WBB/Erica - washb_qPCR_quant_10_23_18_adjusted_var_abundance.csv"))  %>% select(Assay:log.LOQ.)
 head(qPCR)
 head(qPCR_quant)
+
+#Impute BLOQ and BLOD
+qPCR_quant <- qPCR_quant %>%
+  mutate(
+    qual=case_when(
+      log.gc.sample.matrix. >0 ~ "ROQ",
+      BLOQ==1 ~ "BLOQ",
+      BLOD==1 ~ "BLOD"),
+    log.gc.sample.matrix.=ifelse(BLOQ==1, log.LOQ., log.gc.sample.matrix.),
+    log.gc.sample.matrix.=ifelse(BLOD==1, log.LOD., log.gc.sample.matrix.)
+  )
+	
 
 dim(qPCR)
 qPCR <- left_join(qPCR, qPCR_quant, by=c("Unique.Numerical.ID", "Sample.Type","Assay","PID","Month.Collected"))
@@ -58,31 +72,34 @@ qPCR <- qPCR %>%
     abund = 10^log.gc.sample.matrix.)
 
 
-# labs <- makeVlist(soilSTH) %>% mutate(label=as.character(label)) %>% as.data.frame()
-# write.csv(labs, paste0(dropboxDir,"Data/WBB/wbb_STH_soil_codebook.csv"))
-
-# labs <- makeVlist(WB) %>% mutate(label=as.character(label)) %>% as.data.frame()
-# write.csv(labs, paste0(dropboxDir,"Data/WBB/wbb_WB_codebook.csv"))
-
-
-
+#code zoonotic vs. not zoonotic E. coli targets
+PEC$EC_zoo <- ifelse(PEC$EPEC>0 | PEC$EHECSTX1>0 | PEC$EHECSTX2>0, 1,0)
+PEC$EC_zoo <- ifelse(is.na(PEC$EPEC) & is.na(PEC$EHECSTX1) & is.na(PEC$EHECSTX2), NA,PEC$EC_zoo)
+PEC$EC_not_zoo <- ifelse(PEC$EAEC>0 | PEC$EIEC>0 | PEC$ETEC>0, 1,0)
+PEC$EC_not_zoo <- ifelse(is.na(PEC$EAEC)  & is.na(PEC$EIEC) & is.na(PEC$ETEC), NA,PEC$EC_not_zoo)
+table(PEC$EC_zoo)
+table(PEC$EC_not_zoo)
+table(PEC$ECVG)
 
 #Subset to the environmental vars (drop covariates)
 colnames(PEC)
-PEC <- PEC %>% subset(., select=c(PID, env_date, Unique.Numerical.ID, Sample.Type, EPEC, EAEC, EHEC,              
-                      EIEC, ETEC, ECVG, EHECSTX1, EHECSTX2, ETECLT1, ETECST1B,
-                      soilsun, m_hwobs, c_hwobs, dwcont, dwcov, raintime, animalno, MoistCont2)) %>%
+PEC <- PEC %>% subset(., select=c(PID, env_date, Unique.Numerical.ID, Sample.Type,
+                      soilsun, m_hwobs, c_hwobs, dwcont, dwcov, raintime, animalno, MoistCont2, 
+                      EPEC, EAEC, EHEC, EIEC, ETEC, ECVG, EHECSTX1, EHECSTX2, ETECLT1, ETECST1B,
+                      EC_zoo, EC_not_zoo)) %>%
   rename(dataid=PID,
          sampleid=Unique.Numerical.ID,
          sample=Sample.Type) %>%
-  gather(EPEC:ETECST1B, key = target, value = pos)
+  gather(EPEC:EC_not_zoo, key = target, value = pos)
 head(PEC)
 
+
 #Just use any virulent gene - this is a combination variable of the pathogenic subtypes
-PEC <- PEC %>% filter(target=="ECVG")
+# plus target split by zoonotic or not
+PEC <- PEC %>% filter(target %in% c("ECVG","EC_zoo","EC_not_zoo"))
 
 colnames(qPCR)
-qPCR <- qPCR %>% subset(., select=c(PID, env_date, Unique.Numerical.ID, Sample.Type, Pos, abund, log.gc.sample.matrix., Assay, 
+qPCR <- qPCR %>% subset(., select=c(PID, env_date, Unique.Numerical.ID, Sample.Type, Pos, abund, qual, log.gc.sample.matrix., Assay, 
                                     soilsun, m_hwobs, c_hwobs, dwcont, dwcov, raintime, animalno, MoistCont2)) %>%
   rename(dataid=PID,
          pos=Pos,

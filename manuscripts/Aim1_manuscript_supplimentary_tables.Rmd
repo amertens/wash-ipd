@@ -1,0 +1,268 @@
+---
+title: "Effect of water, sanitation and hygiene interventions on pathogens in the environment: Individual participant data meta-analysis"
+author: "Andrew Mertens, Jack Colford, Oliver Cumming, Joe Brown, Jill Stewart, David Holcomb, Jackie Knee, Tom Clasen, Heather Reese, Amy Pickering, Clair Null, Steve Luby, Jessica Grembi, Ben Arnold, Audrie Lin, Jade Benjamin-Chung, Laura Kwong, Lauren Steinbaum, Ali Boehm, Kara Nelson, Erica Fuhrmeister, Mahbubur Rahman, Sammy Njenga, Rassul Nala, Ayse Ercumen (middle order not finalized)"
+output: 
+  word_document:
+    reference_docx:  "tables_format.docx"
+---
+
+
+```{r, include=F}
+
+#Note: Check out this package for integrating any edits from Ayse:
+#https://github.com/noamross/redoc
+
+#CSL styles by journal
+#https://github.com/citation-style-language/styles
+
+
+knitr::opts_chunk$set(echo = FALSE, dpi=300,fig.width=7)
+
+options(warn = -1) 
+library(officedown)
+library(janitor)
+library(knitr)
+library(here)
+# library(table1)
+# library(rvest)
+library(officer)
+library(flextable)
+library(bibtex)
+library(citr)
+library(redoc)
+source(here("0-config.R"))
+#citr:::insert_citation(bib_file ="WASH-IPD.bib", use_betterbiblatex =F)
+# 
+# tidy_bib_file(
+#   rmd_file = "Aim1_manuscript.Rmd"
+#   , messy_bibliography = "WASH-IPD.bib"
+#   , file = "tidy_references.bib"
+# )
+
+
+
+op = function(x, d=2) sprintf(paste0("%1.",d,"f"), x) 
+
+Print <- function(x){
+  prettyNum(round(x,2), big.mark = ",", scientific = FALSE)
+}
+
+ library(pander)
+panderOptions('digits', 2)
+panderOptions('round', 2)
+panderOptions('keep.trailing.zeros', TRUE)
+panderOptions('graph.fontsize', 8)
+
+panderOptions('table.alignment.default', function(df)
+    ifelse(sapply(df, is.numeric), 'right', 'left'))
+panderOptions('table.split.table', Inf)
+panderOptions('big.mark', ",")
+
+set_flextable_defaults(big.mark = ",", 
+  font.size = 8, theme_fun = theme_vanilla,
+  padding.bottom = 5, 
+  padding.top = 5,
+  padding.left = 5,
+  padding.right = 5)
+
+#load clean data
+d <- readRDS(paste0(dropboxDir,"Data/cleaned_ipd_env_data.rds"))
+#sample-positive specific dataset
+pos <- d %>% filter(!grepl("Any",sample),!grepl("any",sample),!grepl("Any",target), !is.na(pos))
+#aggregate samples
+pos.agg <- d %>% filter(grepl("Any",sample),grepl("any",sample),grepl("Any",target), !is.na(pos))
+#abundance dataset
+abund <- d %>% filter(!grepl("Any",sample),!grepl("any",sample),!grepl("Any",target), !is.na(abund))
+
+#number of samples by study
+num_samples_by_study <- d %>% filter(!grepl("Any",sample),!grepl("any",sample),!grepl("Any",target), !is.na(pos)) %>% 
+  group_by(study, sample, clusterid, dataid, round, sampleid) %>% slice(1) %>%
+  group_by(study) %>%
+  summarize(N=n()) %>% mutate(study=gsub(" et al.","",as.character(study))) %>% arrange(N)
+
+#number of food prep samples 
+FP <- d %>% filter(sample=="FP") %>% group_by(target)
+
+#Load figures and tables
+load(here("figures/all_tables.Rdata"))
+
+# load(here("figures/agg_tables.Rdata"))
+load(here("figures/abundance_tables.Rdata"))
+#Drop low ROQ
+tab_unadj_diff <- tab_unadj_diff %>% filter(`ROQ %` >= 50)
+tab_adj_diff <- tab_adj_diff %>% filter(`ROQ %` >= 50)
+
+load(here("figures/all_figures.Rdata"))
+load(here("figures/subgroup_figures.Rdata"))
+#load(here("figures/density_figures.Rdata"))
+load(here("figures/outcome_groups.Rdata"))
+adj_RR <- readRDS(file=here("results/adjusted_aim1_RR_pooled.Rds")) 
+unadj_RR <- readRDS(file=here("results/unadjusted_aim1_RR_pooled.Rds")) 
+pooled_adj_RR <- adj_RR %>% filter(study=="Pooled")
+adj_RR <- adj_RR %>% filter(study!="Pooled")
+adj_diff <- readRDS(file=here("results/adjusted_aim1_diff.Rds")) 
+sig_diff <- adj_diff %>% ungroup() %>% filter(pval < 0.05, perc_ROQ >=50) %>% select(study, sample, target, coef, ci.lb, ci.ub, pval, perc_ROQ)
+
+adj_emm <- readRDS(here("results/adjusted_aim1_emm.Rds"))
+zoonotic_animals_RR <- readRDS(here("results/adjusted_zoonotic_animals.Rds"))
+
+#Study-specific estimates
+protective <- adj_RR %>% ungroup() %>% filter(!is.na(coef),RR<=1) %>% select(sample, target, RR, ci.lb, ci.ub, study)
+n_protective <- paste0(round(nrow(protective)/nrow(adj_RR %>% filter(!is.na(coef))) * 100, 1),"% (",nrow(protective),"/",nrow(adj_RR %>% filter(!is.na(coef))),")")
+
+sig <- adj_RR %>% ungroup() %>% filter(ci.lb<1 & ci.ub<1 | ci.lb>1 & ci.ub>1) %>% select(sample, target, RR, ci.lb, ci.ub, study)
+n_per_sig <- paste0(round(nrow(sig)/nrow(adj_RR %>% filter(!is.na(coef))) * 100, 1),"% (",nrow(sig),"/",nrow(adj_RR %>% filter(!is.na(coef))),")")
+
+perc_no_pos = round(prop.table(table((adj_RR$minN==0)))*100,1)[2]
+num_no_pos = paste0(as.character(sum(adj_RR$minN==0, na.rm=T)),"/",as.character(nrow(adj_RR)))
+adj_RR <- adj_RR %>% filter(minN!=0)
+num_sparse_pos = paste0(as.character(sum(is.na(adj_RR$coef), na.rm=T)),"/",as.character(nrow(adj_RR)))
+adj_sparse <- adj_RR %>% filter(is.na(coef)) %>% mutate(inv_n = N-n)
+too_neg=round(mean(adj_sparse$n <= 10 | adj_sparse$a < 2 | adj_sparse$c < 2) * 100, 1)
+too_pos=round(mean(adj_sparse$inv_n <= 10 | adj_sparse$b < 2 | adj_sparse$d < 2) * 100, 1)
+
+MST_protect  <- adj_RR %>% filter(grepl("MST", target))
+round(prop.table(table(MST_protect$RR<1))[2]*100,1)
+#Pvalue adjustment
+#min(p.adjust(adj_RR$pval, method="BH"), na.rm=T)
+
+#difference between adjusted and unadjusted
+
+d_unadj_comp<- left_join(adj_RR, unadj_RR, by=c("Y","sample","target","study"))
+d_unadj_comp <- d_unadj_comp %>% mutate(log.diff= coef.x-coef.y, log.abs.diff=abs(coef.x-coef.y), diff= RR.x-RR.y, abs.diff=abs(RR.x-RR.y))
+med_unadj_diff<-median(d_unadj_comp$log.abs.diff, na.rm=T)
+
+
+#Clean results function
+clean_est <- function(res, outcome="binomial"){
+  if(outcome=="binomial"){
+    est = round(res$RR, 2)
+    ci.lb = round(res$ci.lb, 2) 
+    ci.ub = round(res$ci.ub, 2)
+    est.ci = paste0("RR=",est," (95% CI: ",ci.lb,", ",ci.ub,")")
+  }else{
+    est = round(res$coef, 2)
+    ci.lb = round(res$ci.lb, 2) 
+    ci.ub = round(res$ci.ub, 2)
+    est.ci = paste0("difference= ",est," (95% CI: ",ci.lb,", ",ci.ub,")")
+  }
+  return(est.ci)
+}
+
+clean_res  <- function(res, outcome="binomial"){
+  if(outcome=="binomial"){
+    res$est.ci = paste0("RR=",round(as.numeric(res$RR),1)," (95% CI: ",round(res$ci.lb,1),", ",round(res$ci.ub,1),")")
+    res <- res %>% ungroup() %>%
+      select(study, sample_type, target_f, est.ci, pval, a, b, c, d, N) 
+    res$est.ci <- gsub("RR\\=1 \\(95\\% CI\\: NA, NA\\)","Not estimated",res$est.ci)
+    
+    res$pval <- as.character(round(res$pval,3))
+    res$pval[is.na(res$pval)] <- ""
+    res <- res %>% 
+      rename(Study=study,
+             Sample=sample_type,
+             Target=target_f,
+             Estimate=est.ci,
+             `p-value`=pval, 
+             `Positive,\nIntervention`=a,
+             `Negative,\nIntervention`=b,
+             `Positive,\nControl`=c,
+             `Negative,\nControl`=d,
+             `Total\nobservations`=N)
+  }else{
+    res$est.ci = paste0("Difference=",round(as.numeric(res$coef),1)," (95% CI: ",round(res$ci.lb,1),", ",round(res$ci.ub,1),")")
+    res <- res %>% ungroup() %>%
+      select(sample_type, target_f, est.ci, pval, a, b, c, d, N) 
+    res$est.ci <- gsub("Difference\\=0 \\(95\\% CI\\: NA, NA\\)","Not estimated",res$est.ci)
+    res$pval <- as.character(round(res$pval,3))
+    res$pval[is.na(res$pval)] <- ""
+    res <- res %>% 
+      rename(Study=study,
+             Sample=sample_type,
+             Target=target_f,
+             Estimate=est.ci,
+             `p-value`=pval, 
+             `Positive,\nIntervention`=a,
+             `Negative,\nIntervention`=b,
+             `Positive,\nControl`=c,
+             `Negative,\nControl`=d,
+             `Total obs-\nervations`=N)
+  }
+  return(res)
+}
+
+clean_res_tab <- function(unadj_RR, adj_RR){
+  unadj<-clean_res(unadj_RR) %>% select(Study,Sample,Target,Estimate, `p-value`) %>% 
+    rename(`Unadjusted\nEstimate`=Estimate, `Unadjusted\np-value`=`p-value`) 
+  adj<-clean_res(adj_RR)%>% rename(`Adjusted\nEstimate`=Estimate, `Adjusted\np-value`=`p-value`)
+  
+  res <- left_join(unadj, adj, by=c("Study", "Sample", "Target"))
+  res <- res %>% arrange(Study,  Sample,  Target) %>% filter(Study!="Pooled")
+  res$`Adjusted\nEstimate`[res$Study=="Odagiri 2016"] <- ""
+  res$`Adjusted\np-value`[res$Study=="Odagiri 2016"] <- ""
+  return(res)
+}
+
+FitFlextableToPage_landscape <- function(ft, pgwidth = 10){
+
+  ft_out <- ft %>% autofit()
+
+  ft_out <- width(ft_out, width = dim(ft_out)$widths*pgwidth /(flextable_dim(ft_out)$widths))
+  return(ft_out)
+}
+
+
+#adj_RR %>% filter(target=="Any virus", sample!="any sample type") %>% select(sample, target, RR, ci.lb, ci.ub, study, a,b,c,d) %>% arrange(sample) %>% as.data.frame()
+
+
+```
+
+```{css, echo=FALSE}
+span.comment-start{
+    background: #e0f3db;
+}
+span.comment-end{
+    background: #e0f3db;
+}
+span.comment-start::after{
+    content: " (" attr(author) ", " attr(date) ") [";
+}
+span.comment-end::before{
+    content: "]"
+}
+span.comment-text{
+    background: #fdbb84;
+}
+
+
+```
+
+```{r, echo=FALSE}
+commentN <- 0
+cmt <- function(txt, cm, author, date = "2021-01-01", comN = commentN){
+  cmt_str <- paste0('<span class="comment-text">[',cm,']{.comment-start id="', comN, '" author="', author, '" date="', date, '"}', txt, '[]{.comment-end id="',commentN,'"}</span>')
+  assign("commentN", commentN + 1, envir = .GlobalEnv)
+  return(cmt_str)
+}
+```
+
+   
+## Supplementary Tables
+
+__Supplementary table 1.__
+Baseline covariates by study. Note Odigari 2016 is not included as all samples are from village water sources and did not have associated household covariates, so all Odigari 2016 estimates are unadjusted`r cmt(".", "Arrange and harmonize covariate levels for the table. This doesn't effect the analysis because it is done study-by-study, but affects the table formatting", "Andrew", "Date")` 
+
+
+```{r, echo=F, results = 'asis'}
+FitFlextableToPage_landscape(flextable(tab2))
+```
+
+__Supplementary table 2.__
+Unadjusted and adjusted results by study, sample, and target.
+
+```{r, echo=F, results = 'asis'}
+FitFlextableToPage_landscape(flextable(clean_res_tab(unadj_RR,adj_RR)))
+```
+
+
+

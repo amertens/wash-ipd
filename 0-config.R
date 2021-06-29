@@ -75,6 +75,8 @@ any_protozoa = c("Giardia", "Cryptosporidium", "Entamoeba histolytica")
 any_pathogens = c(any_virus, any_bacteria, any_helminth, any_protozoa)
 
    
+zoonotic_pathogens = c("EC_zoo","Campylobacter", "Salmonella", "Cryptosporidium", "Yersinia", "Giardia", "Ascaris",  "C. difficile")
+
 
 #MST's:
 general_MST = c("General (GenBac3)","General (BacUni)")

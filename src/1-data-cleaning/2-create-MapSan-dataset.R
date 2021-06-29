@@ -90,17 +90,25 @@ soil$round[soil$round=="24M"] <- "el"
 
 
 unique(soil$target)
-#Create pathogenic E.coli Drop non-included targets
+#Create pathogenic E.coli Drop non-included targets and mark zoonotic/vs non-zoonotic
 ecoli_measures <- c("enteroaggregative_Ecoli","enteropathogenic_Ecoli","enterotoxigenic_Ecoli","shiga_toxin_producing_Ecoli")
+ecoli_measures_zoo <- c("enteropathogenic_Ecoli","shiga_toxin_producing_Ecoli")
+ecoli_measures_not_zoo <- c("enteroaggregative_Ecoli","enterotoxigenic_Ecoli")
 soil_pathogenic <- soil %>% group_by(sampleid, env_date, clusterid, dataid, round, trial_arm, animal_in_compound, sample) %>%
   summarise(detect = 1*(sum(detect==1 & target %in% ecoli_measures)>0)) %>%
   mutate(target="pathogenic_ecoli")
+soil_zoo <- soil %>% group_by(sampleid, env_date, clusterid, dataid, round, trial_arm, animal_in_compound, sample) %>%
+  summarise(detect = 1*(sum(detect==1 & target %in% ecoli_measures_zoo)>0)) %>%
+  mutate(target="EC_zoo")
+soil_measures_not_zoo <- soil %>% group_by(sampleid, env_date, clusterid, dataid, round, trial_arm, animal_in_compound, sample) %>%
+  summarise(detect = 1*(sum(detect==1 & target %in% ecoli_measures_not_zoo)>0)) %>%
+  mutate(target="EC_not_zoo")
 
 
 table(soil$target, soil$detect)
 table(soil_pathogenic$detect)
 
-soil <- bind_rows(soil, soil_pathogenic) %>% 
+soil <- bind_rows(soil, soil_pathogenic, soil_zoo, soil_measures_not_zoo) %>% 
   filter(!(target %in% ecoli_measures))
 table(soil$target, soil$detect)
 
@@ -166,7 +174,8 @@ flyabund <- flyabund %>%
   rename(sample=Location, round=Phase , sampleid=Sample_name, compound_phase=shortname, compound=Compound, tr=treated) %>% 
   subset(., select=c(sampleid,compound_phase, pan_adenovirus:cryptosporidium_parvum_or_hominis, compound, round,sample,tr)) %>%
   gather(pan_adenovirus:cryptosporidium_parvum_or_hominis, key = target, value = abund ) %>%
-  filter(!(target %in% c("EAEC", "EPEC", "ETEC", "STEC")))
+  filter(!(target %in% c("EAEC", "EPEC", "ETEC", "STEC"))) %>%
+  mutate(censored=ifelse(abund==250,"left","none"))
 summary(flyabund$abund)
 
 colnames(flypos)
@@ -212,6 +221,12 @@ table(env$round)
 env <- env %>%
   mutate(dataid=clusterid)
 
+#mark censored obs
+table(env$censored)
+table(is.na(env$censored),is.na(env$abund))
+env$qual <- ifelse(env$censored=="none","ROQ","BLOQ")
+env$qual <- ifelse(is.na(env$abund),NA,env$qual)
+table(is.na(env$abund),is.na(env$qual))
 
 table(env$round)
 table(is.na(env$env_date))
@@ -404,7 +419,7 @@ saveRDS(d, file=paste0(dropboxDir,"Data/MapSan/mapsan_cleaned.rds"))
 colnames(d)
 env_clean <- d %>% subset(., select = c(env_date,sampleid, clusterid, tr,
   dataid,  hh, round, sample, samp_level, target,
-  effort, pos, abund_only_detect, abund, censored, momedu,
+  effort, pos, abund_only_detect, abund, qual, censored, momedu,
   Nhh, hhwealth, nrooms, walls, floor, elec, season, compAnyAnimal, studyArm_binary
 )) 
 
@@ -429,4 +444,6 @@ table((env_clean$nrooms))
 
 df <- env_clean %>% group_by(sampleid, sample) %>% summarise(N=length(unique(tr))) 
   table(df$N)
+  
+table(is.na(env_clean$abund),is.na(env_clean$qual)) 
   

@@ -77,11 +77,11 @@ head(d)
 
 #drop NA columns
 index <- map_lgl(d, ~ all(is.na(.)))
-d <- d[, -index]
-head(d)
+d <- d[, -which(as.vector(index))]
 
-#drop empty columns
-d <- d[,-c(nzv(d, freqCut = 100/0))]
+# #drop empty columns
+# d <- d[,-c(nzv(d, freqCut = 100/0))]
+# head(d)
 
 colnames(d)
 d <- d %>%
@@ -95,23 +95,27 @@ d <- d %>%
     "rv_dilution"="RV_dilution level",                           
     "av_conc"="Avian_cp/ul",                                 
     "av_detect"="Avian_# detected out of 2",                   
-    "av_qual"="Avian_Qualifier",                             
+    "av_qual"="Avian_Qualifier",        
+    "av_dilution"="Avian_dilution level",                           
     "br_conc"="BacR_cp/ul",                                  
     "br_detect"="BacR_# detected out of 2",                    
     "br_qual"="BacR_Qualifier",                              
+    "br_dilution"="BacR_dilution level",                           
     "gbc_conc"="GenBac3_cp/ul",                               
     "gbc_detect"="GenBac3_# detected out of 2",                 
-    "gbc_qual"="GenBac3_Qualifier",                           
+    "gbc_qual"="GenBac3_Qualifier",  
+    "gbc_dilution"="GenBac3_dilution level",                           
     "Hum_conc"="HumM2 (Environmental MMX)_cp/ul",             
     "Hum_detect"="HumM2 (Environmental MMX)_# detected out of 2",
-    "Hum_qual"="HumM2 (Environmental MMX)_Qualifier") %>%
+    "Hum_qual"="HumM2 (Environmental MMX)_Qualifier",
+    "Hum_dilution"="HumM2 (Environmental MMX)_dilution level") %>%
   mutate(uniqueID=sampleid) %>%
   subset(., select = -c(date))
-
+head(d)
 
 #Transform to long-form
 soil_LF <- d %>%
-  gather(rv_conc:Hum_qual, key = var, value = val) %>%
+  gather(rv_conc:Hum_dilution, key = var, value = val) %>%
   mutate(target=str_split(var, "_", simplify = T)[,1],
          var=str_split(var, "_", simplify = T)[,2]) %>%
   filter(sampleid!="EB") %>%
@@ -120,8 +124,6 @@ soil_LF <- d %>%
          hhid = as.numeric(hhid),
          detect=ifelse(is.na(detect),0, detect),
          conc = as.numeric(conc))
-head(soil_LF)
-
 
 #----------------------------------------------------------------------------
 # Compiled SW/hands
@@ -212,6 +214,11 @@ table(water_LF$target, water_LF$sample, water_LF$detect>0)
 #----------------------------------------------------------------------------
 
 df <- bind_rows(water_LF, soil_LF)
+table(df$sample, df$target)
+
+table(1*!is.na(df$conc), !is.na(df$volume), df$sample)
+table(1*!is.na(df$conc), !is.na(df$dilution), df$sample)
+
 df <- df %>% mutate(
   dilution=as.numeric(dilution),
   abund = case_when(
@@ -221,6 +228,7 @@ df <- df %>% mutate(
   ))
 head(df)
 
+summary(df$conc)
 summary(df$abund)
 summary(df$abund[df$detect>0 & df$sample=="H"])
 summary(df$abund[df$detect>0 & df$sample=="W"])
@@ -238,11 +246,6 @@ summary(df$abund[df$qual=="DNQ" & df$sample=="H"])
 summary(df$abund[df$qual=="DNQ" & df$sample=="W"])
 summary(df$abund[df$qual=="DNQ" & df$sample=="S"])
 
-# #Mark GB3 positivity (not in other dataset)
-# table(df$target, df$qual)
-# table(df$target, df$detect )
-
-table(df$target, df$sample, df$detect>0)
 
 #----------------------------------------------------------------------------
 # Load and clean positivity data
@@ -434,23 +437,53 @@ table(df$detect)
 table(df$qual)
 table(df$sample)
 
+summary(df$conc)
+summary(df$abund)
+summary(df$abund[df$sample=="H" & df$detect>0])
+summary(df$abund[df$sample=="W" & df$detect>0])
+summary(df$abund[df$sample=="S" & df$detect>0])
+summary(df$abund[df$sample=="H" & df$detect>0 & df$qual=="BLOQ"])
+summary(df$abund[df$sample=="W" & df$detect>0 & df$qual=="BLOQ"]) 
+summary(df$abund[df$sample=="S" & df$detect>0 & df$qual=="BLOQ"])
+summary(df$abund[df$sample=="H" & df$detect>0 & df$qual=="ROQ"])
+summary(df$abund[df$sample=="W" & df$detect>0 & df$qual=="ROQ"]) 
+summary(df$abund[df$sample=="S" & df$detect>0 & df$qual=="ROQ"])
+
+summary(df$abund[df$sample=="W" & df$detect>0 & df$qual=="ROQ" & df$target=="gbc"])  
+summary(log10(df$abund[df$sample=="W" & df$detect>0 & df$qual=="ROQ" & df$target=="gbc"]))
+
+#Check soil GBS
+
+table(is.na(df$qual), df$detect)
+
+temp <- df[df$detect>0  & df$abund<20,] %>% filter(!is.na(dataid))
+temp
+
+table(df$qual,is.na(df$abund))
+
+
+table(df$detect)
+table(df$qual, df$detect)
+table(df$qual, is.na(df$detect))
 df <- df %>%
   mutate(
     conc = as.numeric(conc),
     abund = case_when(
       sample=="H" & detect==0 ~ 125, 
-      sample=="W" & detect==0 ~ 50,
+      sample=="W" & detect==0 ~ 50/100, #convert to per ml because ROQ conc has been converted to that
       sample=="S" & detect==0 ~ 400, #Need to make based on soil moisture
       sample=="H" & detect!=0 & qual=="BLOQ" ~ (1250-125)/2, 
-      sample=="W" & detect!=0 & qual=="BLOQ" ~ (500-50)/2,
+      sample=="W" & detect!=0 & qual=="BLOQ" ~ (500-50)/(2*100),
       sample=="S" & detect!=0 & qual=="BLOQ" ~ (4000-400)/2, #Need to make based on soil moisture
       qual=="DNQ" ~ NA_real_,
       qual=="ROQ" ~ abund
-    )
+    ),
+    qual=ifelse(detect==0,"BLOD",qual)
   )
 
 summary(df$conc)
 summary(df$abund)
+table(df$sample, df$target, !is.na(df$abund))
 
 
 #Harmonize names with WBB followup

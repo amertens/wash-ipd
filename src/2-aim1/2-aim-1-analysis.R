@@ -71,18 +71,19 @@ res <- d %>% group_by(study, sample, target, aggregate_Y) %>%
 res$sparse <- ifelse(is.na(res$RR), "yes", "no")
 res$RR[is.na(res$RR)] <- 1
 
+
 saveRDS(res, file=here("results/unadjusted_aim1_RR.Rds"))
 
 
-#-----------------------------------
-# Unadjusted RD 
-#-----------------------------------
-res <- d %>% group_by(study, sample, target, aggregate_Y) %>%
-  do(aim1_glm(., outcome="pos", study=.$study[1], sample=.$sample[1], target=.$target[1], family="gaussian"))
-res$sparse <- ifelse(is.na(res$RR), "yes", "no")
-res$RR[is.na(res$RR)] <- 1
-
-saveRDS(res, file=here("results/unadjusted_aim1_RD.Rds"))
+# #-----------------------------------
+# # Unadjusted RD 
+# #-----------------------------------
+# res <- d %>% group_by(study, sample, target, aggregate_Y) %>%
+#   do(aim1_glm(., outcome="pos", study=.$study[1], sample=.$sample[1], target=.$target[1], family="gaussian"))
+# res$sparse <- ifelse(is.na(res$RR), "yes", "no")
+# res$RR[is.na(res$RR)] <- 1
+# 
+# saveRDS(res, file=here("results/unadjusted_aim1_RD.Rds"))
 
 
 
@@ -95,18 +96,19 @@ res <- d %>%
 res$sparse <- ifelse(is.na(res$RR), "yes", "no")
 res$RR[is.na(res$RR)] <- 1
 
+
 saveRDS(res, file=here("results/adjusted_aim1_RR.Rds"))
 
 
-#-----------------------------------
-# Adjusted RD 
-#-----------------------------------
-res <- d %>% 
-  group_by(study, sample, target, aggregate_Y) %>%
-  do(aim1_glm(., outcome="pos", study=.$study[1], sample=.$sample[1], target=.$target[1], Ws=Wvars, family="gaussian"))
-res$sparse <- ifelse(is.na(res$RR), "yes", "no")
-res$RR[is.na(res$RR)] <- 1
-saveRDS(res, file=here("results/adjusted_aim1_RD.Rds"))
+# #-----------------------------------
+# # Adjusted RD 
+# #-----------------------------------
+# res <- d %>% 
+#   group_by(study, sample, target, aggregate_Y) %>%
+#   do(aim1_glm(., outcome="pos", study=.$study[1], sample=.$sample[1], target=.$target[1], Ws=Wvars, family="gaussian"))
+# res$sparse <- ifelse(is.na(res$RR), "yes", "no")
+# res$RR[is.na(res$RR)] <- 1
+# saveRDS(res, file=here("results/adjusted_aim1_RD.Rds"))
 
 
 

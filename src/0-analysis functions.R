@@ -26,7 +26,7 @@ aim1_glm <- function(d, Ws=NULL, outcome="pos", study="mapsan", sample="ds", tar
   Wvars<-NULL
   minN<-NA
   
-  if(length(unique(df$Y))<=2){
+  if(family=="binomial"){
     if(length(unique(df$Y))>1 & length(unique(df$tr))>1){
       minN <- min(table(df$Y))
     }else{
@@ -38,7 +38,7 @@ aim1_glm <- function(d, Ws=NULL, outcome="pos", study="mapsan", sample="ds", tar
     c <- sum(df$Y==1 & df$tr=="Control")
     d <- sum(df$Y==0 & df$tr=="Control")
   }
-  if(length(unique(df$Y))>2){
+  if(family!="binomial"){
     minN <- length(unique(df$Y))
     #Get cell counts
     a <- mean(df$Y[df$tr=="Control"], na.rm=T)
@@ -47,6 +47,8 @@ aim1_glm <- function(d, Ws=NULL, outcome="pos", study="mapsan", sample="ds", tar
     # d <- median(df$Y[df$tr=="Intervention"], na.rm=T)
     c <- sd(df$Y[df$tr=="Control"], na.rm=T)
     d <- sd(df$Y[df$tr=="Intervention"], na.rm=T)
+    
+    perc_ROQ <- round(mean(df$qual=="ROQ", na.rm=T)*100,1)
   }
   
 
@@ -92,11 +94,12 @@ aim1_glm <- function(d, Ws=NULL, outcome="pos", study="mapsan", sample="ds", tar
     }
     
     #Get cell counts after dropping
-    if(length(unique(df$Y))<=2){
-    a <- sum(df$Y==1 & df$tr=="Intervention")
-    b <- sum(df$Y==0 & df$tr=="Intervention")
-    c <- sum(df$Y==1 & df$tr=="Control")
-    d <- sum(df$Y==0 & df$tr=="Control")
+    if(family=="binomial"){
+    a <- sum(df$Y==1 & df$tr=="Intervention", na.rm=T)
+    b <- sum(df$Y==0 & df$tr=="Intervention", na.rm=T)
+    c <- sum(df$Y==1 & df$tr=="Control", na.rm=T)
+    d <- sum(df$Y==0 & df$tr=="Control", na.rm=T)
+    perc_ROQ <- round(mean(df$qual=="ROQ", na.rm=T)*100,1)
     }
     
     #model formula
@@ -144,7 +147,7 @@ aim1_glm <- function(d, Ws=NULL, outcome="pos", study="mapsan", sample="ds", tar
                       ci.ub=NA)
   }
   
-  if(length(unique(df$Y))<=2){
+  if(family=="binomial"){
     res$minN <- minN
     res$n<-sum(df$Y, na.rm=T)
     res$a <- a
@@ -158,6 +161,7 @@ aim1_glm <- function(d, Ws=NULL, outcome="pos", study="mapsan", sample="ds", tar
     # res$median_int <- d
     res$sd_control <- c
     res$sd_int <- d
+    res$perc_ROQ <- perc_ROQ
   }
   
 

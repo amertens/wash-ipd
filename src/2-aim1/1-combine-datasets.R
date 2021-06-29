@@ -76,13 +76,9 @@ odisha$sampleid<-as.character(odisha$sampleid)
 d <- bind_rows(WBB, WBK, mapsan, gv, odisha) %>%
   mutate(study=factor(study, 
             levels=c("Odagiri 2016", "Boehm 2016", "Reese 2017", "Steinbaum 2019", "Fuhrmeister 2020", "Holcomb 2020",  "Kwong 2021")))
-head(d)
-table(d$study, is.na(d$sampleid))
-table(d$study, is.na(d$sampleid), d$pos)
-table(d$study, d$sample)
 
-d %>% distinct(study, sample, target)
-
+#mark STH qual as ROQ
+d$qual <- ifelse(d$study %in% c("Steinbaum 2019","Kwong 2021"),"ROQ",d$qual)
 
 
 #-----------------------------------------------
@@ -98,14 +94,7 @@ df <- d %>% group_by(study,  dataid, tr, clusterid, sample, target,  sampleid) %
   filter(N>1) %>% arrange(study,  dataid, tr, clusterid, sample, target,  sampleid)
 head(df)
 
-  #Mark positives
-table(d$pos)
-d$pos <- ifelse(d$pos==2, 1, d$pos)
-table(d$pos)
 
-#create aggregate outcomes
-head(d)
-d %>% distinct(study, target)
 
 #-----------------------------------------------
 #Give targets more descriptive names
@@ -161,6 +150,8 @@ d <- d %>% mutate(
     target=="norovirus_GI_GII" ~ "Norovirus",
     target=="BacUni" ~ "General (BacUni)",
     target=="Ruminant" ~ "Animal (BacR)",
+    target=="EC_not_zoo" ~ "General (BacUni)",
+    target=="EC_zoo" ~ "Animal (BacR)",
     target==target ~target
   )
 )
@@ -169,14 +160,9 @@ unique(d$target)[!(unique(d$target) %in% c(any_pathogens,any_MST))]
 unique(d$target[d$target_raw==d$target])
 
 table(d$study, d$target)
+table(d$target, !is.na(d$abund), d$sample, d$study)
 
-#-----------------------------------------------
-# Drop abundances without variation
-#-----------------------------------------------
 
-#Drop abundances with less than or equal to 5 unique values or continious estimation doesn't work
-d <- d %>% group_by(study, target, sample) %>% 
-  mutate(Nunique=length(unique(abund)), abund=ifelse(Nunique<=5,NA, abund))
 
 #-----------------------------------------------
 #Clean covariates
@@ -289,6 +275,7 @@ agg_function <- function(targets, name){
   #Drop too-positive strata
   df <- df %>% filter(!(study=="Odagiri 2016" & sample=="W" & target=="Animal (BacCow)"), 
                       !(study=="Boehm 2016" & sample=="CH" & target=="General (GenBac3)"),
+                      !(study=="Boehm 2016" & sample=="S" & target=="General (GenBac3)"),
                       !(study=="Fuhrmeister 2020" & sample=="CH" & target=="Animal (BacCow)"),
                       !(study=="Holcomb 2020" & sample=="FlyLat" & target=="Human (Bacteroides)"))
   
@@ -338,13 +325,25 @@ d_any_human_MST <- agg_function(human_MST, "Any human MST")
 d_any_animal_MST <- agg_function(animal_MST, "Any animal MST")
 
 
+d_any_zoonotic <- agg_function(zoonotic_pathogens, "Any zoonotic")
+
+non_zoonotic <- c(any_pathogens[!(any_pathogens %in% zoonotic_pathogens)],"EC_not_zoo")
+d_any_not_zoonotic <- agg_function(non_zoonotic, "Any non-zoonotic")
+table(d_any_zoonotic$df$pos)
+table(d_any_not_zoonotic$df$pos)
+table(d_any_pathogen$df$pos)
+
+#drop EC split by zoonotic origin
+d <- d %>% filter(!(target %in% c("EC_not_zoo","EC_zoo ")))
+
 #Specifically, BacCow MST markers from Odagiri 2016, GenBac3 in Boehm 2016, and human Bacteroides in Holcomb 2020 had close to 100% prevalence, also leading to high positivity in aggregate targets. 
 
 
 as.data.frame(d_any_protozoa$tab)
 
 d_agg <- bind_rows(d_any_pathogen$df, d_any_virus$df, d_any_protozoa$df, d_any_bacteria$df,
-                   d_any_MST$df, d_any_general_MST$df, d_any_human_MST$df, d_any_animal_MST$df)
+                   d_any_MST$df, d_any_general_MST$df, d_any_human_MST$df, d_any_animal_MST$df,
+                   d_any_zoonotic$df, d_any_not_zoonotic$df)
 table(d_agg$pos)
 table(d_agg$target,d_agg$pos)
 table(d_agg$study, d_agg$target)
@@ -388,7 +387,8 @@ table(d$study, d$target)
 #mark aggregate outcomes
 aggregate_vars <- c("Any general MST",       "Any human MST",        "Any animal MST",  
       "Any pathogen",    "Any bacteria",                       
-      "Any virus",       "Any STH", "Any protozoa")
+      "Any virus",       "Any STH", "Any protozoa",
+      "Any zoonotic", "Any non-zoonotic")
 
 d <- d %>% mutate(
       aggregate_Y = case_when(
@@ -469,5 +469,7 @@ WBB[is.infinite(WBB$pos),]
 # table(d$trial, (d$walls))
 # table(d$trial, (d$floor))
 # table(d$trial, (d$elec))
+
+
 
 
