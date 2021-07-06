@@ -65,7 +65,7 @@ res_RR_unadj <- res_RR_adj <- NULL
 res_RR_unadj <- unadj_RR %>% filter(Y%in%binary_Y) %>%
   group_by(Y, sample, target) %>%
   filter(!is.na(se)) %>% mutate(N=n()) %>%
-  filter(N>=4)%>% group_by(sample, target) %>%
+  filter(N>=4) %>% group_by(sample, target) %>%
   do(poolRR(.)) 
 
 res_RR_adj <- adj_RR %>% filter(Y%in%binary_Y) %>%

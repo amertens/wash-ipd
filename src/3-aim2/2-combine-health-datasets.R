@@ -13,9 +13,9 @@ options(scipen=999)
 wbb <- readRDS(paste0(dropboxDir, "Data/WBB/Clean/WBB_child_health.RDS")) %>% 
   rename(haz=laz) %>%
   mutate(trial="WBB",
-         aged=agedays,
-         child_date =dmy(child_date),
-         child_date_anthro =dmy(child_date_anthro)
+         aged=agedays#,
+         # child_date =dmy(child_date),
+         # child_date_anthro =dmy(child_date_anthro)
          )
 head(wbb)
 

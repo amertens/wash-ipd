@@ -15,9 +15,19 @@ enrol <- read.csv(paste0(dropboxDir,"Data/WBB/washb-bangladesh-enrol.csv"))
 tr <- read.csv(paste0(dropboxDir,"Data/WBB/washb-bangladesh-real-tr.csv"))
 
 #Load env MST/pathogen datasets
-PEC <- read.csv(paste0(dropboxDir,"Data/WBB/washb_PEC_10_23_18_adjusted_var.csv"))
-qPCR <- read.csv(paste0(dropboxDir,"Data/WBB/washb_qPCR_10_23_18_adjusted_var.csv"))  
-soilSTH <- read_dta(paste0(dropboxDir,"Data/WBB/WASHB-soil-sth.dta"))
+# PEC <- read.csv(paste0(dropboxDir,"Data/WBB/washb_PEC_10_23_18_adjusted_var.csv"))
+# qPCR <- read.csv(paste0(dropboxDir,"Data/WBB/washb_qPCR_10_23_18_adjusted_var.csv"))  
+ soilSTH <- read_dta(paste0(dropboxDir,"Data/WBB/WASHB-soil-sth.dta"))
+
+qPCR <- read.csv(paste0(dropboxDir,"Data/WBB/Erica Fuhrmeister - washb_qPCR_10_23_18_adjusted_var_day.csv")) 
+PEC <- read.csv(paste0(dropboxDir,"Data/WBB/Erica Fuhrmeister - washb_PEC_10_23_18_adjusted_var_day.csv")) 
+
+#Add date to PEC and QPCR
+PEC <- PEC %>% mutate(env_date=dmy(paste0(intday,"-",Month.Collected,"-",2015)))
+qPCR <- qPCR %>% mutate(env_date=dmy(paste0(intday,"-",Month.Collected,"-",2015)))
+#soilSTH <- soilSTH %>% mutate(env_date=dmy(paste0(intday,"-",Month.Collected,"-",2015)))
+
+
 #world bank mst data
 WB <- readRDS(paste0(dropboxDir,"Data/WBB/Clean/WBB_WB_env.RDS"))
 
@@ -30,13 +40,13 @@ table(WB$sample, WB$target, !is.na(WB$abund))
 
 
 
-#Add date to PEC and QPCR
-PEC <- PEC %>% mutate(env_date=dmy(paste0(1,"-",Month.Collected,"-",2015)))
-qPCR <- qPCR %>% mutate(env_date=dmy(paste0(1,"-",Month.Collected,"-",2015)))
-
 #merge in abundance
-qPCR_quant <- read.csv(paste0(dropboxDir,"Data/WBB/Erica - washb_qPCR_quant_10_23_18_adjusted_var_abundance.csv"))  %>% select(Assay:log.LOQ.)
-head(qPCR)
+#qPCR_quant <- read.csv(paste0(dropboxDir,"Data/WBB/Erica - washb_qPCR_quant_10_23_18_adjusted_var_abundance.csv"))  %>% select(Assay:log.LOQ.)
+qPCR_quant <- read.csv(paste0(dropboxDir,"Data/WBB/Erica Fuhrmeister - washb_qPCR_quant_10_23_18_adjusted_var_day.csv"))  
+
+qPCR_quant <- qPCR_quant %>% mutate(env_date=dmy(paste0(intday,"-",Month.Collected,"-",2015))) %>%
+select(PID,Assay:log.LOQ., env_date)
+
 head(qPCR_quant)
 
 #Impute BLOQ and BLOD
@@ -49,10 +59,14 @@ qPCR_quant <- qPCR_quant %>%
     log.gc.sample.matrix.=ifelse(BLOQ==1, log.LOQ., log.gc.sample.matrix.),
     log.gc.sample.matrix.=ifelse(BLOD==1, log.LOD., log.gc.sample.matrix.)
   )
-	
+
+head(qPCR)
+head(qPCR_quant)
+
 
 dim(qPCR)
-qPCR <- left_join(qPCR, qPCR_quant, by=c("Unique.Numerical.ID", "Sample.Type","Assay","PID","Month.Collected"))
+#qPCR <- left_join(qPCR, qPCR_quant, by=c("Unique.Numerical.ID", "Sample.Type","Assay","PID","Month.Collected"))
+qPCR <- left_join(qPCR, qPCR_quant, by=c("Unique.Numerical.ID", "Sample.Type","Assay","PID","env_date"))
 dim(qPCR)
 head(qPCR)
 
@@ -290,14 +304,60 @@ saveRDS(env, paste0(dropboxDir, "Data/WBB/Clean/WBB_env.RDS"))
 #----------------------------------------------------------------------------
 
 
-# Load Wash Benefits Bangladesh primary datasets
+# Load Wash Benefits Bangladesh health datasets
 anthro <- read.csv(paste0(dropboxDir,"Data/WBB/washb-bangladesh-anthro.csv"))
-diar <- read.csv(paste0(dropboxDir,"Data/WBB/washb-bangladesh-diar.csv"))
 parasites <- read_dta(paste0(dropboxDir,"Data/WBB/wbb-parasite.dta"))
 
+diar <- read.csv(paste0(dropboxDir,"Data/WBB/washb-bangladesh-diar.csv"))
+r01_diar_full <- read.csv(paste0(dropboxDir,"Data/WBB/r01_child_health_all_variables.csv"))
+colnames(r01_diar_full)
+r01_diar <- r01_diar_full %>%
+  subset(., select = c(dataid,
+                       block,
+                       cluster_id,
+                       child_id_measured,
+                       hhid,
+                       svydate,
+                       Round,
+                       tr,
+                       sex_child,
+                       age_child_days,
+                       who_diar7d)) %>%
+  mutate(svydate=ymd(svydate),
+         sex_child=case_when(sex_child==1 ~ "male", sex_child==2 ~"female")) %>%
+  rename(clusterid=cluster_id,
+         sex=sex_child,
+         agedays=age_child_days,
+         round=Round,
+         diar7d=who_diar7d,
+         child_date=svydate,
+         childid=child_id_measured) 
+r01_diar$childid[r01_diar$childid=="T"] <- "T1"  
+r01_diar$childid[r01_diar$childid=="99"] <- NA  
+
+table(r01_diar$round, r01_diar$diar7d) 
+table(is.na(r01_diar$diar7d))
+table(is.na(r01_diar$svydate))
+
+diar <- diar %>%
+  rename(child_date=svydate) %>%
+  mutate(child_date =dmy(child_date)) %>%
+  subset(., select = c(block,clusterid,dataid,svy, child_date, agedays, sex,childid, diar7d))
+
+
+#combine main trial and r01 diarrhea
 head(diar)
-head(anthro)
-head(parasites)
+head(r01_diar)
+
+table(r01_diar$childid)
+table(diar$childid)
+
+diar <- bind_rows(diar, r01_diar)
+
+# temp <- diar2 %>% group_by( dataid, childid ) %>% summarize(sex1=first(sex), sex2=last(sex))
+# table(temp$sex1, temp$sex2)
+# temp2 <- temp %>% filter(sex1!=sex2)
+# head(temp2)
 
 # 1.	Child birth order/parity -aim 2 only
 
@@ -316,10 +376,7 @@ anthro<-anthro%>%
 colnames(anthro)
 anthro<-anthro%>%
   subset(., select = c(block,clusterid,dataid,svy,child_date_anthro,agedays, sex,childid, laz,whz,waz))
-colnames(diar)
-diar<-diar%>% rename(child_date=svydate) %>%
-  subset(., select = c(block,clusterid,dataid,svy, child_date, agedays, sex,childid, diar7d))
-colnames(diar)
+
 
 # #Merge anthro and diar
 # dim(anthro)
@@ -334,9 +391,10 @@ colnames(diar)
 
 
 anthro_diar <- bind_rows(diar, anthro)
-table(anthro_diar[is.na(anthro_diar$child_date),])
-anthro_diar$child_date[is.na(anthro_diar$child_date)] <- anthro_diar$child_date[is.na(anthro_diar$child_date_anthro)]
-table(anthro_diar[is.na(anthro_diar$child_date),])
+table(is.na(anthro_diar$child_date))
+anthro_diar$child_date_anthro <- dmy(anthro_diar$child_date_anthro)
+anthro_diar$child_date[is.na(anthro_diar$child_date)] <- anthro_diar$child_date_anthro[is.na(anthro_diar$child_date)]
+table(is.na(anthro_diar$child_date))
 
 #----------------------------------------------------------------------------
 #Merge in STH data
