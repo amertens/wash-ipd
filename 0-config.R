@@ -176,6 +176,77 @@ clean_res <- function(d, target_lev=target_levels){
 
 
 
+
+
+
+
+clean_res_subgroup <- function(d, target_lev=target_levels){
+  
+  target_lev <- gsub("Any STH ","Any Helminth",target_lev)
+  d$target_f <- gsub("Any STH ","Any Helminth",d$target)  
+  target_lev <- gsub("Any ","Any\n",target_lev)
+  d$target_f <- gsub("Any ","Any\n",d$target)
+  target_lev <- gsub("Entamoeba histolytica","Entamoeba\nhistolytica",target_lev)
+  d$target_f <- gsub("Entamoeba histolytica","Entamoeba\nhistolytica",d$target_f)
+  target_lev <- gsub("Pathogenic E. coli","Pathogenic\nE. coli",target_lev)
+  d$target_f <- gsub("Pathogenic E. coli","Pathogenic\nE. coli",d$target_f)
+  target_lev <- gsub("MST","MST\nMarker",target_lev)
+  d$target_f <- gsub("MST","MST\nMarker",d$target_f)
+  
+  d$target_f <- factor(d$target_f, levels = c(target_lev, unique(d$target_f)[!(unique(d$target_f) %in% target_lev)]) ) 
+  
+  d <- d %>% mutate(
+    sample_type =case_when(
+      sample == "any sample type" ~ "Any sample\ntype",
+      sample == "SW" ~ "Water",
+      sample == "W" ~ "Water",
+      sample == "CH" ~ "Hands",
+      sample == "MH" ~ "Hands",
+      sample == "FlyKitch" ~ "Flies",
+      sample == "FlyLat" ~ "Flies",
+      sample == "LS" ~ "Soil",
+      sample == "S" ~ "Soil"
+    ),
+    sample_type = factor(sample_type, levels=c("Any sample\ntype", "Water", "Hands","Soil", "Flies")),
+    sample_cat_f =case_when(
+      sample == "any sample type" ~ "Any sample",
+      sample == "SW" ~ "Source water",
+      sample == "W" ~ "Stored water",
+      sample == "CH" ~ "Child hands",
+      sample == "MH" ~ "Mother's hands",
+      sample == "FlyKitch" ~ "Flies in kitchen",
+      sample == "FlyLat" ~ "Flies in latrine",
+      sample == "LS" ~ "Latrine soil",
+      sample == "S" ~ "House soil"
+    ), 
+    sample_cat =case_when(
+      sample == "any sample type" ~ "Any sample",
+      sample == "SW" ~ "Source water",
+      sample == "W" ~ "Stored water",
+      sample == "CH" ~ "Child hands",
+      sample == "MH" ~ "Mother's hands",
+      sample == "FlyKitch" ~ "Flies in kitchen",
+      sample == "FlyLat" ~ "Flies in latrine",
+      sample == "LS" ~ "Latrine soil",
+      sample == "S" ~ "House soil"
+    ), 
+    sample_cat = factor(sample_cat, 
+                        levels=c("Any sample","Source water","Stored water",
+                                 "Child hands", "Mother's hands", "Latrine soil",
+                                 "House soil", "Flies in kitchen",  "Flies in latrine"))
+  )
+  
+  #get raw OR and cell count labels
+  if(!is.null(d$a)){
+    d <- d %>% mutate(OR=(a*d)/(b*c), cell_lab=paste0(a,"/",a+b,":",c,"/",c+d))
+  }
+  
+  
+  return(d)
+}
+
+
+
 #strict_left_join function - will throw error instead of increasing dataframe size
 strict_left_join <- function(x, y, by = NULL, ...){
   by <- common_by(by, x, y)

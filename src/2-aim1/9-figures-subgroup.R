@@ -13,9 +13,10 @@ cbbPalette <- c("#000000", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2"
 #---------------------------------------------------------------
 # Clean results
 #---------------------------------------------------------------
-adj_RR <- adj_RR %>% filter(!is.na(coef))
-adj_RR$sparse <- "no"
-adj_RR <- clean_res(adj_RR)
+#adj_RR <- adj_RR %>% filter(!is.na(coef))
+adj_RR$sparse <- ifelse(is.na(adj_RR$coef),"yes","no")
+adj_RR$RR[adj_RR$sparse=="yes"] <- 1
+adj_RR <- clean_res_subgroup(adj_RR)
 adj_RR <- adj_RR %>% mutate(
   int.p =case_when(
     Vlevel==0 ~ NA_character_,
@@ -25,15 +26,17 @@ adj_RR <- adj_RR %>% mutate(
     int.p>=0.05~""
   ),
   Vlevel = factor(case_when(
+    sparse=="yes" ~ "Sparse data",
     V=="wet" & Vlevel==0 ~ "Dry season",
     V=="wet" & Vlevel==1 ~ "Wet season",
     V=="animals" & Vlevel==0 ~ "No animals",
     V=="animals" & Vlevel==1 ~ "Animals in\ncompound"
-  ))
+  ), levels = c("Dry season", "Wet season","No animals", "Animals in\ncompound","Sparse data"))
 )
 
 table(adj_RR$int.p)
 table(adj_RR$Vlevel, adj_RR$int.p)
+table(adj_RR$Vlevel)
 
 #see if any levels are missing
 adj_RR$target[is.na(adj_RR$target_f)]
@@ -78,15 +81,15 @@ base_plot <- function(mydf, legend_labels=sample_cats, drop_full_sparse=F, ylimi
   Y_breaks=c(.25, .5,1, 2, 4, 8)
   Y_breaks2=c("1/4", "1/2","1", "2", "4", "8")
   
-  ggplot(data = mydf, (aes(x=study, y=RR, group=Vlevel, color=Vlevel))) + 
+  ggplot(data = mydf, (aes(x=study, y=RR, group=Vlevel, color=Vlevel, shape=Vlevel))) + 
   geom_point(size=3, position = position_dodge(0.5)) +
     geom_errorbar(aes(ymin=ci.lb, ymax=ci.ub), position = position_dodge(0.5),
                   width = 0.3, size = 1) +
     #Mark significant interactions
     geom_text(aes(label=int.p), color="black") + 
     scale_color_manual(#breaks = legend_labels,
-      values = cbbPalette[2:3], drop = FALSE) +
-    #scale_shape_manual(values=c(16, 13,18), guide=FALSE) + 
+      values = c(cbbPalette[2:3],"grey50"), drop = FALSE) +
+    scale_shape_manual(values=c(16, 16,18))+  #, guide=FALSE) + 
     geom_hline(yintercept = 1, linetype="dashed") +
     facet_grid(target_f~sample_cat,  scales="free_y", space = "free_x", labeller = label_wrap_gen(width = 10, multi_line = TRUE)) +
     scale_y_continuous(#breaks=scales::breaks_pretty(c(0.25, 0.5,1, 2, 4, 8)),
@@ -162,7 +165,7 @@ p_animals_s2 <- adj_RR %>%
 # Supplimentary figure: zoonotic stratified
 p_zoo <- adj_zoo %>% 
   filter(target %in% c("Any zoonotic","Any non-zoonotic"), 
-         sample_cat!="Sparse Data"
+         sample_cat!="Sparse data"
          ) %>% 
   group_by(study) %>% #mutate(N=n()) %>% filter(N==2) %>%
   mutate(Vlevel=target, target_f="Any pathogen", int.p="") %>%

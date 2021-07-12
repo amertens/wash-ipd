@@ -170,7 +170,7 @@ target_presence_long_P
 
 target_presence_long_MST <- target_presence_long %>% 
   filter(target_type=="MST") %>%
-  select(study,sample, target , N_perc)
+  select(study,sample, target , N_perc, est.ci)
 colnames(target_presence_long_MST) <- str_to_title(colnames(target_presence_long_MST))
 colnames(target_presence_long_MST)[4] <- "Percent positive (n/N)"
 colnames(target_presence_long_MST)[5] <- "PR (95% CI)"
