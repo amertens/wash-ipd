@@ -1,0 +1,8 @@
+Parent study,Study design,Intervention,Location ,Author/ year ,Sample types,Targets,Analytic method,Number of samples
+WASH Benefits Bangladesh,Cluster-randomized trial,"Latrine upgrades, child potties, scoops for feces disposal",Rural Bangladesh,Boehm et al. 2016 ,"Stored drinking water, child hands, soil","Rotavirus, General, human, avian and ruminant fecal markers",qPCR,1497
+-,-,-,-,Fuhrmeister et al. 2020,"Stored drinking water, child and mother hands, soil","Pathogenic E. coli, norovirus, Giardia",qPCR,2606
+-,-,-,-,Kwong et al. 2021,Courtyard soil,Soil-transmitted helminths,Microscopy,1396
+WASH Benefits Kenya,Cluster-randomized trial,"Latrine upgrades, child potties, scoops for feces disposal",Rural Kenya,Steinbaum et al. 2019,Courtyard soil,Soil-transmitted helminths,Microscopy,2107
+MapSan,Controlled before-and-after study,Latrine upgrades,Urban Mozambique,Holcomb et al. 2020,"Source and stored water, household and latrine soil, food, flies caught in latrine and kitchen","Panel of 17 enteropathogens, human and avian fecal markers",qPCR,1081
+Gram Vikas,Matched cohort study,"Latrine upgrades, piped water",Rural India,Reese et al. 2017,Source and stored water ,"V. cholerae, Shigella ",Slide agglutination serotyping,3452
+Total Sanitation Campaign,Cluster-randomized trial,Latrine upgrades,Rural India,Odagiri et al. 2016,Source water,"V. cholerae, rotavirus, adenovirus,general, human, and animal fecal markers","qPCR, microscopy",60

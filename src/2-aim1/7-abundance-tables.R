@@ -20,9 +20,12 @@ table(d$study[is.na(d$qual)])
 table(d$target[is.na(d$qual) & d$study=="Fuhrmeister 2020"])
 table(d$sample[is.na(d$qual) & d$study=="Holcomb 2020"])
 
-
 colnames(unadj_diff)
 head(unadj_diff)
+
+#Drop low ROQ
+unadj_diff <- unadj_diff %>% filter(perc_ROQ  >= 50)
+adj_diff <- adj_diff %>% filter(perc_ROQ  >= 50)
 
 clean_tab = function(df){
   df <- df %>% 
@@ -31,7 +34,7 @@ clean_tab = function(df){
       RR=round(RR,2),
       ci.lb=round(ci.lb,2),
       ci.ub=round(ci.ub,2),
-      pval=round(pval,3),
+      pval=round(pval,2),
       model=ifelse(model=="neg. binomial","*",""),
       est=ifelse(model=="",
                  paste0(coef, " (",ci.lb," ",ci.ub,")"),

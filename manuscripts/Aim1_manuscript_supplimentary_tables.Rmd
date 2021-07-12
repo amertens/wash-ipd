@@ -85,6 +85,11 @@ FP <- d %>% filter(sample=="FP") %>% group_by(target)
 
 #Load figures and tables
 load(here("figures/all_tables.Rdata"))
+S_tab1 <- read.csv(here("data/S_tab1_template.csv"))
+colnames(S_tab1) <- c("Study design","WASH","Environmental markers", "Child health")
+
+S_tab2 <- read.csv(here("data/S_tab2_template.csv"))
+colnames(S_tab2) <- ""
 
 # load(here("figures/agg_tables.Rdata"))
 load(here("figures/abundance_tables.Rdata"))
@@ -98,6 +103,9 @@ load(here("figures/subgroup_figures.Rdata"))
 load(here("figures/outcome_groups.Rdata"))
 adj_RR <- readRDS(file=here("results/adjusted_aim1_RR_pooled.Rds")) 
 unadj_RR <- readRDS(file=here("results/unadjusted_aim1_RR_pooled.Rds")) 
+adj_RR_agg <- adj_RR %>% filter(grepl("Any",sample)|grepl("Any",target))
+unadj_RR_agg <- unadj_RR %>% filter(grepl("Any",sample)|grepl("Any",target))
+
 pooled_adj_RR <- adj_RR %>% filter(study=="Pooled")
 adj_RR <- adj_RR %>% filter(study!="Pooled")
 adj_diff <- readRDS(file=here("results/adjusted_aim1_diff.Rds")) 
@@ -151,16 +159,16 @@ clean_est <- function(res, outcome="binomial"){
 
 clean_res  <- function(res, outcome="binomial"){
   if(outcome=="binomial"){
-    res$est.ci = paste0("RR=",round(as.numeric(res$RR),1)," (95% CI: ",round(res$ci.lb,1),", ",round(res$ci.ub,1),")")
+    res$est.ci = paste0("PR=",round(as.numeric(res$RR),1)," (95% CI: ",round(res$ci.lb,1),", ",round(res$ci.ub,1),")")
     res <- res %>% ungroup() %>%
-      select(study, sample_type, target_f, est.ci, pval, a, b, c, d, N) 
-    res$est.ci <- gsub("RR\\=1 \\(95\\% CI\\: NA, NA\\)","Not estimated",res$est.ci)
+      select(study, sample_cat_f, target_f, est.ci, pval, a, b, c, d, N) 
+    res$est.ci <- gsub("PR\\=1 \\(95\\% CI\\: NA, NA\\)","Not estimated",res$est.ci)
     
-    res$pval <- as.character(round(res$pval,3))
+    res$pval <- as.character(round(res$pval,2))
     res$pval[is.na(res$pval)] <- ""
     res <- res %>% 
       rename(Study=study,
-             Sample=sample_type,
+             Sample=sample_cat_f,
              Target=target_f,
              Estimate=est.ci,
              `p-value`=pval, 
@@ -174,11 +182,11 @@ clean_res  <- function(res, outcome="binomial"){
     res <- res %>% ungroup() %>%
       select(sample_type, target_f, est.ci, pval, a, b, c, d, N) 
     res$est.ci <- gsub("Difference\\=0 \\(95\\% CI\\: NA, NA\\)","Not estimated",res$est.ci)
-    res$pval <- as.character(round(res$pval,3))
+    res$pval <- as.character(round(res$pval,2))
     res$pval[is.na(res$pval)] <- ""
     res <- res %>% 
       rename(Study=study,
-             Sample=sample_type,
+             Sample=sample_cat_f,
              Target=target_f,
              Estimate=est.ci,
              `p-value`=pval, 
@@ -193,13 +201,15 @@ clean_res  <- function(res, outcome="binomial"){
 
 clean_res_tab <- function(unadj_RR, adj_RR){
   unadj<-clean_res(unadj_RR) %>% select(Study,Sample,Target,Estimate, `p-value`) %>% 
-    rename(`Unadjusted\nEstimate`=Estimate, `Unadjusted\np-value`=`p-value`) 
-  adj<-clean_res(adj_RR)%>% rename(`Adjusted\nEstimate`=Estimate, `Adjusted\np-value`=`p-value`)
+    rename(`Unadjusted\nPrevalence Ratio`=Estimate, `Unadjusted\np-value`=`p-value`) 
+  adj<-clean_res(adj_RR)%>% rename(`Adjusted\nPrevalence Ratio`=Estimate, `Adjusted\np-value`=`p-value`)
   
   res <- left_join(unadj, adj, by=c("Study", "Sample", "Target"))
   res <- res %>% arrange(Study,  Sample,  Target) %>% filter(Study!="Pooled")
-  res$`Adjusted\nEstimate`[res$Study=="Odagiri 2016"] <- ""
+  res$`Adjusted\nPrevalence Ratio`[res$Study=="Odagiri 2016"] <- ""
   res$`Adjusted\np-value`[res$Study=="Odagiri 2016"] <- ""
+  
+  res <- res[,c(1:3, 8:12, 4:7)]
   return(res)
 }
 
@@ -247,22 +257,70 @@ cmt <- function(txt, cm, author, date = "2021-01-01", comN = commentN){
 ```
 
    
-## Supplementary Tables
+# Supplementary Tables
 
-__Supplementary table 1.__
-Baseline covariates by study. Note Odigari 2016 is not included as all samples are from village water sources and did not have associated household covariates, so all Odigari 2016 estimates are unadjusted`r cmt(".", "Arrange and harmonize covariate levels for the table. This doesn't effect the analysis because it is done study-by-study, but affects the table formatting", "Andrew", "Date")` 
+## Table S1. Systematic review Search terms
+Different columns denote separation by "AND" in the search string. 
 
-
-```{r, echo=F, results = 'asis'}
-FitFlextableToPage_landscape(flextable(tab2))
+```{r, echo=F, warning=F, message=F,  results = 'asis'}
+FitFlextableToPage_landscape(flextable(S_tab1), pgwidth=8)
 ```
 
-__Supplementary table 2.__
+## Table S2. Pubmed search string
+[MH] are mesh headers and [TW] are text words.
+
+```{r, echo=F, warning=F, message=F,  results = 'asis'}
+knitr::kable(S_tab2)
+```
+
+## Table S3. Prisma Checklist
+(See separate attachment)
+
+## Table S4. Prevalence of pathogens by sample type tested in each study 
+
+```{r, echo=F, warning=F, message=F,  results = 'asis'}
+# autofit(flextable(target_presence_long_P))
+# 
+FitFlextableToPage_landscape(flextable(target_presence_long_P), pgwidth=8)
+
+```
+
+
+
+## Table S5. Prevalence of microbial source tracking markers by sample type tested in each study
+
+```{r, echo=F,  results = 'asis'}
+# autofit(flextable(target_presence_long_MST))
+#target_presence_long_MST <- target_presence_long_MST  %>% flextable(theme_fun = theme_box)
+
+FitFlextableToPage_landscape(flextable(target_presence_long_MST))
+
+```
+
+
+
+
+## Table S6.
+
 Unadjusted and adjusted results by study, sample, and target.
 
 ```{r, echo=F, results = 'asis'}
-FitFlextableToPage_landscape(flextable(clean_res_tab(unadj_RR,adj_RR)))
+
+tabs7 <- clean_res_tab(unadj_RR_agg,adj_RR_agg)
+#Drop any sample type from studies with only one sample type
+tabs7 <- tabs7 %>% filter(!(Study=="Kwong 2021" & Sample=="Any sample"), !(Study=="Steinbaum 2021" & Sample=="Any sample"), !(Study=="Kwong 2021" & Target=="Any pathogen"), !(Study=="Steinbaum 2021" & Target=="Any pathogen"), !(Study=="Reese 2017" & Target=="Any pathogen"))
+
+FitFlextableToPage_landscape(flextable(tabs7))
 ```
 
 
+
+## Table S7.
+
+Baseline covariates by study. Note that Odigari et al. 2016 is not included as data shared from this study were from village water sources and did not have associated covariates from individual households; therefore all estimates for this study are unadjusted`r cmt(".", "Arrange and harmonize covariate levels for the table. This doesn't effect the analysis because it is done study-by-study, but affects the table formatting. Will sort covariate levels better", "Andrew", "Date")` 
+
+
+```{r, echo=F, results = 'asis'}
+FitFlextableToPage_landscape(flextable(tab2), pgwidth=8)
+```
 

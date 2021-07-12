@@ -8,9 +8,10 @@ gv <- readRDS(paste0(dropboxDir,"Data/Gram Vikas/GV_env_cleaned.rds")) %>%
   mutate(study="Reese 2017",
          trial="Gram Vikas",
          #dataid=hh_hid*10000 + dataid,
-         dataid=as.numeric(factor(hh_mid))*10+round,
-         dadagri=as.numeric(dadagri),
-         landacre=as.numeric(landacre))
+         dataid=as.numeric(factor(hh_mid))*10+round#,
+         #dadagri=as.numeric(dadagri),
+         #landown=as.numeric(landown)
+         )
 head(gv)
 
 
@@ -34,10 +35,17 @@ WBB <- WBB %>% mutate(study=case_when(round=="" & target %in% c("sth","ascaris",
                                       round=="" ~ "Fuhrmeister 2020",
                                       round=="World Bank" ~ "Boehm 2016"
                                       ),
+                      momedu=gsub(" \\(1-5y\\)","",momedu), momedu=gsub(" \\(>5y\\)","",momedu), 
                       trial="WBB")
+table(WBB$momedu)
+
 
 WBK <- readRDS(paste0(dropboxDir, "Data/WBK/Clean/WBK_env.RDS"))
 WBK <- WBK %>% mutate(study="Steinbaum 2019", trial="WBK")
+
+table(WBB$momedu)
+table(WBK$momedu)
+table(gv$momedu)
 
 colnames(mapsan)
 colnames(WBB)
@@ -105,9 +113,9 @@ d <- d %>% mutate(
   target = case_when(
     target=="ECVG" ~ "Pathogenic E. coli",
     target=="Hum" ~ "Human (HumM2)",
-    target=="BC" ~ "Animal (BacCow)",
-    target=="BacCow" ~ "Animal (BacCow)",
-    target=="BacCan" ~ "Animal (BacCan)",
+    target=="BC" ~ "Cow (BacCow)",
+    target=="BacCow" ~ "Cow (BacCow)",
+    target=="BacCan" ~ "Dog (BacCan)",
     target=="Gia" ~ "Giardia",
     target=="Noro" ~ "Norovirus",
     target=="norovirus_GIGII" ~ "Norovirus",
@@ -115,7 +123,7 @@ d <- d %>% mutate(
     target=="ascaris" ~ "Ascaris",
     target=="trichuris" ~ "Trichuris",
     target=="a.lumbricoides" ~ "Ascaris",
-    target=="br" ~ "Animal (BacR)",
+    target=="br" ~ "Ruminant (BacR)",
     target=="av" ~ "Avian (GFD)",
     target=="rv" ~ "Rotavirus",
     target=="pan_enterovirus" ~ "Pan enterovirus",
@@ -149,9 +157,9 @@ d <- d %>% mutate(
     target=="pathogenic_ecoli" ~ "Pathogenic E. coli",
     target=="norovirus_GI_GII" ~ "Norovirus",
     target=="BacUni" ~ "General (BacUni)",
-    target=="Ruminant" ~ "Animal (BacR)",
-    target=="EC_not_zoo" ~ "General (BacUni)",
-    target=="EC_zoo" ~ "Animal (BacR)",
+    target=="Ruminant" ~ "Ruminant (BacR)",
+    target=="EC_not_zoo" ~ "Non-zoonotic E. coli",
+    target=="EC_zoo" ~ "Zoonotic E. coli",
     target==target ~target
   )
 )
@@ -159,10 +167,12 @@ d <- d %>% mutate(
 unique(d$target)[!(unique(d$target) %in% c(any_pathogens,any_MST))]
 unique(d$target[d$target_raw==d$target])
 
+
 table(d$study, d$target)
 table(d$target, !is.na(d$abund), d$sample, d$study)
 
-
+#Drop Any STH from WBB because it will be re-aggregated below
+d <- d %>% filter(target!="Any STH")
 
 #-----------------------------------------------
 #Clean covariates
@@ -189,6 +199,7 @@ d <- d %>% group_by(trial) %>%
            nrooms>2  ~ ">3",
          ), levels=c("1-2",">3")),
          nrooms=fct_explicit_na(nrooms, na_level = "Missing"),
+         landown=fct_explicit_na(landown, na_level = "Missing"),
          dadagri=factor(dadagri),
          dadagri=fct_explicit_na(dadagri, na_level = "Missing"),
          momedu=factor(momedu),
@@ -209,14 +220,18 @@ d <- d %>% group_by(trial) %>%
 #-missing from all
 
 # 2.	Asset-based wealth index 
+table(d$hhwealth) 
 table(d$study, d$hhwealth) #check Reese and Holcomb missing
 table(d$study, is.na(d$hhwealth))
 
 # 3.	Number of individuals and children in household
+table(d$Nhh) 
+d$Nhh <- factor(d$Nhh, levels=c("<5","5-8",">8", "Missing"))
 table(d$study, d$Nhh) #check Reese and Holcomb missing
 table(d$study, is.na(d$Nhh))
 
 # 4.	Household food security -aim 2 only
+levels(d$hfiacat) 
 table(d$study, d$hfiacat) 
 table(d$study, is.na(d$hfiacat)) #add to reese and steinbaum
 
@@ -236,6 +251,8 @@ table(d$study, is.na(d$nrooms))
 table(d$study, d$momage)
 table(d$study, is.na(d$momage))
 # 7.	Parental education 
+levels(d$momedu)
+d$momedu <- factor(d$momedu, levels=c("No education", "Incomplete Primary", "Primary",  "Secondary", "More than secondary", "Missing"))
 table(d$study, d$momedu)
 table(d$study, is.na(d$momedu)) #add to Steinbaum and check Holcomb
 # 8.	Parental employment  - check all
@@ -244,7 +261,7 @@ table(d$study, d$dadagri)
 table(d$study, is.na(d$dadagri)) #add missingness check Steinbaum
 
 # 9.	Land ownership 
-table(d$study, is.na(d$landacre)) #check Steinbaum, reese
+table(d$study, is.na(d$landown)) #check Steinbaum, reese
 
 
 
@@ -255,7 +272,7 @@ colnames(d)
 d <- d %>% subset(., select=c(study,            trial,            sampleid,         dataid,           clusterid,       
                               tr,               sample,           env_date,         target,           pos,             
                               abund,            qual,             round,            Nhh,             
-                              momage,           momedu,           dadagri,          landacre,        
+                              momage,           momedu,           dadagri,          landown, landacre,        
                               hfiacat,          watmin,           floor,            hhwealth,         roof,            
                               elec,             walls,            nrooms,           season,  animals))
 
@@ -273,10 +290,10 @@ agg_function <- function(targets, name){
     # ungroup()
   
   #Drop too-positive strata
-  df <- df %>% filter(!(study=="Odagiri 2016" & sample=="W" & target=="Animal (BacCow)"), 
+  df <- df %>% filter(!(study=="Odagiri 2016" & sample=="W" & target=="Cow (BacCow)"), 
                       !(study=="Boehm 2016" & sample=="CH" & target=="General (GenBac3)"),
                       !(study=="Boehm 2016" & sample=="S" & target=="General (GenBac3)"),
-                      !(study=="Fuhrmeister 2020" & sample=="CH" & target=="Animal (BacCow)"),
+                      !(study=="Fuhrmeister 2020" & sample=="CH" & target=="Cow (BacCow)"),
                       !(study=="Holcomb 2020" & sample=="FlyLat" & target=="Human (Bacteroides)"))
   
   
@@ -317,8 +334,9 @@ d_any_pathogen <- agg_function(any_pathogens, "Any pathogen")
 d_any_virus <- agg_function(any_virus, "Any virus")
 d_any_protozoa <- agg_function(any_protozoa, "Any protozoa")
 d_any_bacteria <- agg_function(any_bacteria, "Any bacteria")
+d_any_STH <- agg_function(c("Ascaris","Trichuris"), "Any STH")
 
-
+unique(d$target)
 d_any_MST <- agg_function(any_MST, "Any MST")
 d_any_general_MST <- agg_function(general_MST, "Any general MST")
 d_any_human_MST <- agg_function(human_MST, "Any human MST")
@@ -327,7 +345,7 @@ d_any_animal_MST <- agg_function(animal_MST, "Any animal MST")
 
 d_any_zoonotic <- agg_function(zoonotic_pathogens, "Any zoonotic")
 
-non_zoonotic <- c(any_pathogens[!(any_pathogens %in% zoonotic_pathogens)],"EC_not_zoo")
+non_zoonotic <- c(any_pathogens[!(any_pathogens %in% zoonotic_pathogens)],"Non-zoonotic E. coli")
 d_any_not_zoonotic <- agg_function(non_zoonotic, "Any non-zoonotic")
 table(d_any_zoonotic$df$pos)
 table(d_any_not_zoonotic$df$pos)
@@ -341,7 +359,7 @@ d <- d %>% filter(!(target %in% c("EC_not_zoo","EC_zoo ")))
 
 as.data.frame(d_any_protozoa$tab)
 
-d_agg <- bind_rows(d_any_pathogen$df, d_any_virus$df, d_any_protozoa$df, d_any_bacteria$df,
+d_agg <- bind_rows(d_any_pathogen$df, d_any_virus$df, d_any_protozoa$df, d_any_bacteria$df, d_any_STH$df,
                    d_any_MST$df, d_any_general_MST$df, d_any_human_MST$df, d_any_animal_MST$df,
                    d_any_zoonotic$df, d_any_not_zoonotic$df)
 table(d_agg$pos)
@@ -406,14 +424,17 @@ df <- d %>%
   group_by(study, clusterid, dataid, tr, target, round) %>%
   filter(!is.na(pos)) %>%
   #Drop too-positive strata
-  filter(!(study=="Odagiri 2016" & sample=="W" & target=="Animal (BacCow)"),
+  filter(!(study=="Odagiri 2016" & sample=="W" & target=="Cow (BacCow)"),
                       !(study=="Boehm 2016" & sample=="CH" & target=="General (GenBac3)"),
-                      !(study=="Fuhrmeister 2020" & sample=="CH" & target=="Animal (BacCow)"),
+                      !(study=="Fuhrmeister 2020" & sample=="CH" & target=="Cow (BacCow)"),
                       !(study=="Holcomb 2020" & sample=="FlyLat" & target=="Human (Bacteroides)")) %>%
   mutate(pos=max(pos, na.rm = TRUE), sample="any sample type", animals=max(animals, na.rm=T)) %>% 
   slice(1)
 dim(df)
 table(df$pos)
+
+temp <- df %>% filter(study=="Odagiri 2016")
+table(temp$tr, temp$pos, temp$target)
 
 df$animals[is.infinite(df$animals)] <- NA 
 table(df$animals)
@@ -469,6 +490,12 @@ WBB[is.infinite(WBB$pos),]
 # table(d$trial, (d$walls))
 # table(d$trial, (d$floor))
 # table(d$trial, (d$elec))
+table(d$trial, (d$dadagri))
+table(d$trial, !is.na(d$dadagri))
+table(d$trial, (d$landown))
+table(d$trial, !is.na(d$landown))
+table(d$trial, !is.na(d$landacre))
+table(d$trial, (d$momedu))
 
 
 

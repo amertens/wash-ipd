@@ -162,7 +162,8 @@ p_animals_s2 <- adj_RR %>%
 # Supplimentary figure: zoonotic stratified
 p_zoo <- adj_zoo %>% 
   filter(target %in% c("Any zoonotic","Any non-zoonotic"), 
-         sample_cat=="Any sample") %>% 
+         sample_cat!="Sparse Data"
+         ) %>% 
   group_by(study) %>% #mutate(N=n()) %>% filter(N==2) %>%
   mutate(Vlevel=target, target_f="Any pathogen", int.p="") %>%
   # group_by() %>% #drop when only one target

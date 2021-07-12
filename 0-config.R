@@ -75,15 +75,15 @@ any_protozoa = c("Giardia", "Cryptosporidium", "Entamoeba histolytica")
 any_pathogens = c(any_virus, any_bacteria, any_helminth, any_protozoa)
 
    
-zoonotic_pathogens = c("EC_zoo","Campylobacter", "Salmonella", "Cryptosporidium", "Yersinia", "Giardia", "Ascaris",  "C. difficile")
+zoonotic_pathogens = c("Zoonotic E. coli","Campylobacter", "Salmonella", "Cryptosporidium", "Yersinia", "Giardia", "Ascaris",  "C. difficile")
 
 
 #MST's:
 general_MST = c("General (GenBac3)","General (BacUni)")
 
-animal_MST = c( "Animal (BacCow)",   
-                "Animal (BacR)",              "Avian (GFD)",
-                "Avian (Helicobacter)", "Animal (BacCan)" )
+animal_MST = c( "Cow (BacCow)",   
+                "Ruminant (BacR)",              "Avian (GFD)",
+                "Avian (Helicobacter)", "Dog (BacCan)" )
 
 human_MST = c("Human (HumM2)",  "Human (Bacteroides)",   "Human (M. smithii)")
 
@@ -118,6 +118,8 @@ clean_res <- function(d, target_lev=target_levels){
   d$target_f <- gsub("Entamoeba histolytica","Entamoeba\nhistolytica",d$target_f)
   target_lev <- gsub("Pathogenic E. coli","Pathogenic\nE. coli",target_lev)
   d$target_f <- gsub("Pathogenic E. coli","Pathogenic\nE. coli",d$target_f)
+  target_lev <- gsub("MST","MST\nMarker",target_lev)
+  d$target_f <- gsub("MST","MST\nMarker",d$target_f)
   
   d$target_f <- factor(d$target_f, levels = c(target_lev, unique(d$target_f)[!(unique(d$target_f) %in% target_lev)]) ) 
   
@@ -134,6 +136,17 @@ clean_res <- function(d, target_lev=target_levels){
       sample == "S" ~ "Soil"
     ),
     sample_type = factor(sample_type, levels=c("Any sample\ntype", "Water", "Hands","Soil", "Flies")),
+    sample_cat_f =case_when(
+      sample == "any sample type" ~ "Any sample",
+      sample == "SW" ~ "Source water",
+      sample == "W" ~ "Stored water",
+      sample == "CH" ~ "Child hands",
+      sample == "MH" ~ "Mother's hands",
+      sample == "FlyKitch" ~ "Flies in kitchen",
+      sample == "FlyLat" ~ "Flies in latrine",
+      sample == "LS" ~ "Latrine soil",
+      sample == "S" ~ "House soil"
+    ), 
     sample_cat =case_when(
       sparse == "yes" ~ "Sparse data",
       sample == "any sample type" & sparse != "yes" ~ "Any sample",
@@ -156,6 +169,7 @@ clean_res <- function(d, target_lev=target_levels){
   if(!is.null(d$a)){
     d <- d %>% mutate(OR=(a*d)/(b*c), cell_lab=paste0(a,"/",a+b,":",c,"/",c+d))
   }
+  
   
   return(d)
 }

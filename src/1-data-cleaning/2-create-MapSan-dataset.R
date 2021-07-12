@@ -255,12 +255,13 @@ child <- child %>% mutate_all(~na_if(., 99999999))
 
 #Create child sample date
 child <- child %>% mutate(child_date= ym(ch_surveydate_coarsed))
-
+table(child$ch_careEDUorig)
 
 child <- child %>% select(childid, actualPhase, clusterid, child_date,
                    studyArm_binary, #studyArm_ternary, 
                    age_months, #age_sampMonths,
-                   carerEDU, #breast,
+                   carerEDU,
+                   ch_careEDUorig,
                    diarrhea,
                    # Kkhas,
                    # Kkany,
@@ -396,7 +397,6 @@ d <- d %>%
          hhwealth=povNormal,
          Nhh=Hhsize,
          nrooms=hhrooms,
-         momedu=carerEDU,
          walls=hh_walls,
          floor=hhCement,
          elec=compElec,
@@ -405,11 +405,24 @@ d <- d %>%
   #mutate(tr=ifelse(floor(clusterid/1000)==2,"Sanitation","Control"),
   mutate(
     dataid=clusterid,
+    # momedu=case_when(carerEDU==0 ~"Incomplete Primary",
+    #                  carerEDU==1 ~"Primary",
+    #                  is.na(carerEDU) ~"Missing"),
+    momedu=case_when(ch_careEDUorig==0 ~"No education",
+                     ch_careEDUorig==1 ~"Incomplete Primary",
+                     ch_careEDUorig==2 ~"Primary",
+                     ch_careEDUorig==3 ~"Secondary",
+                     ch_careEDUorig==4 ~"Secondary",
+                     ch_careEDUorig==5 ~"More than secondary",
+                     ch_careEDUorig==6 ~"More than secondary",
+                     ch_careEDUorig==7 ~"More than secondary",
+                     is.na(ch_careEDUorig) ~"Missing"),
     tr=ifelse(studyArm_binary==1,"Sanitation","Control"),
     tr = factor(tr, levels = c("Control", "Sanitation"))
   )
 table(is.na(d$env_date)) 
 table(is.na(d$child_date)) 
+
 
 
 saveRDS(d, file=paste0(dropboxDir,"Data/MapSan/mapsan_cleaned.rds"))

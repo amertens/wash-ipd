@@ -10,7 +10,7 @@ d <- droplevels(d)
 table(d$qual)
 round(prop.table(table(d$qual))*100,1)
 
-Wvars = c("hhwealth", "Nhh","nrooms","walls", "floor","roof","elec","dadagri","landacre", "momedu", "momage")         
+Wvars = c("hhwealth", "Nhh","nrooms","walls", "floor","roof","elec","dadagri","landown","landacre", "momedu", "momage")         
 
 #drop aggregate groups
 d <- d %>% filter(sample!="any sample type", !grepl("Any ",target))

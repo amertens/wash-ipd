@@ -20,6 +20,7 @@ table(is.na(d$target))
 table(d$study,d$sample)
 table(d$study, d$round)
 table(d$study, d$target)
+table(d$study, d$sample)
 table(d$sample, d$target, d$study)
 
 
@@ -35,7 +36,7 @@ table(d$sample, d$target, d$study)
 # 9.	Land ownership 
 
 colnames(d)
-Wvars = c("hhwealth", "Nhh","nrooms","walls", "floor","roof","elec","dadagri","landacre", "momedu", "momage")         
+Wvars = c("hhwealth", "Nhh","nrooms","walls", "floor","roof","elec","dadagri","landown","landacre", "momedu", "momage")         
 
 
 
@@ -99,6 +100,8 @@ res$RR[is.na(res$RR)] <- 1
 
 saveRDS(res, file=here("results/adjusted_aim1_RR.Rds"))
 
+table(res$sample)
+temp<-res %>% filter(sample=="FlyLat", target=="Pathogenic E. coli")
 
 # #-----------------------------------
 # # Adjusted RD 

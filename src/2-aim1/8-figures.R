@@ -103,9 +103,6 @@ base_plot <- function(mydf, legend_labels=sample_cats, drop_full_sparse=F,
 #---------------------------------------------------------------
 # Plot figures
 #---------------------------------------------------------------
-  
-d <- adj_RR %>% 
-  filter(target %in% c("Any pathogen","Any MST")) %>% filter(study=="Holcomb 2020")
 
 #Primary figure
 p_adj_1 <- adj_RR %>% 

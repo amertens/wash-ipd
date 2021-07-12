@@ -122,6 +122,23 @@ d2 <- d2 %>% mutate(elec=as.numeric(hh_asset_12))
 table(d$hoh_edu4)
 
 
+# 1 = <1 yr complete
+# 2 = Completed primary (>4 yrs)
+# 3 = Completed secondary (10 yrs)
+# 4 = More than secondary (>10 yrs)
+d <- d %>% mutate(hoh_edu4=factor(case_when(hoh_edu4=="."~"Missing",
+                                           hoh_edu4=="1"~"Incomplete Primary",
+                                           hoh_edu4=="2"~"Primary",
+                                           hoh_edu4=="3"~"Secondary",
+                                           hoh_edu4=="4"~"More than secondary"
+                                           )))
+d2 <- d2 %>% mutate(hoh_edu4=factor(case_when(hoh_edu4=="."~"Missing",
+                                            hoh_edu4=="1"~"Incomplete Primary",
+                                            hoh_edu4=="2"~"Primary",
+                                            hoh_edu4=="3"~"Secondary",
+                                            hoh_edu4=="4"~"More than secondary"
+                                            )))
+
 
 
 # Parental employment (and Indicator for works in agriculture)
@@ -132,13 +149,16 @@ table(d$hoh_edu4)
   # 5 = Agricultural worker
   # 6 = Not employed
 table(d$hh_hohjob)
-d <- d %>% mutate(dadagri=factor(hh_hohjob))
-d2 <- d2 %>% mutate(dadagri=factor(hh_hohjob))
+d <- d %>% mutate(dadagri=ifelse(hh_hohjob==5,1,0), dadagri=(ifelse(hh_hohjob==".",NA,dadagri)))
+d2 <- d2 %>% mutate(dadagri=ifelse(hh_hohjob==5,1,0), dadagri=(ifelse(hh_hohjob==".",NA,dadagri)))
 
 # Land ownership 
-d <- d %>% mutate(landacre=factor(hh_agricown))
-d2 <- d2 %>% mutate(landacre=factor(hh_agricown))
-
+d <- d %>% mutate(landown=factor(case_when(hh_agricown=="."~"Missing",
+                                    hh_agricown=="0"~"0",
+                                    hh_agricown=="1"~"1")))
+d2 <- d2 %>% mutate(landown=factor(case_when(hh_agricown=="."~"Missing",
+                                           hh_agricown=="0"~"0",
+                                           hh_agricown=="1"~"1")))
 
 # Animal ownership 
 # 12 - any.livest.lg - does the household have any large livestock (oxen, cattle)
@@ -188,7 +208,7 @@ d2 <- d2 %>% mutate(animals=as.numeric(ls_any))
    ) %>%
    subset(., select = c(
      env_date, sampleid, hh_vid, round, hh_hid, hh_mid, hh_st, ic, sample, vc.pos, sh.pos, vc.pres.pos, sh.pres.pos, momedu, haz, whz, sex, age, dia7, wealth_st,
-     mnum4,mnum5,mnum6,mnum7,numcu5, elec,  dadagri, landacre, animals
+     mnum4,mnum5,mnum6,mnum7,numcu5, elec,  dadagri, landown, animals
    ))
 head(dw)
 
@@ -206,7 +226,7 @@ sw <- d2 %>%
   ) %>%
   subset(., select = c(
     env_date, sampleid, hh_vid, round, hh_hid, hh_mid,  hh_st, ic, sample, vc.pos, sh.pos, vc.pres.pos, sh.pres.pos, momedu, haz, whz,  sex, age,dia7, wealth_st,
-    mnum4,mnum5,mnum6,mnum7,numcu5, elec, dadagri, landacre, animals
+    mnum4,mnum5,mnum6,mnum7,numcu5, elec, dadagri, landown, animals
   ))
 head(sw)
 

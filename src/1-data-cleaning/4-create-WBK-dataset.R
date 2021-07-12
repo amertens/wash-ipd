@@ -94,7 +94,12 @@ dim(env2)
 colnames(env2)
 colnames(enrol)
 enrol2 <- enrol %>% 
-  mutate(env_date=dmy(ms_el_up_date)) %>%
+  mutate(env_date=dmy(ms_el_up_date),
+         momedu=case_when(momedu==""~"Missing",
+                          momedu=="Incomplete Primary"~"Incomplete Primary",
+                          momedu=="Any Secondary (>5y)"~"Secondary",
+                          momedu=="Primary (1-5y)"~"Primary",
+                          )) %>%
   subset(., select=c(hhid, env_date, momedu, momage, Ncomp, HHS)) %>%
   rename(hfiacat=HHS) %>%
   filter(!is.na(env_date)) %>% 
@@ -105,10 +110,6 @@ env2 <- left_join(env2, enrol2, by=c("hhid"))
 dim(env2)
 table(is.na(env2$env_date))
 
-
-enrol2 <- enrol %>% 
-  subset(., select=c(hhid, momedu, Ncomp)) %>% 
-  rename(Nhh=Ncomp)
 
 
 saveRDS(env2, paste0(dropboxDir, "Data/WBK/Clean/WBK_env.RDS"))

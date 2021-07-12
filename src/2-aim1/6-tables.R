@@ -6,7 +6,25 @@ library(table1)
 library(rvest)
 
 
+#Clean results function
+clean_est <- function(res, outcome="binomial"){
+  if(outcome=="binomial"){
+    est = round(res$RR, 2)
+    ci.lb = round(res$ci.lb, 2) 
+    ci.ub = round(res$ci.ub, 2)
+    est.ci = paste0(est," (",ci.lb,", ",ci.ub,")")
+  }else{
+    est = round(res$coef, 2)
+    ci.lb = round(res$ci.lb, 2) 
+    ci.ub = round(res$ci.ub, 2)
+    est.ci = paste0("difference= ",est," (95% CI: ",ci.lb,", ",ci.ub,")")
+  }
+  return(est.ci)
+}
 
+
+
+adj_RR <- readRDS(file=here("results/adjusted_aim1_RR_pooled.Rds")) 
 d <- readRDS(paste0(dropboxDir,"Data/cleaned_ipd_env_data.rds"))
 head(d)
 d <- d %>% mutate(
@@ -26,6 +44,24 @@ d <- d %>% mutate(
                                          "Child hands", "Mother's hands", "Latrine soil",
                                          "House soil", "Flies in kitchen",  "Flies in latrine", "Sparse data"))) %>%
             droplevels()
+
+adj_RR <- adj_RR %>% mutate(
+  sample =case_when(
+    sample == "any sample type" ~ "Any sample",
+    sample == "SW" ~ "Source water",
+    sample == "W" ~ "Stored water",
+    sample == "CH" ~ "Child hands",
+    sample == "MH" ~ "Mother's hands",
+    sample == "FlyKitch" ~ "Flies in kitchen",
+    sample == "FlyLat" ~ "Flies in latrine",
+    sample == "LS" ~ "Latrine soil",
+    sample == "S" ~ "House soil"
+  ), 
+  sample = factor(sample, 
+                  levels=c("Any sample","Source water","Stored water",
+                           "Child hands", "Mother's hands", "Latrine soil",
+                           "House soil", "Flies in kitchen",  "Flies in latrine", "Sparse data"))) %>%
+  droplevels()
 
 
 d %>% arrange(study, sample, target) %>%
@@ -93,13 +129,24 @@ target_presence_MST[is.na(target_presence_MST)] <- ""
 
 
 #target presence by sample and study - longform
-target_presence_long <- d %>% filter(!grepl("Any ",target), !grepl("any ",sample), !grepl("Any ",sample)) %>%
+target_presence_long_prep <- d %>% filter(!grepl("Any ",target), !grepl("any ",sample), !grepl("Any ",sample)) %>%
   group_by(study,sample, target, target_cat, target_type) %>% summarize(N=n(), n=sum(pos), perc=round(mean(pos, na.rm=T)*100,1)) %>% 
   ungroup() %>%
   #mutate(target=paste0(target," (",target_cat,", ",n,"/",N,")")) %>% 
   mutate(
     N_perc =paste0(perc,"% (",n,"/",N,")")) %>% 
-  arrange(target_type, study, sample, target_cat, target, perc) %>%
+  arrange(target_type, study, sample, target_cat, target, perc) 
+
+#merge in PRs
+adj_PR <- adj_RR %>% filter(!is.na(coef))
+adj_PR$est.ci <- clean_est(adj_PR)
+adj_PR <- adj_PR %>% subset(., select = c("study","sample","target","est.ci"))
+
+target_presence_long <- left_join(target_presence_long_prep, adj_PR, by = c("study","sample","target"))
+target_presence_long$est.ci <- ifelse(is.na(target_presence_long$est.ci),"-",target_presence_long$est.ci)
+
+
+target_presence_long <- target_presence_long%>%
   group_by(study, target_type) %>% 
   mutate(n=row_number()) %>%
   group_by(study, sample, target_type) %>% 
@@ -115,17 +162,18 @@ target_presence_long <- d %>% filter(!grepl("Any ",target), !grepl("any ",sample
 
 target_presence_long_P <- target_presence_long %>% 
   filter(target_type=="P") %>%
-  select(study,sample, target, target_cat, N_perc) 
+  select(study,sample, target, N_perc, est.ci) 
 colnames(target_presence_long_P) <- str_to_title(colnames(target_presence_long_P))
-colnames(target_presence_long_P)[4] <- "Pathogen type"
-colnames(target_presence_long_P)[5] <- "Percent positive (n/N)"
+colnames(target_presence_long_P)[4] <- "Percent positive (n/N)"
+colnames(target_presence_long_P)[5] <- "PR (95% CI)"
+target_presence_long_P
 
 target_presence_long_MST <- target_presence_long %>% 
   filter(target_type=="MST") %>%
-  select(study,sample, target, target_cat , N_perc)
+  select(study,sample, target , N_perc)
 colnames(target_presence_long_MST) <- str_to_title(colnames(target_presence_long_MST))
-colnames(target_presence_long_MST)[4] <- "MST type"
-colnames(target_presence_long_MST)[5] <- "Percent positive (n/N)"
+colnames(target_presence_long_MST)[4] <- "Percent positive (n/N)"
+colnames(target_presence_long_MST)[5] <- "PR (95% CI)"
 
 
 
@@ -138,19 +186,23 @@ tab1 <- table1(~target+sample |study, format_number = TRUE, data=d)
 
 
 #covariate table
-Wvars = c("hhwealth", "Nhh","nrooms","walls", "floor","roof","elec","dadagri","landacre", "momedu", "momage")         
+Wvars = c("hhwealth", "Nhh","nrooms","walls", "floor","roof","elec","dadagri","landown","landacre", "momedu", "momage")         
 Wvars[!(Wvars %in% colnames(d))]
 df <- d %>% subset(., select = c("study", Wvars)) %>% filter(study!="Odagiri 2016")
-#rename and clean covariates
+#harmonize covariates
+
+
+#rename covariates
 df <- df %>% rename(
   `Household\nwealth`=hhwealth, 
   `Number of people\nin the household`=Nhh,
   `Number of rooms\nin the household`=nrooms,
-  `Wall construction`=walls, 
+  `Improved wall`=walls, 
   `Improved floor`=floor,
-  `Roof construction`=roof,
+  `Improved roof`=roof,
   `Electricity`=elec,
   `Father in\nagriculture`=dadagri,
+  `Land owned`=landown, 
   `Acres of\nland owned`=landacre, 
   `Maternal\neducation`=momedu, 
   `Maternal\nage`=momage)

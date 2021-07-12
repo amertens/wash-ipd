@@ -11,10 +11,11 @@ head(unadj_RR)
 table(unadj_RR$sample_cat)
 
 #make sure zoonotic origin targets have both zoo and not zoo in a study
+#-note changed based on what Ayse said
 zoo_RR <- adj_RR %>%
-  filter(target %in% c("Any zoonotic","Any non-zoonotic")) %>%
-  group_by(sample, study) %>% mutate(N=n()) %>%
-  filter(N==2)
+   filter(target %in% c("Any zoonotic","Any non-zoonotic")) #%>%
+  # group_by(sample, study) %>% mutate(N=n()) %>%
+  # filter(N==2)
 unadj_RR <- unadj_RR %>% filter(!(target %in% c("Any zoonotic","Any non-zoonotic")))
 adj_RR <- adj_RR %>% filter(!(target %in% c("Any zoonotic","Any non-zoonotic")))
 adj_RR <- bind_rows(adj_RR, zoo_RR)
