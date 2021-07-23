@@ -54,11 +54,11 @@ colnames(WBK)
 WBK <- WBK %>% rename( dataid=compoundid, Nhh=num_hh, hhwealth=assetquintile, sampleid=soil_id) %>%
   mutate(round="el")
 
-WBB <- WBB %>% subset(., select = c(study, trial, sampleid, dataid, clusterid, tr, sample,  env_date,
+WBB <- WBB %>% subset(., select = c(study, trial, sampleid, dataid, hhid, clusterid, tr, sample,  env_date,
                                     target, pos, abund, qual, round, block, Nhh, momage, momheight, 
                                     momedu, dadagri,landacre, hfiacat,watmin,  floor, hhwealth,
                                     roof, elec, walls, animals)) 
-WBK <- WBK %>% subset(., select = c(study, trial, sampleid, dataid, clusterid, tr, sample, target, pos, abund, round, block, Nhh, 
+WBK <- WBK %>% subset(., select = c(study, trial, sampleid, dataid, hhid, clusterid, tr, sample, target, pos, abund, round, block, Nhh, 
                                     momage, momedu, hfiacat,  animals,
                                     floor, hhwealth, env_date, roof, elec, walls)) %>%
                 mutate(hfiacat=factor(hfiacat))
@@ -66,7 +66,7 @@ WBK <- WBK %>% subset(., select = c(study, trial, sampleid, dataid, clusterid, t
 
 
 #Odisha
-odisha <- readRDS(file=paste0(dropboxDir,"Data/Odisha/Odisha_env_cleaned.rds")) %>% mutate(study="Odagiri 2016", trial="Odisha")
+odisha <- readRDS(file=paste0(dropboxDir,"Data/Odisha/Odisha_env_cleaned.rds")) %>% mutate(study="Odagiri 2016", trial="Odisha", hhid=dataid)
 
 
 
@@ -102,7 +102,7 @@ df <- d %>% group_by(study,  dataid, tr, clusterid, sample, target,  sampleid) %
   filter(N>1) %>% arrange(study,  dataid, tr, clusterid, sample, target,  sampleid)
 head(df)
 
-
+table(d$study, is.na(d$hhid))
 
 #-----------------------------------------------
 #Give targets more descriptive names
@@ -269,7 +269,7 @@ table(d$study, is.na(d$landown)) #check Steinbaum, reese
 # drop unneeded columns
 #-----------------------------------------------
 colnames(d)
-d <- d %>% subset(., select=c(study,            trial,            sampleid,         dataid,           clusterid,       
+d <- d %>% subset(., select=c(study,            trial,            sampleid,         dataid, hhid, clusterid,       
                               tr,               sample,           env_date,         target,           pos,             
                               abund,            qual,             round,            Nhh,             
                               momage,           momedu,           dadagri,          landown, landacre,        

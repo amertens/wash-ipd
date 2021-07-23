@@ -202,12 +202,13 @@ d2 <- d2 %>% mutate(animals=as.numeric(ls_any))
      age=as.numeric(dbmo),
      env_date=ymd(hh_st)) %>%
    rename(
+     hhid=hh_hid,
      round=hh_rnd, 
      momedu=hoh_edu4,
      sampleid=ev_smp_id
    ) %>%
    subset(., select = c(
-     env_date, sampleid, hh_vid, round, hh_hid, hh_mid, hh_st, ic, sample, vc.pos, sh.pos, vc.pres.pos, sh.pres.pos, momedu, haz, whz, sex, age, dia7, wealth_st,
+     env_date, sampleid, hh_vid, round, hhid, hh_mid, hh_st, ic, sample, vc.pos, sh.pos, vc.pres.pos, sh.pres.pos, momedu, haz, whz, sex, age, dia7, wealth_st,
      mnum4,mnum5,mnum6,mnum7,numcu5, elec,  dadagri, landown, animals
    ))
 head(dw)
@@ -220,21 +221,22 @@ sw <- d2 %>%
     age=as.numeric(dbmo),
     env_date=ymd(hh_st)) %>%
   rename(
+    hhid=hh_hid,
     round=hh_rnd, 
     momedu=hoh_edu4,
     sampleid=ev_smp_id
   ) %>%
   subset(., select = c(
-    env_date, sampleid, hh_vid, round, hh_hid, hh_mid,  hh_st, ic, sample, vc.pos, sh.pos, vc.pres.pos, sh.pres.pos, momedu, haz, whz,  sex, age,dia7, wealth_st,
+    env_date, sampleid, hh_vid, round, hhid, hh_mid,  hh_st, ic, sample, vc.pos, sh.pos, vc.pres.pos, sh.pres.pos, momedu, haz, whz,  sex, age,dia7, wealth_st,
     mnum4,mnum5,mnum6,mnum7,numcu5, elec, dadagri, landown, animals
   ))
 head(sw)
 
 dim(sw)
-dim(sw %>% distinct(hh_vid, round, hh_hid, hh_mid, env_date))
+dim(sw %>% distinct(hh_vid, round, hhid, hh_mid, env_date))
 
 dim(dw)
-dim(dw %>% distinct(hh_vid, round, hh_hid, hh_mid, env_date))
+dim(dw %>% distinct(hh_vid, round, hhid, hh_mid, env_date))
 
 #Merge
 df <- bind_rows(sw, dw)

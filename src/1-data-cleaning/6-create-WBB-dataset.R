@@ -309,6 +309,16 @@ anthro <- read.csv(paste0(dropboxDir,"Data/WBB/washb-bangladesh-anthro.csv"))
 parasites <- read_dta(paste0(dropboxDir,"Data/WBB/wbb-parasite.dta"))
 
 diar <- read.csv(paste0(dropboxDir,"Data/WBB/washb-bangladesh-diar.csv"))
+#get hhid from enrol
+hhid <- enrol %>% subset(., select =c("dataid","hhid")) %>% arrange(dataid, hhid)
+diar <- left_join(diar, hhid, by=c("dataid"))
+
+#world bank diarrhea
+WB_diar <- haven::read_dta(paste0(dropboxDir,"Data/WBB/fecal_pathways_1_childhealth_micro_submit.dta"))
+head(WB_diar)
+table(WB_diar$loose7dprev) #diarrhea measure to use
+
+#R01 diarrhea
 r01_diar_full <- read.csv(paste0(dropboxDir,"Data/WBB/r01_child_health_all_variables.csv"))
 colnames(r01_diar_full)
 r01_diar <- r01_diar_full %>%
@@ -342,7 +352,7 @@ table(is.na(r01_diar$svydate))
 diar <- diar %>%
   rename(child_date=svydate) %>%
   mutate(child_date =dmy(child_date)) %>%
-  subset(., select = c(block,clusterid,dataid,svy, child_date, agedays, sex,childid, diar7d))
+  subset(., select = c(block,clusterid,dataid, hhid, svy, child_date, agedays, sex,childid, diar7d))
 
 
 #combine main trial and r01 diarrhea
@@ -372,10 +382,13 @@ anthro<-anthro%>%
                  child_date_anthro=anthrodate) %>%
           mutate(svyyear=year(dmy(child_date_anthro)),
                  svyweek=week(dmy(child_date_anthro)))
+#get hhid from enrol
+anthro <- left_join(anthro, hhid, by=c("dataid"))
+
 
 colnames(anthro)
 anthro<-anthro%>%
-  subset(., select = c(block,clusterid,dataid,svy,child_date_anthro,agedays, sex,childid, laz,whz,waz))
+  subset(., select = c(block,clusterid,dataid,hhid,svy,child_date_anthro,agedays, sex,childid, laz,whz,waz))
 
 
 # #Merge anthro and diar

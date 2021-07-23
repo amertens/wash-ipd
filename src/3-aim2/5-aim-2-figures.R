@@ -133,7 +133,7 @@ base_plot_diff <- function(mydf, legend_labels=sample_cats, drop_full_sparse=F){
 #   filter(target %in% c("Any pathogen","Any MST")) %>% filter(study=="Holcomb 2020")
 
 #Primary figure
-p_diar_1 <- unadj_RR %>% 
+p_diar_1_unadj <- unadj_RR %>% 
   filter(target %in% c("Any pathogen","Any MST"), Y=="diar7d") %>%
   base_plot(drop_full_sparse=T)
 

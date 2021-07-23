@@ -13,7 +13,8 @@ table(env$hh)
 
 #rename variables. Original study clustered on compound
 env <- env %>% rename(sampleid=ï..samp_id, clusterid=comp, env_date=samp_date) %>%
-  mutate(hhid=env$comp*100+env$hh)
+  mutate(hh=ifelse(is.na(hh),52,hh),
+    hhid=clusterid*100+hh)
 
 
 #Drop cultured and qPCR E.Coli
@@ -30,7 +31,7 @@ env <- env %>% mutate(
  
 
 #Subset to aim 1 variables and save dataset
-env <- env %>% select(env_date, sampleid, clusterid, hh, survey, season, type, type_def, samp_level, 
+env <- env %>% select(env_date, sampleid, clusterid, hhid, hh, survey, season, type, type_def, samp_level, 
                       target, effort, status, detect, logquant, censored, censquant)
 
 #clean variables for merge
@@ -248,7 +249,7 @@ colnames(child)
 head(child)
 
 #rename variables
-child <- child %>% rename(childid=ï..totchildID, clusterid=compID)
+child <- child %>% rename(childid=ï..totchildID, clusterid=compID, hhid=totHHid)
   
 #Replace missingness code (99999999) with NA
 child <- child %>% mutate_all(~na_if(., 99999999))
@@ -257,7 +258,8 @@ child <- child %>% mutate_all(~na_if(., 99999999))
 child <- child %>% mutate(child_date= ym(ch_surveydate_coarsed))
 table(child$ch_careEDUorig)
 
-child <- child %>% select(childid, actualPhase, clusterid, child_date,
+child <- child %>% select(childid, actualPhase, clusterid, hhid,
+                          child_date,
                    studyArm_binary, #studyArm_ternary, 
                    age_months, #age_sampMonths,
                    carerEDU,
@@ -306,7 +308,6 @@ child <- child %>% select(childid, actualPhase, clusterid, child_date,
                    CompPop,
                    sampDate_coarsed,
                    female,
-                   totHHid,
                    ch_careEDUorig,
                    # ch_surveydate_coarsed,
                    # ch_exclbreast,
@@ -332,7 +333,7 @@ child <- child %>%
          
 #clean variables for merge
 child <- child %>% 
-  mutate(hh=totHHid %% 100,
+  mutate(hh=hhid %% 100,
          round = case_when(
            survey==0 ~"bl",
            survey==1 ~"ml",
@@ -385,7 +386,7 @@ env2 <- env2 %>% subset(., select = -c(hh, tr))
 
 
 dim(child)+dim(env2)
-d <- full_join(env2, child,  by = c("clusterid", "round", "studyArm_binary")) %>% filter(!is.na(pos))
+d <- full_join(env2, child,  by = c("clusterid", "hhid", "round", "studyArm_binary")) %>% filter(!is.na(pos))
 dim(d)
 
 colnames(d)
@@ -431,7 +432,7 @@ saveRDS(d, file=paste0(dropboxDir,"Data/MapSan/mapsan_cleaned.rds"))
 #Split out just env data and covariates
 colnames(d)
 env_clean <- d %>% subset(., select = c(env_date,sampleid, clusterid, tr,
-  dataid,  hh, round, sample, samp_level, target,
+  dataid,  hh, hhid, round, sample, samp_level, target,
   effort, pos, abund_only_detect, abund, qual, censored, momedu,
   Nhh, hhwealth, nrooms, walls, floor, elec, season, compAnyAnimal, studyArm_binary
 )) 
@@ -441,11 +442,13 @@ env_clean <- d %>% subset(., select = c(env_date,sampleid, clusterid, tr,
 dim(env)
 dim(d)
 env_clean <- env_clean %>% 
-             distinct(env_date, sampleid, dataid, clusterid, tr, sample, target, .keep_all=TRUE) %>%
+             distinct(env_date, sampleid, dataid, hhid, clusterid, tr, sample, target, .keep_all=TRUE) %>%
              filter(!is.na(sample), sample!="") 
             
 dim(env_clean)
+#[1] 8390   27
 
+table(env$sample, is.na(env$hhid))
 table(env_clean$target, env_clean$pos, env_clean$sample)
 
 

@@ -148,8 +148,8 @@ gv <- readRDS(paste0(dropboxDir,"Data/Gram Vikas/GV_env_cleaned.rds")) %>%
                                   whz=as.numeric(whz),
                                   #momedu=wom.edu4,
                                   child_date =env_date) %>%
-  subset(., select = c(clusterid,  round,      hh_hid,     hh_mid,     hh_st,          
-                       momedu, haz, whz, sex, age, elec, dadagri, landacre, 
+  subset(., select = c(clusterid,  round,      hhid,     hh_mid,     hh_st,          
+                       momedu, haz, whz, sex, age, elec, dadagri, landown, 
                        tr, hhwealth, Nhh, study, trial,     
                        dataid, diar7d, child_date)) %>%
   distinct()
@@ -175,6 +175,7 @@ head(gv)
 
 df <- data.table::rbindlist(list(wbb, wbk, mapsan, odisha, gv), fill=T)
 
+ table(df$trial, !is.na(df$hhid))
 # table(df$trial, !is.na(df$childid))
 # table(df$trial, !is.na(df$child_date))
 # table(df$trial, !is.na(df$diar7d))
@@ -211,6 +212,6 @@ table(df$trial, !is.na(df$age))
 table(df$trial, !is.na(df$sex))
 
 #Temporarily subset to primary health outcome
-df <- df %>% subset(., select = c(trial, clusterid, dataid, childid, sex,age,child_date, diar7d, haz, whz, waz, svy))
+df <- df %>% subset(., select = c(trial, clusterid, dataid, hhid, childid, sex,age,child_date, diar7d, haz, whz, waz, svy))
 
 saveRDS(df, file=paste0(dropboxDir,"Data/cleaned_ipd_CH_data.rds"))

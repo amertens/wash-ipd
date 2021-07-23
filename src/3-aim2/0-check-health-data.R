@@ -86,3 +86,64 @@ tab
 d <- d %>% filter(target=="Any pathogen", !is.na(diar7d))
 
 table(d$pos, d$diar7d, d$sample, d$trial)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#-----------------------------------------------------------
+# Check merging
+#-----------------------------------------------------------
+
+#env data
+ch <- readRDS(paste0(dropboxDir,"Data/cleaned_ipd_CH_data.rds")) %>% mutate(ch_data=1)
+env <- readRDS(paste0(dropboxDir,"Data/cleaned_ipd_env_data.rds"))
+env <- env %>% mutate(
+  trial = case_when(study %in% c("Fuhrmeister 2020", "Kwong 2021", "Boehm 2016") ~ "WBB",
+                    study=="Steinbaum 2019" ~ "WBK",
+                    study=="Holcomb 2020" ~ "MapSan",
+                    study=="Reese 2017" ~ "Gram Vikas",
+                    study=="Odagiri 2016" ~ "Odisha")) 
+table(env$trial)  
+#Drop baseline measure from mapsan and food prep samples
+env <- env %>% filter(round != "0m", sample!="FP") %>% droplevels(.)
+
+#Check just wash benefits
+ch <- ch %>% filter(trial=="WBB", !is.na(diar7d))
+env <- env %>% filter(trial=="WBB", target=="Any pathogen", sample=="any sample type")
+
+dim(ch)
+dim(env)
+
+d <- full_join(env, ch, by = c("trial","dataid","clusterid"))
+d <- d %>% filter(!is.na(sample), !is.na(ch_data))
+dim(d)
+
+table(d$pos, d$diar7d)
+
+d <- d %>% 
+  filter(child_date>=env_date) %>%
+  mutate(
+    diar7d = ifelse(child_date-env_date > 93, NA, diar7d))
+
+table(d$pos, d$diar7d)
+
+#Why are so many dropped?
+summary(d$child_date)
+summary(d$env_date)
+summary(as.numeric(d$child_date-d$env_date))
+
+
+

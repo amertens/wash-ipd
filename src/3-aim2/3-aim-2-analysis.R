@@ -23,7 +23,7 @@ d <- d %>% filter(sample!="FP") %>% droplevels()
 # a.	Indicator for works in agriculture 
 # 9.	Land ownership 
 
-Wvars = c("sex","age","hfiacat","momage","hhwealth", "Nhh","nrooms","walls", "roof", "floor","elec","dadagri","landacre", "momedu", "tr")         
+Wvars = c("sex","age","hfiacat","momage","hhwealth", "Nhh","nrooms","walls", "roof", "floor","elec","dadagri","landacre","landown", "momedu", "tr")         
 
 
 #-----------------------------------
