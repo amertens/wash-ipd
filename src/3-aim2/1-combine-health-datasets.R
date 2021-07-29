@@ -7,17 +7,7 @@ options(scipen=999)
 
 
 
-#-----------------------------------------------------------
-# Clean WASH Benefits Bangladesh
-#-----------------------------------------------------------
-wbb <- readRDS(paste0(dropboxDir, "Data/WBB/Clean/WBB_child_health.RDS")) %>% 
-  rename(haz=laz) %>%
-  mutate(trial="WBB",
-         aged=agedays#,
-         # child_date =dmy(child_date),
-         # child_date_anthro =dmy(child_date_anthro)
-         )
-head(wbb)
+
 
 #-----------------------------------------------------------
 # Merge in WASH Benefits Kenya
@@ -170,10 +160,10 @@ head(gv)
 
 
 #-----------------------------------------------------------
-# bind child health data together
+# bind non-WBB child health data together
 #-----------------------------------------------------------
 
-df <- data.table::rbindlist(list(wbb, wbk, mapsan, odisha, gv), fill=T)
+df <- data.table::rbindlist(list( wbk, mapsan, odisha, gv), fill=T)
 
  table(df$trial, !is.na(df$hhid))
 # table(df$trial, !is.na(df$childid))
@@ -212,6 +202,7 @@ table(df$trial, !is.na(df$age))
 table(df$trial, !is.na(df$sex))
 
 #Temporarily subset to primary health outcome
-df <- df %>% subset(., select = c(trial, clusterid, dataid, hhid, childid, sex,age,child_date, diar7d, haz, whz, waz, svy))
+#df <- df %>% subset(., select = c(trial, clusterid, dataid, hhid, childid, sex,age,child_date, diar7d, haz, whz, waz, svy))
+df <- df %>% subset(., select = c(trial, clusterid, dataid, hhid, childid, sex,age,child_date, diar7d, haz, whz, waz))
 
 saveRDS(df, file=paste0(dropboxDir,"Data/cleaned_ipd_CH_data.rds"))

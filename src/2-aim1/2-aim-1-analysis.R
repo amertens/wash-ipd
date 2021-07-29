@@ -5,6 +5,7 @@ source(here::here("0-config.R"))
 d <- readRDS(paste0(dropboxDir,"Data/cleaned_ipd_env_data.rds"))
 head(d)
 
+table(d$study)
 table(d$target)
 
 #Why is aggregation function leading to bl dropping of all Any_ variables?

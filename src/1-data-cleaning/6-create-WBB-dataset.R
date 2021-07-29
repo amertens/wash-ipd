@@ -15,9 +15,7 @@ enrol <- read.csv(paste0(dropboxDir,"Data/WBB/washb-bangladesh-enrol.csv"))
 tr <- read.csv(paste0(dropboxDir,"Data/WBB/washb-bangladesh-real-tr.csv"))
 
 #Load env MST/pathogen datasets
-# PEC <- read.csv(paste0(dropboxDir,"Data/WBB/washb_PEC_10_23_18_adjusted_var.csv"))
-# qPCR <- read.csv(paste0(dropboxDir,"Data/WBB/washb_qPCR_10_23_18_adjusted_var.csv"))  
- soilSTH <- read_dta(paste0(dropboxDir,"Data/WBB/WASHB-soil-sth.dta"))
+soilSTH <- read_dta(paste0(dropboxDir,"Data/WBB/WASHB-soil-sth.dta")) 
 
 qPCR <- read.csv(paste0(dropboxDir,"Data/WBB/Erica Fuhrmeister - washb_qPCR_10_23_18_adjusted_var_day.csv")) 
 PEC <- read.csv(paste0(dropboxDir,"Data/WBB/Erica Fuhrmeister - washb_PEC_10_23_18_adjusted_var_day.csv")) 
@@ -25,11 +23,12 @@ PEC <- read.csv(paste0(dropboxDir,"Data/WBB/Erica Fuhrmeister - washb_PEC_10_23_
 #Add date to PEC and QPCR
 PEC <- PEC %>% mutate(env_date=dmy(paste0(intday,"-",Month.Collected,"-",2015)))
 qPCR <- qPCR %>% mutate(env_date=dmy(paste0(intday,"-",Month.Collected,"-",2015)))
-#soilSTH <- soilSTH %>% mutate(env_date=dmy(paste0(intday,"-",Month.Collected,"-",2015)))
 
 
 #world bank mst data
-WB <- readRDS(paste0(dropboxDir,"Data/WBB/Clean/WBB_WB_env.RDS"))
+WB <- readRDS(paste0(dropboxDir,"Data/WBB/Clean/WBB_WB_env.RDS"))  %>% mutate(study="Boehm 2016")
+
+
 
 head(PEC)
 head(qPCR)
@@ -41,7 +40,6 @@ table(WB$sample, WB$target, !is.na(WB$abund))
 
 
 #merge in abundance
-#qPCR_quant <- read.csv(paste0(dropboxDir,"Data/WBB/Erica - washb_qPCR_quant_10_23_18_adjusted_var_abundance.csv"))  %>% select(Assay:log.LOQ.)
 qPCR_quant <- read.csv(paste0(dropboxDir,"Data/WBB/Erica Fuhrmeister - washb_qPCR_quant_10_23_18_adjusted_var_day.csv"))  
 
 qPCR_quant <- qPCR_quant %>% mutate(env_date=dmy(paste0(intday,"-",Month.Collected,"-",2015))) %>%
@@ -65,7 +63,6 @@ head(qPCR_quant)
 
 
 dim(qPCR)
-#qPCR <- left_join(qPCR, qPCR_quant, by=c("Unique.Numerical.ID", "Sample.Type","Assay","PID","Month.Collected"))
 qPCR <- left_join(qPCR, qPCR_quant, by=c("Unique.Numerical.ID", "Sample.Type","Assay","PID","env_date"))
 dim(qPCR)
 head(qPCR)
@@ -97,7 +94,7 @@ table(PEC$ECVG)
 
 #Subset to the environmental vars (drop covariates)
 colnames(PEC)
-PEC <- PEC %>% subset(., select=c(PID, env_date, Unique.Numerical.ID, Sample.Type,
+PEC <- PEC %>% subset(., select=c(PID, env_date, Unique.Numerical.ID, Sample.Type, round,
                       soilsun, m_hwobs, c_hwobs, dwcont, dwcov, raintime, animalno, MoistCont2, 
                       EPEC, EAEC, EHEC, EIEC, ETEC, ECVG, EHECSTX1, EHECSTX2, ETECLT1, ETECST1B,
                       EC_zoo, EC_not_zoo)) %>%
@@ -113,7 +110,7 @@ head(PEC)
 PEC <- PEC %>% filter(target %in% c("ECVG","EC_zoo","EC_not_zoo"))
 
 colnames(qPCR)
-qPCR <- qPCR %>% subset(., select=c(PID, env_date, Unique.Numerical.ID, Sample.Type, Pos, abund, qual, log.gc.sample.matrix., Assay, 
+qPCR <- qPCR %>% subset(., select=c(PID, env_date, Unique.Numerical.ID, Sample.Type, Pos, abund, qual, log.gc.sample.matrix., Assay, round, 
                                     soilsun, m_hwobs, c_hwobs, dwcont, dwcov, raintime, animalno, MoistCont2)) %>%
   rename(dataid=PID,
          pos=Pos,
@@ -163,6 +160,8 @@ dim(soilSTH)
 table(is.na(soilSTH$pos),is.na(soilSTH$abund))
 
 soilSTH$sample="S"
+soilSTH$study="Kwong 2021"
+soilSTH$round="endline"
 soilSTH$dataid <- as.numeric(soilSTH$dataid)
 soilSTH$sampleid <- as.numeric(soilSTH$sampleid)
 head(soilSTH)
@@ -173,8 +172,9 @@ head(soilSTH)
 #Merge env datasets
 #----------------------------------------------------------------------------
 
-env <- bind_rows(PEC, qPCR, soilSTH)
-env$round <- ""
+env_fuhrmeister <- bind_rows(PEC, qPCR) %>% mutate(round=as.character(round), study="Fuhrmeister 2020")
+env <- bind_rows(env_fuhrmeister, soilSTH)              
+#env$round <- ""
 env$sampleid <- as.character(env$sampleid)
 env <- bind_rows(env, WB)
 table(env$target, is.na(env$abund))
@@ -185,10 +185,8 @@ df <-  enrol %>% subset(., select=c("dataid","roof","walls","cement","elec","ass
                       "asset_tvbw",      "asset_tvcol",     "asset_refrig",    "asset_bike",      "asset_moto",     
                       "asset_sewmach",   "asset_phone",     "asset_tv",        "asset_wardrobe",  "asset_table",    
                       "asset_chair",    
-                      #"asset_clock",    don't use clock due to missingness
                       "asset_khat",      "asset_chouki",    "asset_mobile",   
                       "n_asset_wardrobe","n_asset_table",   "n_asset_chair",  
-                      #"n_asset_clock",   
                       "n_asset_khat",  "n_asset_chouki",  "n_asset_mobile")) %>% 
             as.data.frame()
 
@@ -263,7 +261,6 @@ table(is.na(env$animals))
 
 animals <- read.csv(paste0(dropboxDir,"Data/WBB/1. WASHB_Baseline_main_survey.csv")) %>% select(dataid, q4016, starts_with("q4114")) %>% rename(hhid=q4016) %>%
   mutate(animals2=as.numeric(q4114_1com + q4114_2com+ q4114_3com+ q4114_1h+ q4114_2h+ q4114_3h > 0), dataid=as.numeric(dataid)) %>% select(dataid, hhid, animals2)
-  #mutate(animals2=as.numeric(q4114_2com+ q4114_3com+ q4114_1h+ q4114_2h+ q4114_3h > 0), dataid=as.numeric(dataid)) %>% select(dataid, hhid, animals2)
 head(animals)
 
 env <- left_join(env, animals, by=c("dataid","hhid"))
@@ -305,16 +302,16 @@ saveRDS(env, paste0(dropboxDir, "Data/WBB/Clean/WBB_env.RDS"))
 
 
 # Load Wash Benefits Bangladesh health datasets
-anthro <- read.csv(paste0(dropboxDir,"Data/WBB/washb-bangladesh-anthro.csv"))
+anthro <- read.csv(paste0(dropboxDir,"Data/WBB/washb-bangladesh-anthro.csv")) %>% mutate(round=case_when(svy==1~"midline", svy==2~"endline"))
 parasites <- read_dta(paste0(dropboxDir,"Data/WBB/wbb-parasite.dta"))
 
-diar <- read.csv(paste0(dropboxDir,"Data/WBB/washb-bangladesh-diar.csv"))
+diar <- read.csv(paste0(dropboxDir,"Data/WBB/washb-bangladesh-diar.csv")) %>% mutate(round=case_when(svy==0~"baseline",svy==1~"midline", svy==2~"endline"))
 #get hhid from enrol
 hhid <- enrol %>% subset(., select =c("dataid","hhid")) %>% arrange(dataid, hhid)
 diar <- left_join(diar, hhid, by=c("dataid"))
 
 #world bank diarrhea
-WB_diar <- haven::read_dta(paste0(dropboxDir,"Data/WBB/fecal_pathways_1_childhealth_micro_submit.dta"))
+WB_diar <- haven::read_dta(paste0(dropboxDir,"Data/WBB/fecal_pathways_1_childhealth_micro_submit.dta")) %>% mutate(round="World Bank")
 head(WB_diar)
 table(WB_diar$loose7dprev) #diarrhea measure to use
 
@@ -325,37 +322,49 @@ r01_diar <- r01_diar_full %>%
   subset(., select = c(dataid,
                        block,
                        cluster_id,
-                       child_id_measured,
+                       #child_id_measured,
+                       child_id,
                        hhid,
-                       svydate,
+                       date,
                        Round,
                        tr,
                        sex_child,
                        age_child_days,
                        who_diar7d)) %>%
-  mutate(svydate=ymd(svydate),
-         sex_child=case_when(sex_child==1 ~ "male", sex_child==2 ~"female")) %>%
+  mutate(date=ymd(date),
+         sex_child=case_when(sex_child==1 ~ "male", sex_child==2 ~"female"),
+         round=as.character(Round)) %>%
   rename(clusterid=cluster_id,
          sex=sex_child,
          agedays=age_child_days,
-         round=Round,
          diar7d=who_diar7d,
-         child_date=svydate,
-         childid=child_id_measured) 
+         child_date=date,
+         childid=child_id) 
+
+#Check duplicates
+dim(r01_diar)
+dim(r01_diar %>% distinct(dataid, hhid, round, childid))
+
+table(r01_diar$childid)
+
+# temp <- r01_diar %>% group_by(dataid, hhid, round, childid) %>% mutate(N=n()) %>% arrange(desc(N),dataid, hhid, round, childid) %>% subset(., select = -c(N, round))
+# table(temp$N)
+# knitr::kable(head(temp, 17), "pipe")
+
 r01_diar$childid[r01_diar$childid=="T"] <- "T1"  
-r01_diar$childid[r01_diar$childid=="99"] <- NA  
 
 table(r01_diar$round, r01_diar$diar7d) 
 table(is.na(r01_diar$diar7d))
-table(is.na(r01_diar$svydate))
+table(is.na(r01_diar$date))
+
 
 diar <- diar %>%
   rename(child_date=svydate) %>%
   mutate(child_date =dmy(child_date)) %>%
-  subset(., select = c(block,clusterid,dataid, hhid, svy, child_date, agedays, sex,childid, diar7d))
+  subset(., select = c(block,clusterid,dataid, hhid, round, child_date, agedays, sex,childid, diar7d))
 
 
-#combine main trial and r01 diarrhea
+#combine main study and r01 diarrhea
 head(diar)
 head(r01_diar)
 
@@ -388,7 +397,7 @@ anthro <- left_join(anthro, hhid, by=c("dataid"))
 
 colnames(anthro)
 anthro<-anthro%>%
-  subset(., select = c(block,clusterid,dataid,hhid,svy,child_date_anthro,agedays, sex,childid, laz,whz,waz))
+  subset(., select = c(block,clusterid,dataid,hhid,round,child_date_anthro,agedays, sex,childid, laz,whz,waz))
 
 
 # #Merge anthro and diar

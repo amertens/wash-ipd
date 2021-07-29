@@ -7,11 +7,7 @@ source(here::here("0-config.R"))
 gv <- readRDS(paste0(dropboxDir,"Data/Gram Vikas/GV_env_cleaned.rds")) %>% 
   mutate(study="Reese 2017",
          trial="Gram Vikas",
-         #dataid=hh_hid*10000 + dataid,
-         dataid=as.numeric(factor(hh_mid))*10+round#,
-         #dadagri=as.numeric(dadagri),
-         #landown=as.numeric(landown)
-         )
+         dataid=as.numeric(factor(hh_mid))*10+round)
 head(gv)
 
 
@@ -31,13 +27,10 @@ mapsan <- readRDS(paste0(dropboxDir,"Data/MapSan/mapsan_env_cleaned.rds")) %>%
 
 #Wash benefits
 WBB <- readRDS(paste0(dropboxDir, "Data/WBB/Clean/WBB_env.RDS"))
-WBB <- WBB %>% mutate(study=case_when(round=="" & target %in% c("sth","ascaris","trichuris") ~ "Kwong 2021",
-                                      round=="" ~ "Fuhrmeister 2020",
-                                      round=="World Bank" ~ "Boehm 2016"
-                                      ),
-                      momedu=gsub(" \\(1-5y\\)","",momedu), momedu=gsub(" \\(>5y\\)","",momedu), 
+WBB <- WBB %>% mutate(momedu=gsub(" \\(1-5y\\)","",momedu), momedu=gsub(" \\(>5y\\)","",momedu), 
                       trial="WBB")
-table(WBB$momedu)
+table(WBB$study)
+table(WBB$study, WBB$round)
 
 
 WBK <- readRDS(paste0(dropboxDir, "Data/WBK/Clean/WBK_env.RDS"))
@@ -352,7 +345,7 @@ table(d_any_not_zoonotic$df$pos)
 table(d_any_pathogen$df$pos)
 
 #drop EC split by zoonotic origin
-d <- d %>% filter(!(target %in% c("EC_not_zoo","EC_zoo ")))
+d <- d %>% filter(!(target %in% c("EC_not_zoo","EC_zoo")))
 
 #Specifically, BacCow MST markers from Odagiri 2016, GenBac3 in Boehm 2016, and human Bacteroides in Holcomb 2020 had close to 100% prevalence, also leading to high positivity in aggregate targets. 
 
