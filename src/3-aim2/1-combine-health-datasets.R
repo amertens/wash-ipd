@@ -1,208 +1,77 @@
 
+
+
 rm(list=ls())
 source(here::here("0-config.R"))
-# devtools::install_github("moodymudskipper/safejoin")
-library(safejoin)
-options(scipen=999)
 
+wbb <- readRDS(paste0(dropboxDir,"Data/WBB_env_CH_data.rds"))
+wbk <- readRDS(paste0(dropboxDir,"Data/WBK_env_CH_data.rds"))
+mapsan <- readRDS(paste0(dropboxDir,"Data/mapsan_env_CH_data.rds"))
+gv <- readRDS(paste0(dropboxDir,"Data/gv_env_CH_data.rds"))
+odisha <- readRDS(paste0(dropboxDir,"Data/odisha_env_CH_data.rds"))
 
+#d <- bind_rows(wbb, wbk, mapsan, gv, odisha)
+d <- data.table::rbindlist(list( wbb, wbk, mapsan, gv, odisha), fill=T)
+#d <- d %>% filter(!is.na(env_date) & !is.na(child_date))
+table(d$study)
 
+#-----------------------------------------------------------
+# Calculate stunting/wasting/underweight
+#-----------------------------------------------------------
+
+d <- d %>% mutate(
+  stunt = 1*(haz < -2),
+  wast = 1*(whz < -2),
+  underwt = 1*(waz < -2),
+)
 
 
 #-----------------------------------------------------------
-# Merge in WASH Benefits Kenya
+# Check covariates
 #-----------------------------------------------------------
-wbk_diar <- read.csv(paste0(dropboxDir, "Data/WBK/washb-kenya-diar.csv"))
-wbk_anthro <- read_dta(paste0(dropboxDir, "Data/WBK/washb-kenya-anthro.dta"))
-wbk_sth <- read_dta(paste0(dropboxDir, "Data/WBK/parasites_kenya_public_ca20171215.dta"))
+table(d$study, d$hfiacat)
+table(d$study, is.na(d$hfiacat))
+table(d$study, d$hhwealth)
+table(d$study, is.na(d$hhwealth))
+table(d$study, d$momedu)
+table(d$study, is.na(d$momedu)) 
+table(d$study, is.na(d$momage)) 
 
-
-
-#Need to get date of WBK sth collection
-#convert wbk_sth to real IDs
-wbk_sth <- wbk_sth %>%
-  mutate(hhid=hhidr2/10 - 3252,
-         childid=childidr2/10 - 3252,
-         studyyear=2)
-
-colnames(wbk_diar)
-wbk_diar <- wbk_diar %>% 
-  mutate(child_date=dmy(DOB)+aged, compoundid=floor(hhid/10)) %>% filter(!is.na(child_date)) %>%
-  subset(., select =c("childid","child_date","hhid","compoundid","clusterid","studyyear","aged","sex","tr","diar7d")) 
-# wbk_sth <- wbk_sth %>% subset(., select =c("childid","studyyear","hhid","compoundid","deworm6m","soilw",
-#                                            "wearing_shoes","sameday_defecation", "asca_epg","asca_intensity","asca_intensity_cat",
-#                                            "tric_epg","tric_intensity","tric_intensity_cat", "hook_epg","hook_intensity",
-#                                            "hook_intensity_cat", "ascaris_yn","trichuris_yn","hook_yn","sth_yn",
-#                                            "giardia_yn","sth_coinf","sth_giar_coinf")) 
-  
-
-colnames(wbk_anthro)
-wbk_anthro <- wbk_anthro %>% 
-  mutate(child_date=ymd(DOB)+aged) %>% filter(!is.na(child_date)) %>%
-  subset(., select =c("childid","compoundid","child_date","studyyear","laz","waz","whz"))
-
-#Merge WBK datasets
-dim(wbk_diar)
-dim(wbk_anthro)
-# wbk <- full_join(wbk_diar, wbk_anthro, by=c("childid", "compoundid", "studyyear"))
-# dim(wbk)
-# table(!is.na(wbk$diar7d), !is.na(wbk$laz))
-
-wbk <- bind_rows(wbk_diar, wbk_anthro)
-
-
-# dim(wbk_sth)
-# dim(wbk)
-# wbk <- full_join(wbk, wbk_sth, by=c("childid","hhid", "studyyear"))
-# dim(wbk)
-
-
-wbk <- wbk %>% mutate(trial="WBK") %>%
-  rename(dataid=compoundid,
-         haz=laz)
-table(is.na(wbk$child_date))
+table(d$study, d$sex)
+table(d$study, is.na(d$sex))
+d$age[is.na(d$age)] <- d$agedays[is.na(d$age)]
+table(d$study, is.na(d$age))
 
 
 #-----------------------------------------------------------
-# Clean Mapsan
+# Save
 #-----------------------------------------------------------
-mapsan <- readRDS(paste0(dropboxDir, "Data/MapSan/mapsan_child_cleaned.rds")) %>% mutate(trial="MapSan", dataid=clusterid)
-mapsan <- mapsan %>% subset(., select=c(trial, child_date,childid, female, age_months, dataid,clusterid, diar7d, haz,whz,waz)) %>%
-  rename(sex=female)
-head(mapsan)
-table(mapsan$diar7d)
+saveRDS(d, file=paste0(dropboxDir,"Data/merged_env_CH_data.rds"))
 
 
 
-#-----------------------------------------------------------
-# clean Odisha
-#-----------------------------------------------------------
 
-odisha <- read_dta(paste0(dropboxDir,"Data/Odisha/diarrhoea and weight data Odisha san trial.dta")) %>% mutate(trial="Odisha") %>%
-  filter(!is.na(currage)) #only include children with date of birth/current age measured, adults don't have dob
-head(odisha)
-colnames(odisha)
+# d %>% group_by(study, sample, target) %>%
+#   summarize(N=n(), N_pos=sum(pos), N_diar=sum(!is.na(diar7d)), N_pos_diar=sum(diar7d==1, na.rm=T), N_pos_env_diar=sum(pos==1 & diar7d==1, na.rm=T), N_haz=sum(!is.na(haz)))
 
+d %>% group_by(study) %>%
+  summarize(N=n(), N_pos=sum(pos), N_diar=sum(!is.na(diar7d)), N_pos_diar=sum(diar7d==1, na.rm=T), N_haz=sum(!is.na(haz)), N_waz=sum(!is.na(waz)))
 
+tab <- d %>% group_by(study, sample, target) %>%
+  summarize(N=n(), N_pos=sum(pos), N_diar=sum(!is.na(diar7d)), N_pos_diar=sum(diar7d==1, na.rm=T), N_pos_env_diar=sum(pos==1 & diar7d==1, na.rm=T), N_haz=sum(!is.na(haz)))
+tab %>% filter(sample=="any sample type", target=="Any pathogen")
+tab %>% filter(sample=="any sample type", target=="Any MST")
 
-odisha <- odisha %>% 
-  rename(childid=indid,
-         clusterid=villid,
-         age=currage,
-         sex=hh104,
-         hhwealth=assetf1,
-         walls=housestruc,
-         Nhh=hhpop,
-         child_date=visitdate1,
-         landacre=land, 
-         diar7d=hh106) %>% 
-  subset(., select =c(childid, clusterid, hhid,age,sex,diar7d, waz,
-                      child_date, hhwealth, Nhh, walls, landacre)) %>%
-  mutate(trial="Odisha",
-         dataid=clusterid,
-         child_date=ymd(child_date),
-         diar7d=case_when(
-           diar7d==2 ~ 0, 
-           diar7d==1 ~ 1, 
-           diar7d==99 | diar7d==92 ~ NA_real_
-         )) %>%
-  filter(!is.na(diar7d) | !is.na(waz))
-head(odisha)
+#To do:
 
+#specific issues to check
+#-diarrhea in holcomb seems reall low. See how many in primary trial at same sampling time
+#
 
-#-----------------------------------------------------------
-# clean GV
-#-----------------------------------------------------------
-
-# load(paste0(dropboxDir,"Data/Gram Vikas/gramvikas.rda"))
-# colnames(gramvikas)
-# head(gramvikas)
-# 
-# #Diarrhea
-# table(gramvikas$hh.dia7)
-#Z-scores
-
-#identifiers
-#hhm.id
-
-
-#Note that the GV lab data had diarrhea/anthro merged in, but 
-gv <- readRDS(paste0(dropboxDir,"Data/Gram Vikas/GV_env_cleaned.rds")) %>% 
-  mutate(study="Reese 2017",
-         trial="Gram Vikas",
-         dataid=as.numeric(factor(hh_mid))*10+round,
-         #dia7=ifelse(dia7==99,NA,dia7),
-                                  #diar7d=ifelse(dia7==2,0,1),
-                                  diar7d=as.numeric(dia7),
-                                  haz=as.numeric(haz),
-                                  whz=as.numeric(whz),
-                                  #momedu=wom.edu4,
-                                  child_date =env_date) %>%
-  subset(., select = c(clusterid,  round,      hhid,     hh_mid,     hh_st,          
-                       momedu, haz, whz, sex, age, elec, dadagri, landown, 
-                       tr, hhwealth, Nhh, study, trial,     
-                       dataid, diar7d, child_date)) %>%
-  distinct()
-
- gv %>% group_by(dataid, round) %>% summarize(N=n()) %>% ungroup() %>% summarise(mean(N))
-
-head(gv)
-
-
-
-#Sex, age
-# 1.	Child birth order/parity -aim 2 only
-# 4.	Household food security -aim 2 only
-# 6.	Parental age -aim 2 only
-# 8.	Parental employment  - check all
-  # a.	Indicator for works in agriculture 
-# 9.	Land ownership 
-
-
-#-----------------------------------------------------------
-# bind non-WBB child health data together
-#-----------------------------------------------------------
-
-df <- data.table::rbindlist(list( wbk, mapsan, odisha, gv), fill=T)
-
- table(df$trial, !is.na(df$hhid))
-# table(df$trial, !is.na(df$childid))
-# table(df$trial, !is.na(df$child_date))
-# table(df$trial, !is.na(df$diar7d))
-# table(df$trial, !is.na(df$haz)|!is.na(df$waz)|!is.na(df$whz))
-# head(df)
-
-
-#-----------------------------------------------------------
-# Clean covariates
-#-----------------------------------------------------------
-
-#temp
-df <- df %>% filter(!is.na(diar7d)|!is.na(haz)|!is.na(waz))
-
-#Date of observation
-table(df$trial, !is.na(df$child_date))
-
-#Fix missing child date in WBK
-
-#Child age 
-class(df$age)
-
-table(df$trial, !is.na(df$age))
-table(df$trial, !is.na(df$aged))
-table(df$trial, !is.na(df$age_months))
-
-df$age[is.na(df$age)] <- df$age[is.na(df$age)]
-df$age[is.na(df$age)] <- df$aged[is.na(df$age)]
-df$age[is.na(df$age)] <- df$age_months[is.na(df$age)]
-
-table(df$trial, !is.na(df$age))
-
-#child sex
-table(df$trial, !is.na(df$sex))
-
-#Temporarily subset to primary health outcome
-#df <- df %>% subset(., select = c(trial, clusterid, dataid, hhid, childid, sex,age,child_date, diar7d, haz, whz, waz, svy))
-df <- df %>% subset(., select = c(trial, clusterid, dataid, hhid, childid, sex,age,child_date, diar7d, haz, whz, waz))
-
-saveRDS(df, file=paste0(dropboxDir,"Data/cleaned_ipd_CH_data.rds"))
+#To check: get number of diarhhea/anthro samples by study
+#check Kwong env dates. Can I get actual dates?
+#Check that there is a health measure for every env. in fuhrmeister
+#Check I am using the closest anthro measure per child in all studies
+#make a variable for just diarrhea named diarhhea_all right before setting too-far away diarrhea as NA
+#Make table for Ayse
+#Check covariate usage, especially the right child age for diarrhea and Z-scores

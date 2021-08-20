@@ -1,0 +1,174 @@
+---
+title: "Aim 2 tables"
+
+#output: redoc::redoc
+output: 
+  officedown::rdocx_document:
+      reference_docx: "tables_format.docx"
+header-includes:
+  - \setlength{\parindent}{4em}
+  - \setlength{\parskip}{0em}
+indent: true
+
+---
+
+
+```{r, include=F}
+
+#Note: Check out this package for integrating any edits from Ayse:
+#https://github.com/noamross/redoc
+
+#CSL styles by journal
+#https://github.com/citation-style-language/styles
+
+
+knitr::opts_chunk$set(echo = FALSE, dpi=300,fig.width=7)
+
+options(warn = -1) 
+library(officedown)
+#library(janitor)
+library(knitr)
+library(here)
+# library(table1)
+# library(rvest)
+library(officer)
+library(flextable)
+library(bibtex)
+library(citr)
+library(redoc)
+source(here("0-config.R"))
+
+
+
+op = function(x, d=2) sprintf(paste0("%1.",d,"f"), x) 
+
+Print <- function(x){
+  prettyNum(round(x,2), big.mark = ",", scientific = FALSE)
+}
+
+ library(pander)
+panderOptions('digits', 2)
+panderOptions('round', 2)
+panderOptions('keep.trailing.zeros', TRUE)
+panderOptions('graph.fontsize', 8)
+
+panderOptions('table.alignment.default', function(df)
+    ifelse(sapply(df, is.numeric), 'right', 'left'))
+panderOptions('table.split.table', Inf)
+panderOptions('big.mark', ",")
+
+set_flextable_defaults(big.mark = ",", 
+  font.size = 8, theme_fun = theme_vanilla,
+  padding.bottom = 5, 
+  padding.top = 5,
+  padding.left = 5,
+  padding.right = 5)
+
+#load clean data
+d <- readRDS(paste0(dropboxDir,"Data/cleaned_ipd_env_data.rds"))
+
+
+
+FitFlextableToPage <- function(ft, pgwidth = 6){
+
+  ft_out <- ft %>% autofit()
+
+  ft_out <- width(ft_out, width = dim(ft_out)$widths*pgwidth /(flextable_dim(ft_out)$widths))
+  return(ft_out)
+}
+
+
+add_footnote_with_rlang <- function(df, col, pattern, symbol){
+  form_ <- sprintf("~ %s == '%s'", col, pattern)
+  colname <- enquo(col)
+  flextable::compose(
+    x = df, j = col, i = as.formula(form_), 
+    value = as_paragraph(
+      as_chunk(!!colname), 
+      as_chunk(symbol, props = fp_text(vertical.align = 'superscript')))
+  ) 
+}
+
+add_footnote <- function(df, col, pattern, symbol){
+  form_ <- sprintf("~ %s == '%s'", col, pattern)
+  flextable::compose(
+    x = df, j = col, i = as.formula(form_), 
+    value = as_paragraph(pattern,
+      as_chunk(symbol, props = fp_text(vertical.align = 'superscript')))
+    ) 
+}
+#adj_RR %>% filter(target=="Any virus", sample!="any sample type") %>% select(sample, target, RR, ci.lb, ci.ub, study, a,b,c,d) %>% arrange(sample) %>% as.data.frame()
+
+
+```
+
+
+## Overall notes on data availability:
+
+  - Odagiri only measured weight, so we only have WAZ, and Reese only measures/shared height, so we only have LAZ/ 
+  - number of measures by study recorded in their primary publications. 
+  - need to get percent dropped by out of date range
+
+
+```{r, echo=FALSE, warning=F, message=F}
+
+#Merge full env. with child health to see percent dropped 
+env <- readRDS(paste0(dropboxDir,"Data/cleaned_ipd_env_data.rds"))
+d <- readRDS(file=paste0(dropboxDir,"Data/merged_env_CH_data.rds"))
+
+tab <- d %>% group_by(study, sample, target) %>%
+  summarize(N=n(), N_pos=sum(pos), N_diar=sum(!is.na(diar7d)), N_pos_diar=sum(diar7d==1, na.rm=T), N_pos_env_diar=sum(pos==1 & diar7d==1, na.rm=T), N_haz=sum(!is.na(haz)))
+
+colnames(tab)[4:9] <- c("N samples","N diar. meas.", "N diar. pos.","N sample. and diar. pos.", "N haz")
+
+tab1 <- tab %>% filter(sample=="any sample type", target=="Any pathogen")
+tab2 <- tab %>% filter(sample=="any sample type", target=="Any MST")
+
+tab3 <- tab %>% filter(sample=="S", target=="Any pathogen")
+tab4 <- tab %>% filter(sample=="S", target=="Any MST")
+
+tab5 <- tab %>% filter(sample=="W", target=="Any pathogen")
+tab6 <- tab %>% filter(sample=="W", target=="Any MST")
+
+```
+
+### Any sample type, any pathogen
+
+```{r, echo=FALSE, warning=F, message=F}
+FitFlextableToPage(flextable(tab1))
+```
+
+
+### Any sample type, any MST
+
+```{r, echo=FALSE, warning=F, message=F}
+FitFlextableToPage(flextable(tab2))
+```
+
+### Soil samples, any pathogen
+
+```{r, echo=FALSE, warning=F, message=F}
+FitFlextableToPage(flextable(tab3))
+```
+
+### Soil samples, any MST
+
+```{r, echo=FALSE, warning=F, message=F}
+FitFlextableToPage(flextable(tab4))
+```
+
+### Water samples, any pathogen
+
+```{r, echo=FALSE, warning=F, message=F}
+FitFlextableToPage(flextable(tab5))
+```
+
+### Water samples, any MST
+
+```{r, echo=FALSE, warning=F, message=F}
+FitFlextableToPage(flextable(tab6))
+```
+
+   
+
+

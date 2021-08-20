@@ -5,7 +5,17 @@ library(scales)
 
 adj_zoo <- readRDS(file=here("results/adjusted_aim1_RR_pooled.Rds")) %>% filter(target %in% c("Any zoonotic","Any non-zoonotic"))
 adj_RR <- readRDS(file=here("results/adjusted_aim1_emm.Rds")) 
+
+Ns <- adj_RR %>% group_by(study, sample, target, aggregate_Y, V) %>% summarise(N=n())
+table(Ns$N)
+Ns[Ns$N>2,]
+Ns[Ns$N==1,]
+adj_RR
+
+
+adj_RR$RR[is.na(adj_RR$RR)] <- NA
 target_lev=target_levels
+
 
 cbbPalette <- c("#000000", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
 
@@ -45,6 +55,8 @@ sample_cats = levels(adj_RR$sample_cat)[levels(adj_RR$sample_cat)!="Any sample"]
 #Clean zoonotic results
 adj_zoo <- clean_res(adj_zoo)
 
+#Add blank level for un-estimated levels
+#XXXXXXXXXXXXXX
 
 #---------------------------------------------------------------
 #plot function
@@ -74,6 +86,8 @@ base_plot <- function(mydf, legend_labels=sample_cats, drop_full_sparse=F, ylimi
   if(drop_full_sparse){
     mydf <- mydf %>% group_by(target) %>%
       filter(n()!=sum(sparse=="yes")) %>% ungroup()
+    mydf <- mydf %>% group_by(sample) %>%
+      filter(n()!=sum(sparse=="yes")) %>% ungroup()
   }
   
   mydf <- mydf %>% droplevels(.)
@@ -89,7 +103,7 @@ base_plot <- function(mydf, legend_labels=sample_cats, drop_full_sparse=F, ylimi
     geom_text(aes(label=int.p), color="black") + 
     scale_color_manual(#breaks = legend_labels,
       values = c(cbbPalette[2:3],"grey50"), drop = FALSE) +
-    scale_shape_manual(values=c(16, 16,18))+  #, guide=FALSE) + 
+    scale_shape_manual(values=c(16, 16,18), guide=FALSE)+  
     geom_hline(yintercept = 1, linetype="dashed") +
     facet_grid(target_f~sample_cat,  scales="free_y", space = "free_x", labeller = label_wrap_gen(width = 10, multi_line = TRUE)) +
     scale_y_continuous(#breaks=scales::breaks_pretty(c(0.25, 0.5,1, 2, 4, 8)),
@@ -113,12 +127,12 @@ base_plot <- function(mydf, legend_labels=sample_cats, drop_full_sparse=F, ylimi
 #---------------------------------------------------------------
 p_wet_1 <- adj_RR %>% 
   filter(target %in% c("Any pathogen","Any MST"), V=="wet") %>%
-  base_plot(drop_full_sparse=F, ylimits=c(0.5,3))
+  base_plot(drop_full_sparse=T, ylimits=c(0.25,5))
 p_wet_1
 
 p_animals_1 <- adj_RR %>% 
   filter(target %in% c("Any pathogen","Any MST"), V=="animals") %>%
-  base_plot(drop_full_sparse=T, ylimits=c(0.25,5))
+  base_plot(drop_full_sparse=T, ylimits=c(0.25,8))
 
 
 p_wet_2 <- adj_RR %>% 

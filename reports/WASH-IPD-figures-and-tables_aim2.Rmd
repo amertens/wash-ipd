@@ -15,6 +15,11 @@ library(here)
 library(table1)
 library(rvest)
 
+library(officedown)
+library(officer)
+library(flextable)
+
+
 source(here("0-config.R"))
 
 
@@ -31,12 +36,86 @@ panderOptions('table.split.table', Inf)
 panderOptions('big.mark', ",")
 panderOptions('keep.trailing.zeros', TRUE)
 
-#resRR <- readRDS(file=here("results/pooled_RR.Rds"))
+
+FitFlextableToPage <- function(ft, pgwidth = 6){
+
+  ft_out <- ft %>% autofit()
+
+  ft_out <- width(ft_out, width = dim(ft_out)$widths*pgwidth /(flextable_dim(ft_out)$widths))
+  return(ft_out)
+}
+
+
+unadj_RR <- readRDS(file=here("results/unadjusted_aim2_pooled.Rds")) 
+adj_RR <- readRDS(file=here("results/adjusted_aim2_pooled.Rds")) 
+d <- readRDS(file=paste0(dropboxDir,"Data/merged_env_CH_data.rds"))
+
+tab <- d %>% group_by(study, sample, target) %>%
+  summarize(N=n(), N_pos=sum(pos), N_diar=sum(!is.na(diar7d)), N_pos_diar=sum(diar7d==1, na.rm=T), N_pos_env_diar=sum(pos==1 & diar7d==1, na.rm=T), N_haz=sum(!is.na(haz)))
+
+colnames(tab)[4:9] <- c("N samples","N sample pos.", "N diar. meas.", "N diar. pos.","N sample. and diar. pos.", "N haz")
+
+tab1 <- tab %>% filter(sample=="any sample type", target=="Any pathogen")
+tab2 <- tab %>% filter(sample=="any sample type", target=="Any MST")
+
+tab3 <- tab %>% filter(sample=="S", target=="Any pathogen")
+tab4 <- tab %>% filter(sample=="S", target=="Any MST")
+
+tab5 <- tab %>% filter(sample=="W", target=="Any pathogen")
+tab6 <- tab %>% filter(sample=="W", target=="Any MST")
 
 load(here("figures/aim2_figures.Rdata"))
 
 ```
 
+## Data checking tables
+
+### Overall notes on data availability:
+
+  - Odagiri only measured weight, so we only have WAZ, and Reese only measures/shared height, so we only have LAZ. 
+  - I need to get number of measures by study recorded in their primary publications for general sanity check, but may be hard to figure out exact number of samples with CH outcome within date range
+  - I need to get percent dropped by out of date range for diarrhea.
+  - The tables below show the number of samples and number of health outcomes by study the column for both positive sample and diarrhea measure is likely the limiting factor for sparse analyses.
+  -With (hopefully fully) fixed data merging/cleaning, there is now a lot less sparsity in estinates, though most estimates are still null.
+
+### Any sample type, any pathogen
+
+```{r, echo=FALSE, warning=F, message=F}
+FitFlextableToPage(flextable(tab1))
+```
+
+
+### Any sample type, any MST
+
+```{r, echo=FALSE, warning=F, message=F}
+FitFlextableToPage(flextable(tab2))
+```
+
+### Soil samples, any pathogen
+
+```{r, echo=FALSE, warning=F, message=F}
+FitFlextableToPage(flextable(tab3))
+```
+
+### Soil samples, any MST
+
+```{r, echo=FALSE, warning=F, message=F}
+FitFlextableToPage(flextable(tab4))
+```
+
+### Water samples, any pathogen
+
+```{r, echo=FALSE, warning=F, message=F}
+FitFlextableToPage(flextable(tab5))
+```
+
+### Water samples, any MST
+
+```{r, echo=FALSE, warning=F, message=F}
+FitFlextableToPage(flextable(tab6))
+```
+
+   
 
 
 
@@ -49,5 +128,12 @@ load(here("figures/aim2_figures.Rdata"))
 ```{r, echo=F, warning=F, message=F, fig.width = 10, fig.height = 5}
 
 p_diar_1_adj
+
+```
+
+
+```{r, echo=F, warning=F, message=F, fig.width = 10, fig.height = 5}
+
+p_haz_1_adj
 
 ```

@@ -29,25 +29,27 @@ d_animals <- d %>% filter(!is.na(animals)) %>% droplevels()
 # table(df$tr,  df$wet)
 # prop.table(table(df$tr, df$pos),1)
 
-# table(d$study, d$trial)
-# outcome="pos"
-# study="Boehm 2016"
-# sample="any sample type"
-# target="Any pathogen"
-# Ws=Wvars
-# Ws=NULL
-# Vvar="animals"
-# family="binomial"
-# d=d_animals
-# 
+table(d$study, d$trial)
+outcome="pos"
+study="Boehm 2016"
+sample="any sample type"
+target="Any MST"
+Ws=Wvars
+#Ws=NULL
+Vvar="wet"
+family="binomial"
+d=d_wet
+#
 # temp <- d %>% filter(study==!!(study), target==!!(target))
 # table(temp$sample, temp$pos)
-# 
-# 
-# aim1_subgroup(d=d_wet, Vvar="wet", outcome="pos", study=d_wet$study[1], sample=d_wet$sample[1], target=d_wet$target[1], family="binomial")
+#
+#
+res <- aim1_subgroup(d=d_animals, Vvar=Vvar, outcome="pos", study=study, sample=sample, target=target, family="binomial")
+#aim1_subgroup(d=d_wet, Vvar="wet", outcome="pos", study=d_wet$study[1], sample=d_wet$sample[1], target=d_wet$target[1], family="binomial")
 
 
 
+#Error in names(dn) <- dnn : attempt to set an attribute on NULL 
 
 
 #-----------------------------------

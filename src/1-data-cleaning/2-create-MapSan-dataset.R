@@ -255,7 +255,8 @@ child <- child %>% rename(childid=ï..totchildID, clusterid=compID, hhid=totHHid)
 child <- child %>% mutate_all(~na_if(., 99999999))
 
 #Create child sample date
-child <- child %>% mutate(child_date= ym(ch_surveydate_coarsed))
+child <- child %>% mutate(child_date= ymd(paste0(ch_surveydate_coarsed,"-15")))
+
 table(child$ch_careEDUorig)
 
 child <- child %>% select(childid, actualPhase, clusterid, hhid,
