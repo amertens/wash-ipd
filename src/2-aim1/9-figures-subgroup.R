@@ -4,7 +4,10 @@ source(here::here("0-config.R"))
 library(scales)
 
 adj_zoo <- readRDS(file=here("results/adjusted_aim1_RR_pooled.Rds")) %>% filter(target %in% c("Any zoonotic","Any non-zoonotic"))
-adj_RR <- readRDS(file=here("results/adjusted_aim1_emm.Rds")) 
+#adj_RR <- readRDS(file=here("results/adjusted_aim1_emm.Rds")) 
+adj_RR <- readRDS(file=here("results/adjusted_aim1_emm_pooled.Rds")) 
+
+
 
 Ns <- adj_RR %>% group_by(study, sample, target, aggregate_Y, V) %>% summarise(N=n())
 table(Ns$N)

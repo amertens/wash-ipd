@@ -186,6 +186,18 @@ dim(env_diar_kwong)
 summary(as.numeric(env_diar_kwong$child_date - env_diar_kwong$env_date))
 table(env_diar_kwong$pos, env_diar_kwong$diar7d)
 table(env_diar_kwong$pos, is.na(env_diar_kwong$diar7d))
+
+#Get proportion dropped for days off
+prop.table(table(env_diar_kwong$child_date>=env_diar_kwong$env_date)) * 100
+prop.table(table(env_diar_kwong$child_date-env_diar_kwong$env_date > 93)) * 100
+prop.table(table(env_diar_kwong$child_date-env_diar_kwong$env_date > 93 & env_diar_kwong$child_date>=env_diar_kwong$env_date)) * 100
+
+summary(as.numeric(env_diar_kwong$child_date-env_diar_kwong$env_date))
+
+#weekly difference
+table(floor(as.numeric(env_diar_kwong$child_date-env_diar_kwong$env_date)/7))
+
+
 env_diar_kwong <- env_diar_kwong %>% 
   mutate(diar7d = ifelse(child_date<env_date, NA, diar7d),
          diar7d = ifelse(child_date-env_date > 93, NA, diar7d),

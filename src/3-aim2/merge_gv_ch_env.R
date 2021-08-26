@@ -59,6 +59,11 @@ colnames(d)
 table(d$pos, d$diar7d)
 summary(as.numeric(d$child_date- d$env_date))
 
+
+#Get proportion dropped for days off
+prop.table(table(d$child_date>=d$env_date))
+prop.table(table(d$child_date-d$env_date) > 93)
+
 d <- d %>% 
   filter(child_date>=env_date) %>%
   mutate(

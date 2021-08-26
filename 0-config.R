@@ -85,7 +85,8 @@ animal_MST = c( "Cow (BacCow)",
                 "Ruminant (BacR)",              "Avian (GFD)",
                 "Avian (Helicobacter)", "Dog (BacCan)" )
 
-human_MST = c("Human (HumM2)",  "Human (Bacteroides)",   "Human (M. smithii)")
+human_MST = c("Human (HumM2)",  "Human (BacHum)",  "Human (HF183)", "Human (M. smithii)")
+
 
 any_MST = c(general_MST, animal_MST, human_MST)
 

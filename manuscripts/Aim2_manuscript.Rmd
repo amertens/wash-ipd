@@ -2,9 +2,9 @@
 title: "Effect of pathogens in the environment on diarrhea, child growth, and enteric infections: Individual participant data meta-analysis"
 author: "Andrew Mertens, Jack Colford, Oliver Cumming, Joe Brown, Jill Stewart, David Holcomb, Jackie Knee, Tom Clasen, Heather Reese, Amy Pickering, Clair Null, Steve Luby, Jessica Grembi, Ben Arnold, Audrie Lin, Jade Benjamin-Chung, Laura Kwong, Lauren Steinbaum, Ali Boehm, Kara Nelson, Erica Fuhrmeister, Ayse Ercumen"
 output:
+  html_document: default
   word_document: 
       reference_docx: manuscript_format.docx
-  html_document: default
 header-includes:
   - \setlength{\parindent}{4em}
   - \setlength{\parskip}{0em}
@@ -12,7 +12,6 @@ indent: true
 bibliography: WASH-IPD.bib
 bib-humanities: FALSE
 csl: nature.csl
-
 ---
 
 

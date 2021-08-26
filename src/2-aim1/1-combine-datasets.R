@@ -60,7 +60,7 @@ WBK <- WBK %>% subset(., select = c(study, trial, sampleid, dataid, hhid, cluste
 
 #Odisha
 odisha <- readRDS(file=paste0(dropboxDir,"Data/Odisha/Odisha_env_cleaned.rds")) %>% mutate(study="Odagiri 2016", trial="Odisha", hhid=dataid)
-
+table(odisha$target)
 
 
 mapsan$sampleid<-as.character(mapsan$sampleid)
@@ -122,8 +122,8 @@ d <- d %>% mutate(
     target=="pan_enterovirus" ~ "Pan enterovirus",
     target=="gbc" ~ "General (GenBac3)",
     target=="GFD" ~ "Avian (GFD)", 
-    target=="BacHum" ~ "Human (Bacteroides)",
-    target=="HF183" ~ "Human (Bacteroides)",
+    target=="BacHum" ~ "Human (BacHum)",
+    target=="HF183" ~ "Human (HF183)",
     target=="Mnif" ~ "Human (M. smithii)",
     target=="adenovirus_40_41" ~ "Adenovirus",
     target=="pan_adenovirus" ~ "Adenovirus",
@@ -287,7 +287,7 @@ agg_function <- function(targets, name){
                       !(study=="Boehm 2016" & sample=="CH" & target=="General (GenBac3)"),
                       !(study=="Boehm 2016" & sample=="S" & target=="General (GenBac3)"),
                       !(study=="Fuhrmeister 2020" & sample=="CH" & target=="Cow (BacCow)"),
-                      !(study=="Holcomb 2020" & sample=="FlyLat" & target=="Human (Bacteroides)"))
+                      !(study=="Holcomb 2020" & sample=="FlyLat" & target=="Human (BacHum)"))
   
   
   
@@ -420,7 +420,7 @@ df <- d %>%
   filter(!(study=="Odagiri 2016" & sample=="W" & target=="Cow (BacCow)"),
                       !(study=="Boehm 2016" & sample=="CH" & target=="General (GenBac3)"),
                       !(study=="Fuhrmeister 2020" & sample=="CH" & target=="Cow (BacCow)"),
-                      !(study=="Holcomb 2020" & sample=="FlyLat" & target=="Human (Bacteroides)")) %>%
+                      !(study=="Holcomb 2020" & sample=="FlyLat" & target=="Human (BacHum)")) %>%
   mutate(pos=max(pos, na.rm = TRUE), sample="any sample type", animals=max(animals, na.rm=T)) %>% 
   slice(1)
 dim(df)

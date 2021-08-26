@@ -24,8 +24,9 @@ dnozoo <- d_animals %>% filter(target=="Any non-zoonotic")
 prop.table(table(dzoo$animals, dzoo$pos ),1)
 prop.table(table(dnozoo$animals, dnozoo$pos ),1)
 
-prop.table(table(d_animals$target, d_animals$pos ),1)
+prop.table(table(d_animals$target, d_animals$pos ),1)*100
 
+animal_zoonotic_tab <- round(prop.table(table(dzoo$animals, dzoo$pos ),1)*100,1)
 
 
 
