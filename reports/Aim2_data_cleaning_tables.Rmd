@@ -1,0 +1,150 @@
+---
+title: "Aim 2 tables"
+
+#output: redoc::redoc
+output: html_document
+header-includes:
+  - \setlength{\parindent}{4em}
+  - \setlength{\parskip}{0em}
+indent: true
+
+---
+
+
+```{r, include=F}
+
+
+knitr::opts_chunk$set(echo = FALSE, dpi=300,fig.width=7)
+
+options(warn = -1) 
+library(officedown)
+#library(janitor)
+library(knitr)
+library(here)
+# library(table1)
+# library(rvest)
+library(officer)
+library(flextable)
+library(bibtex)
+library(citr)
+library(kableExtra)
+source(here("0-config.R"))
+
+
+
+op = function(x, d=2) sprintf(paste0("%1.",d,"f"), x) 
+
+Print <- function(x){
+  prettyNum(round(x,2), big.mark = ",", scientific = FALSE)
+}
+
+ library(pander)
+panderOptions('digits', 2)
+panderOptions('round', 2)
+panderOptions('keep.trailing.zeros', TRUE)
+panderOptions('graph.fontsize', 8)
+
+panderOptions('table.alignment.default', function(df)
+    ifelse(sapply(df, is.numeric), 'right', 'left'))
+panderOptions('table.split.table', Inf)
+panderOptions('big.mark', ",")
+
+set_flextable_defaults(big.mark = ",", 
+  font.size = 8, theme_fun = theme_vanilla,
+  padding.bottom = 5, 
+  padding.top = 5,
+  padding.left = 5,
+  padding.right = 5)
+
+#load clean data
+d <- readRDS(paste0(dropboxDir,"Data/cleaned_ipd_env_data.rds"))
+
+gv_res <- readRDS(file=paste0(here(),"/results/gv_merge_Ns.rds"))
+mapsan_res <- readRDS(file=paste0(here(),"/results/mapsan_merge_Ns.rds"))
+wbk_res <- readRDS(file=paste0(here(),"/results/wbk_merge_Ns.rds"))
+wbb_res <- readRDS(file=paste0(here(),"/results/wbb_merge_Ns.rds"))
+odisha_res <- readRDS(file=paste0(here(),"/results/odisha_merge_Ns.rds"))
+merge_Ns <- bind_rows(
+  gv_res, mapsan_res, wbb_res, wbk_res, odisha_res
+)
+
+
+
+gv_date_diff<- readRDS(file=paste0(here(),"/results/gv_date_diff.rds"))
+mapsan_date_diff<- readRDS(file=paste0(here(),"/results/mapsan_date_diff.rds"))
+wbk_date_diff<- readRDS(file=paste0(here(),"/results/wbk_date_diff.rds"))
+wbb_date_diff<- readRDS(file=paste0(here(),"/results/wbb_date_diff.rds"))
+odisha_date_diff<- readRDS(file=paste0(here(),"/results/odisha_date_diff.rds"))
+# date_diff <- bind_rows(
+#   gv_date_diff, mapsan_date_diff, wbb_date_diff, wbk_date_diff, odisha_date_diff
+# )
+
+
+
+FitFlextableToPage <- function(ft, pgwidth = 6){
+
+  ft_out <- ft %>% autofit()
+
+  ft_out <- width(ft_out, width = dim(ft_out)$widths*pgwidth /(flextable_dim(ft_out)$widths))
+  return(ft_out)
+}
+
+
+add_footnote_with_rlang <- function(df, col, pattern, symbol){
+  form_ <- sprintf("~ %s == '%s'", col, pattern)
+  colname <- enquo(col)
+  flextable::compose(
+    x = df, j = col, i = as.formula(form_), 
+    value = as_paragraph(
+      as_chunk(!!colname), 
+      as_chunk(symbol, props = fp_text(vertical.align = 'superscript')))
+  ) 
+}
+
+add_footnote <- function(df, col, pattern, symbol){
+  form_ <- sprintf("~ %s == '%s'", col, pattern)
+  flextable::compose(
+    x = df, j = col, i = as.formula(form_), 
+    value = as_paragraph(pattern,
+      as_chunk(symbol, props = fp_text(vertical.align = 'superscript')))
+    ) 
+}
+#adj_RR %>% filter(target=="Any virus", sample!="any sample type") %>% select(sample, target, RR, ci.lb, ci.ub, study, a,b,c,d) %>% arrange(sample) %>% as.data.frame()
+
+
+```
+
+
+## Overall notes on data availability:
+
+  - Odagiri only measured weight, so we only have WAZ, and Reese only measures/shared height, so we only have LAZ/ 
+  - number of measures by study recorded in their primary publications. 
+  - need to get percent dropped by out of date range
+  
+
+
+```{r, echo=FALSE, warning=F, message=F}
+
+#Merge full env. with child health to see percent dropped 
+merge_Ns[,-1] <- round(merge_Ns[,-1], 2)
+
+merge_Ns <- t(merge_Ns)
+
+```
+
+
+```{r, echo=FALSE, warning=F, message=F}
+knitr::kable(merge_Ns) %>% kable_styling("striped") %>% scroll_box(width = "100%")
+```
+
+
+```{r}
+
+ggplot(gv_date_diff, aes(x=date_diff)) + facet_wrap(~study) + geom_histogram()
+ggplot(mapsan_date_diff, aes(x=date_diff)) + facet_wrap(~study) + geom_histogram()
+ggplot(wbk_date_diff, aes(x=date_diff)) + facet_wrap(~study) + geom_histogram()
+ggplot(wbb_date_diff, aes(x=date_diff)) + facet_wrap(~study) + geom_histogram()
+ggplot(odisha_date_diff, aes(x=date_diff)) + facet_wrap(~study) + geom_histogram()
+
+
+```

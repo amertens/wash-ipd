@@ -213,6 +213,9 @@ d2 <- d2 %>% mutate(animals=as.numeric(ls_any))
    ))
 head(dw)
 
+table(dw$round, is.na(as.numeric(dw$haz)))
+table(dw$round, dw$dia7)
+
 sw <- d2 %>% 
   mutate(sample="SW",
     vc.pos=as.numeric(vc_kiit_pos), sh.pos=as.numeric(sh_kiit_pos),
@@ -231,6 +234,10 @@ sw <- d2 %>%
     mnum4,mnum5,mnum6,mnum7,numcu5, elec, dadagri, landown, animals
   ))
 head(sw)
+
+table(sw$round, is.na(as.numeric(sw$haz)))
+table(sw$round, sw$dia7)
+
 
 dim(sw)
 dim(sw %>% distinct(hh_vid, round, hhid, hh_mid, env_date))
@@ -270,7 +277,12 @@ df <- df %>%
          target = case_when(
            target=="sh.pos" ~"shigella",
            target=="vc.pos" ~"vibrio_cholera"
-         )) 
+         ))  %>% 
+  mutate(study="Reese 2017",
+         trial="Gram Vikas",
+         dataid=hhid
+         #dataid=as.numeric(factor(hh_mid))*10+round
+         )
 
 head(df)
 

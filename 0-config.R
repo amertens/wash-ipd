@@ -255,3 +255,13 @@ strict_left_join <- function(x, y, by = NULL, ...){
     stop("Duplicate values in foreign key")
   } else left_join(x, y, by = by, ...)
 }
+
+
+#drop aggregate functions
+drop_agg <- function(d){
+  d <- d %>% filter(sample!="any sample type", !grepl("Any ", target)) %>% ungroup()
+   return(d)
+}
+
+
+

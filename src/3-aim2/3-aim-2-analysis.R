@@ -9,6 +9,11 @@ table(d$trial, d$pos)
 
 d <- d %>% filter(sample!="FP") %>% droplevels()
 
+df <- d %>% filter(!is.na(diar7d))
+dim(df)
+df2 <- df %>% distinct(study, sampleid, sample, target, hhid, dataid, childid, diar7d, round)
+dim(df2)
+
 # df <- d %>% filter(target=="Any human MST")
 # table(df$sample, df$diar7d, df$study)
 

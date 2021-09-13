@@ -4,10 +4,7 @@ source(here::here("0-config.R"))
 
 
 #Gram vikas
-gv <- readRDS(paste0(dropboxDir,"Data/Gram Vikas/GV_env_cleaned.rds")) %>% 
-  mutate(study="Reese 2017",
-         trial="Gram Vikas",
-         dataid=as.numeric(factor(hh_mid))*10+round)
+gv <- readRDS(paste0(dropboxDir,"Data/Gram Vikas/GV_env_cleaned.rds")) 
 head(gv)
 
 
@@ -19,8 +16,7 @@ table(gv2$target, gv2$sample, gv2$round)
 
 #Mapsan
 mapsan <- readRDS(paste0(dropboxDir,"Data/MapSan/mapsan_env_cleaned.rds")) %>% 
-  mutate(study="Holcomb 2020",
-         trial="MapSan",
+  mutate( trial="MapSan",
          momedu=factor(momedu)) %>%
   rename(animals=compAnyAnimal)
 
@@ -76,7 +72,7 @@ odisha$sampleid<-as.character(odisha$sampleid)
 
 d <- bind_rows(WBB, WBK, mapsan, gv, odisha) %>%
   mutate(study=factor(study, 
-            levels=c("Odagiri 2016", "Boehm 2016", "Reese 2017", "Steinbaum 2019", "Fuhrmeister 2020", "Holcomb 2020",  "Kwong 2021")))
+            levels=c("Odagiri 2016", "Boehm 2016", "Reese 2017", "Steinbaum 2019", "Fuhrmeister 2020", "Holcomb 2020", "Capone et al. 2021", "Capone 2021 in prep.", "Kwong 2021")))
 
 #mark STH qual as ROQ
 d$qual <- ifelse(d$study %in% c("Steinbaum 2019","Kwong 2021"),"ROQ",d$qual)

@@ -55,7 +55,8 @@ env <- env %>% mutate(
       type=="ls" ~ "LS",
       type=="wp" ~ "SW"
     )      
-  )
+  )%>%
+  mutate(study="Holcomb 2020")
 
 
 
@@ -110,7 +111,8 @@ table(soil$target, soil$detect)
 table(soil_pathogenic$detect)
 
 soil <- bind_rows(soil, soil_pathogenic, soil_zoo, soil_measures_not_zoo) %>% 
-  filter(!(target %in% ecoli_measures))
+  filter(!(target %in% ecoli_measures))%>%
+  mutate(study="Capone et al. 2021")
 table(soil$target, soil$detect)
 
 #add soil to env dataset
@@ -213,7 +215,8 @@ fly <- fly %>% group_by(target) %>% mutate(Npos=sum(pos)) %>% filter(Npos>0)
 table(fly$target, fly$pos)
 
 #drop mitochondrial DNA
-fly <- fly %>% filter(target!="human_mtDNA")
+fly <- fly %>% filter(target!="human_mtDNA") %>%
+  mutate(study="Capone 2021 in prep.")
 
 #bind into main data
 env <- bind_rows(env, fly)
@@ -432,7 +435,7 @@ saveRDS(d, file=paste0(dropboxDir,"Data/MapSan/mapsan_cleaned.rds"))
 
 #Split out just env data and covariates
 colnames(d)
-env_clean <- d %>% subset(., select = c(env_date,sampleid, clusterid, tr,
+env_clean <- d %>% subset(., select = c(study, env_date,sampleid, clusterid, tr,
   dataid,  hh, hhid, round, sample, samp_level, target,
   effort, pos, abund_only_detect, abund, qual, censored, momedu,
   Nhh, hhwealth, nrooms, walls, floor, elec, season, compAnyAnimal, studyArm_binary
