@@ -216,7 +216,7 @@ table(fly$target, fly$pos)
 
 #drop mitochondrial DNA
 fly <- fly %>% filter(target!="human_mtDNA") %>%
-  mutate(study="Capone 2021 in prep.")
+  mutate(study="Capone 2021")
 
 #bind into main data
 env <- bind_rows(env, fly)

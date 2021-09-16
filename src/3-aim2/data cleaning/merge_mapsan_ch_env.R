@@ -11,7 +11,7 @@ env <- readRDS(paste0(dropboxDir,"Data/cleaned_ipd_env_data.rds"))
 env <- env %>% mutate(
   trial = case_when(study %in% c("Fuhrmeister 2020", "Kwong 2021", "Boehm 2016") ~ "WBB",
                     study=="Steinbaum 2019" ~ "WBK",
-                    study=="Holcomb 2020" ~ "MapSan",
+                    study %in% c("Holcomb 2020","Capone et al. 2021") ~ "MapSan",
                     study=="Reese 2017" ~ "Gram Vikas",
                     study=="Odagiri 2016" ~ "Odisha")) 
 
@@ -49,6 +49,9 @@ d_hh <- full_join(env_hh, ch, by = c("trial","dataid","clusterid", "hhid","round
 d<-bind_rows(d_compound,d_hh)
 d <- d %>% filter(!is.na(sample), !is.na(ch_data))
 
+
+
+
 #merge the next round's diarhhea and anthro and then see which is closer but still after env. sampling 
 ch2 <- ch %>% filter(round!="bl") %>% mutate(round=case_when(round == "ml" ~ "bl", round == "el" ~ "ml"))
 d_compound2 <- full_join(env_compound, ch2, by = c("trial","dataid","clusterid","round"))  %>% subset(., select = -c(hhid))
@@ -78,13 +81,17 @@ mapsan_res$diar_samples_after_merge <- nrow(d %>% filter(!is.na(diar7d)) %>% do(
 mapsan_res$haz_samples_after_merge <- nrow(d %>% filter(!is.na(haz)) %>% do(drop_agg(.)) %>% distinct(dataid, hhid, age,    sex, haz))
 mapsan_res$samples_with_diar_after_merge <- nrow(d %>% filter(!is.na(diar7d)) %>% do(drop_agg(.)) %>% distinct(sampleid, dataid,  hhid, clusterid,sample, round))
 mapsan_res$samples_with_haz_after_merge <- nrow(d %>% filter(!is.na(haz)) %>% do(drop_agg(.)) %>% distinct(sampleid, dataid,  hhid, clusterid,sample, round))
+mapsan_res$samples_with_ch_after_merge <- nrow(d %>% filter(!is.na(haz)|!is.na(diar7d)) %>% do(drop_agg(.)) %>% distinct(sampleid, dataid,  hhid, clusterid,sample, round))
 
 
 
+summary(d$samp_diff[d$study=="Holcomb 2020"])
+summary(d$samp_diff[d$study=="Capone et al. 2021"])
 
 d <- d  %>%
   filter(!is.na(samp_diff), samp_diff>=0) %>%
   filter(samp_diff==min(samp_diff))
+
 
 
 
@@ -96,11 +103,23 @@ date_diff <- d %>% mutate(date_diff = child_date-env_date) %>% select(study, sam
 
 
 d <- d %>% 
-  filter(child_date>=env_date) %>%
+  filter(child_date +14 >=env_date) %>% #add 14 because child data had been coarsened to the month
   mutate(
-    diar7d = ifelse(child_date-env_date > 93, NA, diar7d))
+    diar7d = ifelse(child_date-env_date > 124, NA, diar7d))
 table(d$pos, d$diar7d)
 table(d$pos, !is.na(d$haz))
+
+
+df <- env %>% filter(sample=="any sample type", target=="Any pathogen")
+table(df$pos)
+df <- d %>% filter(sample=="any sample type", target=="Any pathogen")
+table(df$pos)
+df <- env %>% filter(sample=="any sample type", target=="Any MST")
+table(df$pos)
+df <- d %>% filter(sample=="any sample type", target=="Any MST")
+table(df$pos)
+
+#Check how far apart rounds are
 
 
 mapsan_res$diar_samples_date_dropped <- mapsan_res$samples_with_diar_after_merge - nrow(d %>% do(drop_agg(.)) %>% filter(!is.na(diar7d)) %>% distinct(sampleid, dataid, hhid, age,    sex, diar7d))
@@ -112,6 +131,8 @@ mapsan_res$percent_diar_samples_dropped <- 100 - mapsan_res$diar_samples_after_m
 mapsan_res$percent_haz_samples_dropped <- 100 - mapsan_res$haz_samples_after_merge/mapsan_res$haz_samples_before_merge * 100
 mapsan_res$percent_env_samples_with_diar <- mapsan_res$samples_with_diar_after_merge/mapsan_res$env_samples_before_merge  * 100
 mapsan_res$percent_env_samples_with_haz <-  mapsan_res$samples_with_haz_after_merge/mapsan_res$env_samples_before_merge  * 100
+mapsan_res$percent_env_samples_with_ch <-  mapsan_res$samples_with_ch_after_merge/mapsan_res$env_samples_before_merge  * 100
+
 mapsan_res$diar_samples_date_dropped[is.na(mapsan_res$diar_samples_date_dropped )] <- 0
 mapsan_res$haz_samples_date_dropped[is.na(mapsan_res$haz_samples_date_dropped )] <- 0
 

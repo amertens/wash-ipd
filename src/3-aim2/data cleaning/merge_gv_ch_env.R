@@ -30,32 +30,33 @@ ch <- ch %>%
          whz=as.numeric(whz),
          #momedu=wom.edu4,
          childid=hh_mid,
-         child_date =env_date,
+         child_date_anthro =env_date,
+         age_anthro=age,
          merge_round=round
          ) %>%
   subset(., select = c(clusterid, merge_round,      hhid,     childid,     hh_st,          
-                       haz, whz, sex, age, study, trial,     
-                       dataid, diar7d, child_date)) %>%
+                       haz, whz, sex, age_anthro, study, trial,     
+                       dataid, diar7d, child_date_anthro)) %>%
   filter(!(is.na(diar7d) & is.na(haz) & is.na(whz))) %>%
   distinct() %>% mutate(ch_data=1)
 
 dim(ch)
 dim(ch %>% distinct(clusterid,  merge_round,      hhid,
-                    haz, whz, sex, age,     
-                    dataid, diar7d, child_date))
+                    haz, whz, sex, age_anthro,     
+                    dataid, diar7d, child_date_anthro))
 dim(ch %>% distinct(clusterid,      hhid,
-                    haz, whz, sex, age,     
+                    haz, whz, sex, age_anthro,     
                     dataid, diar7d))
 dim(ch %>% distinct(clusterid,  merge_round, hhid, dataid))
 dim(ch %>% distinct(clusterid, hhid, dataid))
 dim(ch %>% distinct(clusterid, hhid))
-dim(ch %>% distinct(clusterid, hhid, haz, whz, sex, age,  diar7d))
+dim(ch %>% distinct(clusterid, hhid, haz, whz, sex, age_anthro,  diar7d))
 dim(ch %>% distinct(clusterid, hhid, haz, sex))
 
 table(ch$merge_round)
 
 ch %>% group_by(dataid, hhid, merge_round) %>% summarize(N=n()) %>% ungroup() %>% summarise(mean(N))
-ch %>% group_by(merge_round, hhid, childid, child_date) %>% summarize(N=n()) %>% ungroup() %>% summarise(mean(N))
+ch %>% group_by(merge_round, hhid, childid, child_date_anthro) %>% summarize(N=n()) %>% ungroup() %>% summarise(mean(N))
 ch %>% group_by(merge_round, hhid, childid) %>% summarize(N=n()) %>% ungroup() %>% summarise(mean(N))
 ch %>% group_by( hhid, childid) %>% summarize(N=n()) %>% ungroup() %>% summarise(mean(N))
 ch %>% group_by(dataid) %>% summarize(N=n()) %>% ungroup() %>% summarise(mean(N))
@@ -75,30 +76,26 @@ table(ch$diar7d, ch$merge_round)
 # And next round's anthro
 #------------------------------------------
 
-# ch <- ch %>% rename(diar7d_contemporaneous=diar7d,
-#                     haz_contemporaneous=haz,
-#                     whz_contemporaneous=whz) %>%
-#             arrange(childid, dataid, hhid, round) %>%
-#             group_by(childid, dataid, hhid) %>%
-#             mutate(diar7d=lead(diar7d_contemporaneous),
-#                    haz=lead(haz_contemporaneous),
-#                    whz=lead(whz_contemporaneous),
-#                    child_date=lead(env_date)) %>%
-#             filter(!is.na(child_date)) %>%
-#             mutate(date_diff=as.numeric(child_date-env_date))
-# 
-# summary(ch$date_diff)
-# summary(ch$date_diff[!is.na(ch$diar7d)])
-# summary(ch$date_diff[!is.na(ch$haz)])
-# table(ch$date_diff[!is.na(ch$diar7d)] <93 & ch$date_diff[!is.na(ch$diar7d)] >0)
-# #table(ch1$date_diff[!is.na(ch1$diar7d)] <93 & ch1$date_diff[!is.na(ch1$diar7d)] >0)
-
-#Need to merge contemporaneous diarhea measures and leading anthro measures
+ch_diar <- ch %>% rename(
+                    child_date = child_date_anthro,
+                    age = age_anthro
+                    #diar7d_contemporaneous=diar7d#,
+                    #haz_contemporaneous=haz,
+                    #whz_contemporaneous=whz
+                    ) %>%
+            arrange(childid, dataid, hhid, merge_round) %>%
+            group_by(childid, dataid, hhid) %>%
+            mutate(merge_round = merge_round+1,
+                   #haz=lead(haz_contemporaneous),
+                   #whz=lead(whz_contemporaneous),
+                   #child_date=lead(child_date_anthro)
+                   ) %>%
+            subset(., select = c(childid, dataid, clusterid, hhid, merge_round, diar7d, child_date, age))
+ch <- ch %>% subset(., select = -c(diar7d))
 
 
-
+#Need to merge contemporaneous diarrhea measures and leading anthro measures
 head(ch)
-
 table(ch$round)
 env$round <- as.numeric(env$round)
 
@@ -106,8 +103,8 @@ gv_res <- data.frame(
   study = "reese",
   env_samples_before_merge = nrow(env %>% do(drop_agg(.)) %>% distinct(sampleid, dataid,  hhid, clusterid,sample, round)),
   env_HH_before_merge = nrow(env %>% do(drop_agg(.)) %>% distinct(dataid,  hhid, clusterid)),
-  diar_samples_before_merge = nrow(ch %>% ungroup() %>% filter(!is.na(diar7d)) %>% distinct(dataid, hhid, child_date, age,    sex, childid,     hh_st, diar7d)),
-  haz_samples_before_merge = nrow(ch %>% ungroup() %>% filter(!is.na(haz)) %>% distinct(dataid, hhid, child_date, age,    sex, childid,     hh_st, haz))
+  diar_samples_before_merge = nrow(ch_diar %>% ungroup() %>% filter(!is.na(diar7d)) %>% distinct(dataid, hhid, child_date, age, childid, diar7d)),
+  haz_samples_before_merge = nrow(ch %>% ungroup() %>% filter(!is.na(haz)) %>% distinct(dataid, hhid, child_date_anthro, age_anthro,    sex, childid,     hh_st, haz))
 )
 
 #Note: merging on round is fine, as samples and health outcomes collected on the same day
@@ -116,7 +113,9 @@ dim(env)
 dim(ch)
 d <- full_join(env, ch, by = c("trial","study","dataid","clusterid","hhid","merge_round"))
 dim(d)
-d <- d %>% filter(!is.na(sample), !is.na(ch_data))
+d <- full_join(d, ch_diar, by = c("childid","dataid","clusterid","hhid","merge_round"))
+dim(d)
+d <- d %>% filter(!is.na(sample), !is.na(child_date) | !is.na(child_date_anthro))
 dim(d)
 
 table(d$round)
@@ -134,8 +133,9 @@ gv_res$env_samples_after_merge <- nrow(d %>% do(drop_agg(.)) %>% distinct(sample
 gv_res$env_HH_after_merge <- nrow(d %>% do(drop_agg(.)) %>% distinct(dataid,  hhid, clusterid))
 gv_res$diar_samples_after_merge <- nrow(d %>% do(drop_agg(.)) %>% filter(!is.na(diar7d)) %>% distinct(child_date, dataid, hhid, age,    sex, diar7d))
 gv_res$haz_samples_after_merge <- nrow(d %>% do(drop_agg(.)) %>% filter(!is.na(haz)) %>% distinct(child_date, dataid, hhid, age,    sex, haz))
-gv_res$samples_with_diar_after_merge <- nrow(d %>% do(drop_agg(.)) %>% filter(!is.na(diar7d)) %>% distinct(sampleid, dataid, hhid,))
-gv_res$samples_with_haz_after_merge <- nrow(d %>% do(drop_agg(.)) %>% filter(!is.na(haz)) %>% distinct(sampleid, dataid, hhid))
+gv_res$samples_with_diar_after_merge <- nrow(d %>% do(drop_agg(.)) %>% filter(!is.na(diar7d)) %>% distinct(sampleid, dataid, hhid,merge_round))
+gv_res$samples_with_haz_after_merge <- nrow(d %>% do(drop_agg(.)) %>% filter(!is.na(haz)) %>% distinct(sampleid, dataid, hhid, merge_round))
+gv_res$samples_with_ch_after_merge <- nrow(d %>% filter(!is.na(haz)|!is.na(diar7d)) %>% do(drop_agg(.)) %>% distinct(sampleid, dataid, hhid, merge_round))
 
 
 #Get proportion dropped for days off
@@ -148,7 +148,7 @@ date_diff <- d %>% mutate(date_diff = child_date-env_date) %>% select(study, sam
 d <- d %>% 
   filter(child_date>=env_date) %>%
   mutate(
-    diar7d = ifelse(child_date-env_date > 93, NA, diar7d))
+    diar7d = ifelse(child_date-env_date > 124, NA, diar7d))
 table(d$pos, d$diar7d)
 table(d$pos, !is.na(d$haz))
 
@@ -164,6 +164,8 @@ gv_res$percent_diar_samples_dropped <- 100 - gv_res$diar_samples_after_merge/gv_
 gv_res$percent_haz_samples_dropped <- 100 - gv_res$haz_samples_after_merge/gv_res$haz_samples_before_merge * 100
 gv_res$percent_env_samples_with_diar <- gv_res$samples_with_diar_after_merge/gv_res$env_samples_before_merge  * 100
 gv_res$percent_env_samples_with_haz <-  gv_res$samples_with_haz_after_merge/gv_res$env_samples_before_merge  * 100
+gv_res$percent_env_samples_with_ch <-  gv_res$samples_with_ch_after_merge/gv_res$env_samples_before_merge  * 100
+
 gv_res$diar_samples_date_dropped[is.na(gv_res$diar_samples_date_dropped )] <- 0
 gv_res$haz_samples_date_dropped[is.na(gv_res$haz_samples_date_dropped )] <- 0
 

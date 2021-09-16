@@ -6,6 +6,7 @@ d <- readRDS(paste0(dropboxDir,"Data/merged_env_CH_data.rds"))
 head(d)
 d <- droplevels(d)
 table(d$trial, d$pos)
+table(d$study)
 
 d <- d %>% filter(sample!="FP") %>% droplevels()
 

@@ -155,6 +155,8 @@ diar_boehm <- diar_boehm %>% rename(diar7d=loose7dprev,
          childid=toupper(childid),
          study="Boehm 2016")
 
+
+
 # Merge with endline anthropometry
 # The timing of the Boehm sampling was on average 4 months after the initiation of interventions so it preceded the main trial
 # midline anthro measurements and should be perfectly matched to those as well.
@@ -164,13 +166,24 @@ anthro_boehm <- wbb %>% filter(round == "midline", !is.na(haz)|!is.na(waz)|!is.n
   rename(agedays_anthro=agedays) %>%
   mutate(study="Boehm 2016", round="World Bank")
 
-table(diar_boehm$childid)
-table(anthro_boehm$childid)
-
-dim(diar_boehm)
-dim(anthro_boehm)
-ch_boehm <- full_join(diar_boehm, anthro_boehm, by = c("study","dataid","clusterid", "childid", "round")) %>% filter(!(is.na(diar7d) & is.na(haz) & is.na(waz) & is.na(whz)))
+#Check diarrhea merging
+ch_boehm <- left_join(diar_boehm, anthro_boehm, by = c("study","dataid","clusterid", "childid", "round")) %>% filter(!(is.na(diar7d) & is.na(haz) & is.na(waz) & is.na(whz)))
 dim(ch_boehm)
+
+#env <- env_boehm %>% filter(target=="Any pathogen", sample=="any sample type")
+env <- env_boehm %>% distinct(study,dataid,clusterid, round)
+dim(diar_boehm)
+dim(env)
+diar_merge_boehm <- left_join(env, diar_boehm, by = c("study","dataid","clusterid", "round"))
+dim(diar_merge_boehm)
+table(is.na(diar_merge_boehm$diar7d))
+prop.table(table(is.na(diar_merge_boehm$diar7d)))*100
+diar_merge_boehm$dataid[is.na(diar_merge_boehm$diar7d)]
+diar_merge_boehm[is.na(diar_merge_boehm$diar7d),]
+
+env_failed <- anti_join(env, diar_boehm, by = c("study","dataid","clusterid", "round"))
+diar_failed <- anti_join(diar_boehm, env, by = c("study","dataid","clusterid", "round"))
+env_boehm[env_boehm$dataid==301,]
 
 
 table(env_boehm$round)
@@ -191,42 +204,7 @@ dim(env_boehm)
 dim(diar_boehm)
 
 
-
-
-#diar_env_boehm <- full_join(env_boehm, diar_boehm, by = c("dataid","clusterid", "hhid","merge_round","momage","hfiacat")) %>% filter(!is.na(pos) | !is.na(diar7d)) %>% arrange(sampleid, dataid,clusterid, hhid,childid, merge_round)
-#diar_env_boehm <- full_join(env_boehm, diar_boehm, by = c("study","dataid","clusterid","round")) %>% filter(!is.na(pos)) %>% arrange(sampleid, dataid,clusterid,childid)
-
-
-# #Figure out non_joins
-# df1 <- anti_join(env_boehm, diar_boehm, by = c("study","dataid","clusterid","round")) %>% distinct(study,dataid,clusterid,round)
-# df2 <- anti_join(diar_boehm, env_boehm, by = c("study","dataid","clusterid","round")) %>% distinct(study,dataid,clusterid,round)
-# df3 <- anti_join(env_boehm, diar_boehm, by = c("clusterid")) %>% distinct(study,dataid,clusterid,round)
-# df4 <- anti_join(diar_boehm, env_boehm, by = c("clusterid")) %>% distinct(study,dataid,clusterid,round)
-# df5 <- anti_join(env_boehm, diar_boehm, by = c("dataid")) %>% distinct(study,dataid,clusterid,round)
-# diar_boehm[diar_boehm$clusterid==643,]
-# anthro_boehm[anthro_boehm$clusterid==643,]
-# temp <- ch_env_boehm[ch_env_boehm$clusterid==643,]
-# temp %>% subset(., select=c(dataid, diar7d, haz))
-# #64301, 64302, 64305
-# 
-# env_boehm[env_boehm$dataid==64301,]
-# diar_boehm[diar_boehm$dataid==64301,]
-# anthro_boehm[anthro_boehm$dataid==64301,]
-# diar_env_boehm[diar_env_boehm$dataid==64301,] %>% subset(., select=c(dataid, pos, diar7d))
-# ch_env_boehm[ch_env_boehm$dataid==64301,]
-# 
-# colnames(diar_env_boehm)
-# dim(diar_env_boehm)
-# table(diar_env_boehm$pos, diar_env_boehm$diar7d)
-
-
-
-#xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-# NOTE! This merging is wrong because it doesn't work for env. samples without
-# diar but with haz because of merge on childid. I think anthro and diar need to be merged first
-#xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-
-ch_env_boehm <- full_join(env_boehm, ch_boehm, by = c("dataid","clusterid", "hhid","round","momage","hfiacat")) %>% filter(!is.na(pos)) %>% arrange(sampleid, dataid,clusterid, hhid,childid)
+ch_env_boehm <- full_join(env_boehm, ch_boehm, by = c("study","dataid","clusterid", "hhid","round","momage","hfiacat")) %>% filter(!is.na(pos)) %>% arrange(sampleid, dataid,clusterid, hhid,childid)
 table(is.na(ch_env_boehm$haz))
 dim(ch_env_boehm)
 colnames(ch_env_boehm)
@@ -240,6 +218,11 @@ boehm_res$haz_samples_after_merge <- nrow(ch_env_boehm %>% filter(!is.na(haz)) %
 boehm_res$samples_with_diar_after_merge <- nrow(ch_env_boehm %>% filter(!is.na(diar7d)) %>% do(drop_agg(.)) %>% distinct(sampleid, dataid,  hhid, clusterid,sample, round))
 boehm_res$samples_with_haz_after_merge <- nrow(ch_env_boehm %>% filter(!is.na(haz)) %>% do(drop_agg(.)) %>% distinct(sampleid, dataid,  hhid, clusterid,sample, round))
 boehm_res$samples_with_ch_after_merge <- nrow(ch_env_boehm %>% filter(!is.na(haz)|!is.na(diar7d)) %>% do(drop_agg(.)) %>% distinct(sampleid, dataid,  hhid, clusterid,sample, round))
+
+boehm_res$env_samples_before_merge
+boehm_res$samples_with_diar_after_merge
+boehm_res$samples_with_diar_after_merge/boehm_res$env_samples_before_merge  * 100
+
 
 #3) Kwong to health outcomes- collected at endline
 env_kwong <- env_wbb %>% filter(study=="Kwong 2021")
@@ -294,7 +277,7 @@ date_diff <- ch_env_kwong %>% mutate(date_diff = child_date-env_date) %>% select
 
 ch_env_kwong <- ch_env_kwong %>%
   mutate(diar7d = ifelse(child_date<env_date, NA, diar7d),
-         diar7d = ifelse(child_date-env_date > 93, NA, diar7d),
+         diar7d = ifelse(child_date-env_date > 124, NA, diar7d),
          diar7d = ifelse(is.na(child_date)|is.na(env_date), NA, diar7d))
 
 ch_env_kwong <- ch_env_kwong %>% 

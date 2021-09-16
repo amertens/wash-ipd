@@ -77,6 +77,7 @@ odisha_res$diar_samples_after_merge <- nrow(d %>% filter(!is.na(diar7d)) %>% do(
 odisha_res$haz_samples_after_merge <- nrow(d %>% filter(!is.na(waz)) %>% do(drop_agg(.)) %>% distinct(dataid, hhid, age,    sex, waz))
 odisha_res$samples_with_diar_after_merge <- nrow(d %>% filter(!is.na(diar7d)) %>% do(drop_agg(.)) %>% distinct(sampleid, dataid, clusterid,sample, round))
 odisha_res$samples_with_haz_after_merge <- nrow(d %>% filter(!is.na(waz)) %>% do(drop_agg(.)) %>% distinct(sampleid, dataid, clusterid,sample, round))
+odisha_res$samples_with_ch_after_merge <- nrow(d %>% filter(!is.na(waz)|!is.na(diar7d)) %>% do(drop_agg(.)) %>% distinct(sampleid, dataid, clusterid,sample, round))
 
 
 table(d$pos, d$diar7d)
@@ -87,7 +88,7 @@ date_diff <- d %>% mutate(date_diff = child_date-env_date) %>% select(study, sam
 d <- d %>% 
   filter(child_date>=env_date) %>%
   mutate(
-    diar7d = ifelse(child_date-env_date > 93, NA, diar7d))
+    diar7d = ifelse(child_date-env_date > 124, NA, diar7d))
 table(d$pos, d$diar7d)
 table(d$pos, !is.na(d$waz))
 
@@ -100,6 +101,8 @@ odisha_res$percent_diar_samples_dropped <- 100 - odisha_res$diar_samples_after_m
 odisha_res$percent_haz_samples_dropped <- 100 - odisha_res$haz_samples_after_merge/odisha_res$haz_samples_before_merge * 100
 odisha_res$percent_env_samples_with_diar <- odisha_res$samples_with_diar_after_merge/odisha_res$env_samples_before_merge  * 100
 odisha_res$percent_env_samples_with_haz <-  odisha_res$samples_with_haz_after_merge/odisha_res$env_samples_before_merge  * 100
+odisha_res$percent_env_samples_with_ch <-  odisha_res$samples_with_ch_after_merge/odisha_res$env_samples_before_merge  * 100
+
 odisha_res$diar_samples_date_dropped[is.na(odisha_res$diar_samples_date_dropped )] <- 0
 odisha_res$haz_samples_date_dropped[is.na(odisha_res$haz_samples_date_dropped )] <- 0
 

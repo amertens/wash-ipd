@@ -10,6 +10,10 @@ mapsan <- readRDS(paste0(dropboxDir,"Data/mapsan_env_CH_data.rds"))
 gv <- readRDS(paste0(dropboxDir,"Data/gv_env_CH_data.rds"))
 odisha <- readRDS(paste0(dropboxDir,"Data/odisha_env_CH_data.rds"))
 
+df <- mapsan %>% filter(sample=="any sample type", target=="Any pathogen")
+table(df$pos)
+table(df$pos)
+
 #d <- bind_rows(wbb, wbk, mapsan, gv, odisha)
 d <- data.table::rbindlist(list( wbb, wbk, mapsan, gv, odisha), fill=T)
 #d <- d %>% filter(!is.na(env_date) & !is.na(child_date))

@@ -72,7 +72,7 @@ odisha$sampleid<-as.character(odisha$sampleid)
 
 d <- bind_rows(WBB, WBK, mapsan, gv, odisha) %>%
   mutate(study=factor(study, 
-            levels=c("Odagiri 2016", "Boehm 2016", "Reese 2017", "Steinbaum 2019", "Fuhrmeister 2020", "Holcomb 2020", "Capone et al. 2021", "Capone 2021 in prep.", "Kwong 2021")))
+            levels=c("Odagiri 2016", "Boehm 2016", "Reese 2017", "Steinbaum 2019", "Fuhrmeister 2020", "Holcomb 2020", "Capone et al. 2021","Kwong 2021")))
 
 #mark STH qual as ROQ
 d$qual <- ifelse(d$study %in% c("Steinbaum 2019","Kwong 2021"),"ROQ",d$qual)

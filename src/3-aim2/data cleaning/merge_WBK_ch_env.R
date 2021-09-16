@@ -94,6 +94,7 @@ wbk_res$diar_samples_after_merge <- nrow(d %>% filter(!is.na(diar7d)) %>% do(dro
 wbk_res$haz_samples_after_merge <- nrow(d %>% filter(!is.na(haz)) %>% do(drop_agg(.)) %>% distinct(dataid, hhid, agedays,    sex, haz))
 wbk_res$samples_with_diar_after_merge <- nrow(d %>% filter(!is.na(diar7d)) %>% do(drop_agg(.)) %>% distinct(sampleid, dataid, hhid))
 wbk_res$samples_with_haz_after_merge <- nrow(d %>% filter(!is.na(haz)) %>% do(drop_agg(.)) %>% distinct(sampleid, dataid, hhid))
+wbk_res$samples_with_ch_after_merge <- nrow(d %>% filter(!is.na(haz)|!is.na(diar7d)) %>% do(drop_agg(.)) %>% distinct(sampleid, dataid, hhid))
 
 
 
@@ -105,7 +106,7 @@ date_diff <- d %>% mutate(date_diff = child_date-env_date) %>% select(study, sam
 
 d <- d %>%
   mutate(diar7d = ifelse(child_date<env_date, NA, diar7d),
-         diar7d = ifelse(child_date-env_date > 93, NA, diar7d),
+         diar7d = ifelse(child_date-env_date > 124, NA, diar7d),
          diar7d = ifelse(is.na(child_date)|is.na(env_date), NA, diar7d))
 
 d <- d %>%
@@ -125,6 +126,8 @@ wbk_res$percent_diar_samples_dropped <- 100 - wbk_res$diar_samples_after_merge/w
 wbk_res$percent_haz_samples_dropped <- 100 - wbk_res$haz_samples_after_merge/wbk_res$haz_samples_before_merge * 100
 wbk_res$percent_env_samples_with_diar <- wbk_res$samples_with_diar_after_merge/wbk_res$env_samples_before_merge  * 100
 wbk_res$percent_env_samples_with_haz <-  wbk_res$samples_with_haz_after_merge/wbk_res$env_samples_before_merge  * 100
+wbk_res$percent_env_samples_with_ch <-  wbk_res$samples_with_ch_after_merge/wbk_res$env_samples_before_merge  * 100
+
 wbk_res$diar_samples_date_dropped[is.na(wbk_res$diar_samples_date_dropped )] <- 0
 wbk_res$haz_samples_date_dropped[is.na(wbk_res$haz_samples_date_dropped )] <- 0
 

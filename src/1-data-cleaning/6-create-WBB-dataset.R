@@ -310,10 +310,6 @@ diar <- read.csv(paste0(dropboxDir,"Data/WBB/washb-bangladesh-diar.csv")) %>% mu
 hhid <- enrol %>% subset(., select =c("dataid","hhid")) %>% arrange(dataid, hhid)
 diar <- left_join(diar, hhid, by=c("dataid"))
 
-# #world bank diarrhea
-# WB_diar <- haven::read_dta(paste0(dropboxDir,"Data/WBB/fecal_pathways_1_childhealth_micro_submit.dta")) %>% mutate(round="World Bank")
-# head(WB_diar)
-# table(WB_diar$loose7dprev) #diarrhea measure to use
 
 #R01 diarrhea
 r01_diar_full <- read.csv(paste0(dropboxDir,"Data/WBB/r01_child_health_all_variables.csv"))
