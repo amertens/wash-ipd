@@ -12,6 +12,8 @@ table(unadj_RR$sample_cat)
 
 poolRR<-function(d, method="REML"){
   
+  if(nrow(d)>0){
+  
   d <- d %>% rename(untransformed_estimate=coef, untransformed_se=se)  
   
   fit<-NULL
@@ -32,6 +34,10 @@ poolRR<-function(d, method="REML"){
   est$ci.ub<-exp(est$logRR + 1.96 * est$logSE)
   est$N <- d$N[1]
   est <- est %>% mutate(Y=d$Y[1],study="Pooled", sparse="pooled", sample_type=d$sample_type[1], sample_cat=d$sample_cat[1], target_f=d$target_f[1])
+  
+  }else{
+    est <- data.frame(Y=NA,study=NA, sparse=NA, sample_type=NA, sample_cat=NA, target_f=NA)
+  }
   
   return(est)
 }
@@ -66,7 +72,7 @@ res_RR_unadj <- unadj_RR %>% filter(Y%in%binary_Y, sample_cat!="Sparse data") %>
   group_by(Y, sample, target) %>%
   filter(!is.na(se)) %>% mutate(N=n()) %>%
   filter(N>=4) %>%  
-  do(poolRR(.)) 
+  do(try(poolRR(.)))
 
 res_RR_adj <- adj_RR %>% filter(Y%in%binary_Y, sample_cat!="Sparse data") %>%
   group_by(Y, sample, target) %>%

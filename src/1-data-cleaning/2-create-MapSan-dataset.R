@@ -84,7 +84,7 @@ soil <- soil %>%
   mutate(animal_in_compound = ifelse(dog_observed=="Yes" | chicken_duck_observed=="Yes" | cat_observed=="Yes", 1, 0)) %>%
   subset(., select=c(compound_phase, phase, compound, env_date, adenovirus_40_41:campylobacter_jejuni_coli, trial_arm, animal_in_compound)) %>%
   gather(adenovirus_40_41:campylobacter_jejuni_coli, key = target, value = detect ) %>%
-  mutate(sample="S", dataid=compound, logquant=NA, env_date=ymd(mdy(env_date))) %>%
+  mutate(sample="LS", dataid=compound, logquant=NA, env_date=ymd(mdy(env_date))) %>%
   rename(sampleid=compound_phase, clusterid=compound, round=phase )
 #Notes: keep in the intervention variable to check merging accuracy
 soil$env_date[1:10]
@@ -112,7 +112,7 @@ table(soil_pathogenic$detect)
 
 soil <- bind_rows(soil, soil_pathogenic, soil_zoo, soil_measures_not_zoo) %>% 
   filter(!(target %in% ecoli_measures))%>%
-  mutate(study="Capone et al. 2021")
+  mutate(study="Capone 2021")
 table(soil$target, soil$detect)
 
 #add soil to env dataset

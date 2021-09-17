@@ -11,11 +11,12 @@ env <- readRDS(paste0(dropboxDir,"Data/cleaned_ipd_env_data.rds"))
 env <- env %>% mutate(
   trial = case_when(study %in% c("Fuhrmeister 2020", "Kwong 2021", "Boehm 2016") ~ "WBB",
                     study=="Steinbaum 2019" ~ "WBK",
-                    study %in% c("Holcomb 2020","Capone et al. 2021") ~ "MapSan",
+                    study %in% c("Holcomb 2020","Capone 2021") ~ "MapSan",
                     study=="Reese 2017" ~ "Gram Vikas",
                     study=="Odagiri 2016" ~ "Odisha")) 
 
 env <- env %>% filter(trial == "MapSan") %>% droplevels(.)
+table(env$study, env$sample)
 
 ch <- readRDS(paste0(dropboxDir, "Data/MapSan/mapsan_child_cleaned.rds")) %>% mutate(trial="MapSan", dataid=clusterid)
 ch <- ch %>% subset(., select=c(trial, round,child_date,childid, female, age_months, dataid, hhid,clusterid, diar7d, haz,whz,waz)) %>%
@@ -23,33 +24,88 @@ ch <- ch %>% subset(., select=c(trial, round,child_date,childid, female, age_mon
 head(ch)
 table(ch$diar7d)
 
-table(env$round)
+table(env$study, env$round)
+table(env$study, env$sample, env$round)
 
 
 
-mapsan_res <- data.frame(
+holcomb_res <- data.frame(
   study = "holcomb",
-  env_samples_before_merge = nrow(env %>% do(drop_agg(.)) %>% distinct(sampleid, dataid,  hhid, clusterid,sample, round)),
-  env_HH_before_merge = nrow(env %>% do(drop_agg(.)) %>% distinct(dataid,  hhid, clusterid)),
+  env_samples_before_merge = nrow(env %>% filter(study=="Holcomb 2020") %>% do(drop_agg(.)) %>% distinct(sampleid, dataid,  hhid, clusterid,sample, round)),
+  env_HH_before_merge = nrow(env %>% filter(study=="Holcomb 2020")%>% do(drop_agg(.)) %>% distinct(dataid,  hhid, clusterid)),
+  diar_samples_before_merge = nrow(ch %>% filter(round!="el",!is.na(diar7d)) %>% ungroup() %>% distinct(dataid, hhid, child_date, age,    sex, childid, diar7d)),
+  haz_samples_before_merge = nrow(ch %>% filter(round!="el",!is.na(haz)) %>% ungroup() %>% distinct(dataid, hhid, child_date, age,    sex, childid, haz))
+)
+
+capone_res <- data.frame(
+  study = "capone",
+  env_samples_before_merge = nrow(env %>% filter(study=="Capone 2021") %>% do(drop_agg(.)) %>% distinct(sampleid, dataid,  hhid, clusterid,sample, round)),
+  env_HH_before_merge = nrow(env %>% filter(study=="Capone 2021")%>% do(drop_agg(.)) %>% distinct(dataid,  hhid, clusterid)),
   diar_samples_before_merge = nrow(ch %>% filter(!is.na(diar7d)) %>% ungroup() %>% distinct(dataid, hhid, child_date, age,    sex, childid, diar7d)),
   haz_samples_before_merge = nrow(ch %>% filter(!is.na(haz)) %>% ungroup() %>% distinct(dataid, hhid, child_date, age,    sex, childid, haz))
 )
 
 
+#Merge diarrhea and growth separately. Growth 1-year later
+# So merge holcomb BL to ML, and ML to EL
+# Merge capone BL to ML, and ML to EL
+#Merge concurrent diarrhea
+ch_bl <- ch %>% filter(round=="bl")
+ch_ml <- ch %>% filter(round=="ml")
+ch_el <- ch %>% filter(round=="el")
+cp_bl <- env %>% filter(study=="Capone 2021", round=="bl") 
+cp_ml <- env %>% filter(study=="Capone 2021", round=="ml") 
+cp_el <- env %>% filter(study=="Capone 2021", round=="el") 
+hol_bl <- env %>% filter(study=="Holcomb 2020", round=="bl") 
+hol_ml <- env %>% filter(study=="Holcomb 2020", round=="ml") 
 
-#Split data by hh versus compound samples
+
+#Function to split data by hh versus compound samples
 unique(env$sample)
 
+# env = cp_bl
+# ch = ch_ml %>% subset(., select = -c(diar7d))
+
+merge_ch <- function(env, ch){
+  ch$ch_data <- 1
+  env_compound <- env %>% filter(sample %in% c("LS","FlyLat","FlyKitch","SW","any sample type")) %>% subset(., select = -c(hhid))
+  env_hh <- env %>% filter(sample %in% c("S","MH", "CH", "W" ))
+  
+  d_compound <- full_join(env_compound, ch, by = c("trial","dataid","clusterid"))
+  d_hh <- full_join(env_hh, ch, by = c("trial","dataid","clusterid", "hhid"))
+  #table(d_hh$study, d_hh$sample)
+  
+  d<-bind_rows(d_compound,d_hh)
+  d <- d %>% filter(!is.na(sample), !is.na(ch_data))
+  return(d)
+}
+
+# cp_bl <- cp_bl %>% filter(sample=="any sample type", target=="Any pathogen")
+# dim(cp_bl)
+# dim(ch_ml)
+cp_anthro_ml <- merge_ch(cp_bl, ch_ml %>% subset(., select = -c(diar7d)))
+cp_anthro_ml <- merge_ch(cp_ml, ch_el %>% subset(., select = -c(diar7d)))
+cp_anthro_el <- merge_ch(cp_el, ch_el %>% subset(., select = -c(diar7d)))
+
+
+cp_diar_bl <- merge_ch()
+
+
+
+
 #d <- full_join(env, ch, by = c("trial","dataid","clusterid"))
-env_compound <- env %>% filter(sample %in% c("LS","FlyLat","SW","any sample type")) %>% subset(., select = -c(hhid))
-env_hh <- env %>% filter(sample %in% c("S","MH", "CH", "FlyKitch", "W" ))
+env_compound <- env %>% filter(sample %in% c("LS","FlyLat","FlyKitch","SW","any sample type")) %>% subset(., select = -c(hhid))
+env_hh <- env %>% filter(sample %in% c("S","MH", "CH",  "W" ))
 
 d_compound <- full_join(env_compound, ch, by = c("trial","dataid","clusterid","round"))
 d_hh <- full_join(env_hh, ch, by = c("trial","dataid","clusterid", "hhid","round"))
+table(d_hh$study, d_hh$sample)
+
+
 d<-bind_rows(d_compound,d_hh)
 d <- d %>% filter(!is.na(sample), !is.na(ch_data))
 
-
+table(d$sample)
 
 
 #merge the next round's diarhhea and anthro and then see which is closer but still after env. sampling 
@@ -62,6 +118,8 @@ d2 <- d2 %>% filter(!is.na(sample), !is.na(ch_data))
 d$merge_type="concurrent"
 d2$merge_type="next round"
 
+table(d$study, d$sample)
+table(d2$study, d2$sample)
 dim(d)
 dim(d2)
 
@@ -74,6 +132,7 @@ table(d$merge_type)
 summary(d$samp_diff)
 summary(d$samp_diff2)
 
+table(d$sample)
 
 mapsan_res$env_samples_after_merge <- nrow(d %>% do(drop_agg(.)) %>% distinct(sampleid, dataid,  hhid, clusterid,sample, round))
 mapsan_res$env_HH_after_merge <- nrow(d %>% do(drop_agg(.)) %>% distinct(dataid,  hhid, clusterid))

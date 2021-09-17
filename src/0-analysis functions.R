@@ -291,7 +291,8 @@ aim2_glm <- function(d, Ws=NULL, outcome="pos", exposure, study="mapsan", sample
   cat(minN,"\n")
   
   #cat(minN>=10 | length(unique(df$Y)) > 2)
-  if((minN>=10 & min(table(df$Y, df$X))>1) | (minN>=10 & length(unique(df$Y)) > 2 & length(unique(df$X)) == 2)){
+  #if((minN>=10 & min(table(df$Y, df$X))>1) | (minN>=10 & length(unique(df$Y)) > 2 & length(unique(df$X)) == 2)){
+  if((minN>=2 & min(table(df$Y, df$X))>1) | (minN>=2 & length(unique(df$Y)) > 2 & length(unique(df$X)) == 2)){
     
     if(!is.null(Ws)){
       Wdf <- df %>% ungroup() %>% select(any_of(Ws)) %>% select_if(~sum(!is.na(.)) > 0)

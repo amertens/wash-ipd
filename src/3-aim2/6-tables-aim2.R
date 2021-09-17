@@ -285,8 +285,8 @@ save(target_presence_P, target_presence_MST, tab1, tab2,
      target_presence_long_P, target_presence_long_MST,
      any_pathogens_tab, any_virus_tab, any_bacteria_tab, any_helminth_tab, any_protozoa_tab,
      general_MST_tab, animal_MST_tab, human_MST_tab,
-     any_pathogens_tab2, any_virus_tab2, any_bacteria_tab2, any_helminth_tab2, any_protozoa_tab2,
-     general_MST_tab2, animal_MST_tab2, human_MST_tab2,
+     # any_pathogens_tab2, any_virus_tab2, any_bacteria_tab2, any_helminth_tab2, any_protozoa_tab2,
+     # general_MST_tab2, animal_MST_tab2, human_MST_tab2,
      file=here("figures/all_tables.Rdata"))
 
 
