@@ -405,12 +405,6 @@ table(d2f$sample)
 
 
 
-# #mark missing dataid
-# temp<-sapply(strsplit(df$sampleid, "-"), "[", 2)
-# temp<-as.numeric(sapply(strsplit(temp, "\\."), "[", 1))
-# df$dataid[is.na(df$dataid)] <- temp[is.na(df$dataid)]
-
-
 #----------------------------------------------------------------------------
 # Impute non-detects
 #----------------------------------------------------------------------------
@@ -453,15 +447,6 @@ summary(df$abund[df$sample=="W" & df$detect>0 & df$qual=="ROQ" & df$target=="gbc
 summary(log10(df$abund[df$sample=="W" & df$detect>0 & df$qual=="ROQ" & df$target=="gbc"]))
 
 #Check soil GBS
-
-table(is.na(df$qual), df$detect)
-
-temp <- df[df$detect>0  & df$abund<20,] %>% filter(!is.na(dataid))
-temp
-
-table(df$qual,is.na(df$abund))
-
-
 table(df$detect)
 table(df$qual, df$detect)
 table(df$qual, is.na(df$detect))

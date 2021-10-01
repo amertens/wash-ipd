@@ -131,8 +131,9 @@ clean_res <- function(d, target_lev=target_levels){
       sample == "W" ~ "Water",
       sample == "CH" ~ "Hands",
       sample == "MH" ~ "Hands",
-      sample == "FlyKitch" ~ "Flies",
-      sample == "FlyLat" ~ "Flies",
+      # sample == "FlyKitch" ~ "Flies",
+      # sample == "FlyLat" ~ "Flies",
+      sample == "Fly" ~ "Flies",
       sample == "LS" ~ "Soil",
       sample == "S" ~ "Soil"
     ),
@@ -143,8 +144,9 @@ clean_res <- function(d, target_lev=target_levels){
       sample == "W" ~ "Stored water",
       sample == "CH" ~ "Child hands",
       sample == "MH" ~ "Mother's hands",
-      sample == "FlyKitch" ~ "Flies in kitchen",
-      sample == "FlyLat" ~ "Flies in latrine",
+      # sample == "FlyKitch" ~ "Flies in kitchen",
+      # sample == "FlyLat" ~ "Flies in latrine",
+      sample == "Fly" ~ "Flies",
       sample == "LS" ~ "Latrine soil",
       sample == "S" ~ "House soil"
     ), 
@@ -155,15 +157,18 @@ clean_res <- function(d, target_lev=target_levels){
       sample == "W"  & sparse != "yes"~ "Stored water",
       sample == "CH"  & sparse != "yes"~ "Child hands",
       sample == "MH"  & sparse != "yes"~ "Mother's hands",
-      sample == "FlyKitch"  & sparse != "yes"~ "Flies in kitchen",
-      sample == "FlyLat"  & sparse != "yes"~ "Flies in latrine",
+      # sample == "FlyKitch"  & sparse != "yes"~ "Flies in kitchen",
+      # sample == "FlyLat"  & sparse != "yes"~ "Flies in latrine",
+      sample == "Fly" ~ "Flies",
       sample == "LS"  & sparse != "yes"~ "Latrine soil",
       sample == "S"  & sparse != "yes"~ "House soil"
     ), 
     sample_cat = factor(sample_cat, 
                         levels=c("Any sample","Source water","Stored water",
                                  "Child hands", "Mother's hands", "Latrine soil",
-                                 "House soil", "Flies in kitchen",  "Flies in latrine", "Sparse data"))
+                                 "House soil", "Flies",
+                                 #"Flies in kitchen",  "Flies in latrine", 
+                                 "Sparse data"))
   )
   
   #get raw OR and cell count labels
@@ -203,6 +208,7 @@ clean_res_subgroup <- function(d, target_lev=target_levels){
       sample == "W" ~ "Water",
       sample == "CH" ~ "Hands",
       sample == "MH" ~ "Hands",
+      sample == "Fly" ~ "Flies",
       sample == "FlyKitch" ~ "Flies",
       sample == "FlyLat" ~ "Flies",
       sample == "LS" ~ "Soil",
@@ -215,8 +221,9 @@ clean_res_subgroup <- function(d, target_lev=target_levels){
       sample == "W" ~ "Stored water",
       sample == "CH" ~ "Child hands",
       sample == "MH" ~ "Mother's hands",
-      sample == "FlyKitch" ~ "Flies in kitchen",
-      sample == "FlyLat" ~ "Flies in latrine",
+      # sample == "FlyKitch" ~ "Flies in kitchen",
+      # sample == "FlyLat" ~ "Flies in latrine",
+      sample == "Fly" ~ "Flies",
       sample == "LS" ~ "Latrine soil",
       sample == "S" ~ "House soil"
     ), 
@@ -226,15 +233,16 @@ clean_res_subgroup <- function(d, target_lev=target_levels){
       sample == "W" ~ "Stored water",
       sample == "CH" ~ "Child hands",
       sample == "MH" ~ "Mother's hands",
-      sample == "FlyKitch" ~ "Flies in kitchen",
-      sample == "FlyLat" ~ "Flies in latrine",
+      # sample == "FlyKitch" ~ "Flies in kitchen",
+      # sample == "FlyLat" ~ "Flies in latrine",
+      sample == "Fly" ~ "Flies",
       sample == "LS" ~ "Latrine soil",
       sample == "S" ~ "House soil"
     ), 
     sample_cat = factor(sample_cat, 
                         levels=c("Any sample","Source water","Stored water",
                                  "Child hands", "Mother's hands", "Latrine soil",
-                                 "House soil", "Flies in kitchen",  "Flies in latrine"))
+                                 "House soil", "Flies", "Flies in kitchen",  "Flies in latrine"))
   )
   
   #get raw OR and cell count labels
@@ -264,4 +272,12 @@ drop_agg <- function(d){
 }
 
 
+#extract stata labels
+makeVlist <- function(dta) { 
+  labels <- sapply(dta, function(x) attr(x, "label"))
+  labs <- tibble(name = names(labels),
+                 label = labels)
+  labs$label<- as.character(labs$label)
+  return(labs)
+}
 

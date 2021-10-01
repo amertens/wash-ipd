@@ -41,8 +41,8 @@ table(df$abund)
 d <- d %>% filter(!is.na(abund)) %>% droplevels(.)
 
 table(d$sample, d$target)
-sth <- d %>% filter(target %in% c("Any STH","Ascaris","Trichuris") & sample!="FlyKitch" & sample!="FlyLat")  %>% droplevels(.)
-d <- d %>% filter(!(target %in% c("Any STH","Ascaris","Trichuris"))|sample=="FlyKitch" | sample=="FlyLat")  %>% droplevels(.)
+sth <- d %>% filter(target %in% c("Any STH","Ascaris","Trichuris") & sample!="Fly")  %>% droplevels(.)
+d <- d %>% filter(!(target %in% c("Any STH","Ascaris","Trichuris"))|sample=="Fly")  %>% droplevels(.)
 
 table(d$sample, d$target, d$study)
 

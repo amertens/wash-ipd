@@ -135,15 +135,28 @@ env_boehm <- env_wbb %>% filter(study=="Boehm 2016")
 
 
 #world bank diarrhea
-diar_boehm <- haven::read_dta(paste0(dropboxDir,"Data/WBB/fecal_pathways_1_childhealth_micro_submit.dta")) %>% mutate(round="World Bank")
-head(diar_boehm)
-colnames(diar_boehm)
-table(diar_boehm$loose7dprev) #diarrhea measure to use
-diar_boehm <- diar_boehm %>% rename(diar7d=loose7dprev,
-                                    clusterid=cluster_id,
+labs <- haven::read_dta(paste0(dropboxDir,"Data/WBB/fecal_pathways_1_childhealth_micro_submit.dta"))
+labs <- makeVlist(labs)
+
+diar_boehm_full <- haven::read_dta(paste0(dropboxDir,"Data/WBB/world bank/child_health_micro_cum_d1_d2_long_30oct2016.dta")) %>% mutate(round="World Bank")
+head(diar_boehm_full)
+colnames(diar_boehm_full)
+
+table(is.na(diar_boehm_full$d1diar7dprev)) #day 1 diarrhea
+table(is.na(diar_boehm_full$loose7dprev)) #diarrhea measure to use
+table(diar_boehm_full$d1diar7dprev) #day 1 diarrhea
+table(diar_boehm_full$loose7dprev) #diarrhea measure to use
+prop.table(table(diar_boehm_full$d1diar7dprev)) #day 1 diarrhea
+prop.table(table(diar_boehm_full$loose7dprev)) #diarrhea measure to use
+nrow(diar_boehm_full %>% distinct(pid))
+nrow(diar_boehm_full %>% distinct(pid, cid))
+
+diar_boehm <- diar_boehm_full %>% rename(diar7d=loose7dprev,
                                     dataid=pid,
                                     childid=cid,
                                     agedays=age) %>%
+  filter(!is.na(diar7d), !is.na(agedays), 
+         arm %in% c("Control", "Sanitation")) %>%
   select(clusterid, dataid, 
          #hhid,  child_date_anthro, sex,    
          agedays,          
@@ -153,7 +166,19 @@ diar_boehm <- diar_boehm %>% rename(diar7d=loose7dprev,
          childid=gsub("tt","t2",childid),
          childid=gsub("t","t1",childid),
          childid=toupper(childid),
-         study="Boehm 2016")
+         clusterid=as.numeric(clusterid),
+         agedays=agedays*30.4167,
+         study="Boehm 2016") %>%
+  distinct(clusterid, dataid, agedays,childid,intday, intmo,diar7d, round, study)
+
+dim(diar_boehm)
+table(diar_boehm$childid)
+prop.table(table(diar_boehm$diar7d))
+#From https://pubs.acs.org/doi/pdf/10.1021/acs.est.8b00928
+# On the second household visit, 2200 (90%) of these children
+# were successfully measured and included in the prospective
+# analysis. WHO-defined diarrhea 7-day prevalence was 17.8% at
+# the first household visit and 16.9% at the second visit;
 
 
 
@@ -174,22 +199,50 @@ dim(ch_boehm)
 env <- env_boehm %>% distinct(study,dataid,clusterid, round)
 dim(diar_boehm)
 dim(env)
-diar_merge_boehm <- left_join(env, diar_boehm, by = c("study","dataid","clusterid", "round"))
+diar_merge_boehm <- left_join(env, diar_boehm, by = c("study","dataid","clusterid", "round")) 
 dim(diar_merge_boehm)
+
+unique(env$dataid[!(env$dataid %in% diar_boehm$dataid)])
+unique(env$dataid[!(env$dataid %in% diar_boehm_full$pid)])
+
+
+
 table(is.na(diar_merge_boehm$diar7d))
 prop.table(table(is.na(diar_merge_boehm$diar7d)))*100
+
+table((diar_merge_boehm$diar7d))
+prop.table(table((diar_merge_boehm$diar7d)))*100
+
 diar_merge_boehm$dataid[is.na(diar_merge_boehm$diar7d)]
 diar_merge_boehm[is.na(diar_merge_boehm$diar7d),]
 
+#dataid and clusterid
 env_failed <- anti_join(env, diar_boehm, by = c("study","dataid","clusterid", "round"))
 diar_failed <- anti_join(diar_boehm, env, by = c("study","dataid","clusterid", "round"))
-env_boehm[env_boehm$dataid==301,]
+env_failed <- env_failed %>% distinct(dataid, clusterid)
+diar_failed <- diar_failed %>% distinct(dataid, clusterid)
+dim(env_failed)
+dim(diar_failed)
+unique(env_failed$dataid)
+
+#Just dataid
+env_failed <- anti_join(env, diar_boehm, by = c("dataid"))
+diar_failed <- anti_join(diar_boehm, env, by = c("dataid"))
+env_failed <- env_failed %>% distinct(dataid, clusterid)
+diar_failed <- diar_failed %>% distinct(dataid, clusterid)
+dim(env_failed)
+dim(diar_failed)
+unique(env_failed$dataid)
 
 
-table(env_boehm$round)
-table(diar_boehm$round)
-table(is.na(diar_boehm$diar7d))
-table(env_boehm$sample, env_boehm$round)
+table(unique(env_failed$dataid) %in% unique(diar_boehm_full$pid))
+table(unique(env_failed$dataid) %in% unique(diar_boehm$dataid))
+miss_id <- unique(env_failed$dataid)[unique(env_failed$dataid) %in% unique(diar_boehm_full$pid)]
+temp<-diar_boehm_full[diar_boehm_full$pid %in% miss_id,]
+#write.csv(temp, file="C:/Users/andre/Downloads/temp.csv")
+table(temp$diar7dprev)
+table(temp$d1diar7dprev)
+
 
 boehm_res <- data.frame(
   study = "boehm",

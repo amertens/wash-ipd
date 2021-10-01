@@ -4,7 +4,7 @@ source(here::here("0-config.R"))
 
 
 #-----------------------------------------------------------
-# Merge WBK
+# Merge GV
 #-----------------------------------------------------------
 
 env <- readRDS(paste0(dropboxDir,"Data/cleaned_ipd_env_data.rds"))
@@ -76,21 +76,24 @@ table(ch$diar7d, ch$merge_round)
 # And next round's anthro
 #------------------------------------------
 
+#next round diarrhea
 ch_diar <- ch %>% rename(
                     child_date = child_date_anthro,
-                    age = age_anthro
-                    #diar7d_contemporaneous=diar7d#,
-                    #haz_contemporaneous=haz,
-                    #whz_contemporaneous=whz
-                    ) %>%
+                    age = age_anthro) %>%
             arrange(childid, dataid, hhid, merge_round) %>%
             group_by(childid, dataid, hhid) %>%
-            mutate(merge_round = merge_round+1,
-                   #haz=lead(haz_contemporaneous),
-                   #whz=lead(whz_contemporaneous),
-                   #child_date=lead(child_date_anthro)
+            mutate(merge_round = merge_round
                    ) %>%
             subset(., select = c(childid, dataid, clusterid, hhid, merge_round, diar7d, child_date, age))
+# #Concurrent diarrhea
+# ch_diar2 <- ch %>% rename(
+#   child_date = child_date_anthro,
+#   age = age_anthro) %>%
+#   arrange(childid, dataid, hhid, merge_round) %>%
+#   group_by(childid, dataid, hhid) %>%
+#   mutate(merge_round = merge_round) %>%
+#   subset(., select = c(childid, dataid, clusterid, hhid, merge_round, diar7d, child_date, age))
+
 ch <- ch %>% subset(., select = -c(diar7d))
 
 
@@ -111,22 +114,42 @@ gv_res <- data.frame(
 #Added note: and I used the lead outcome time
 dim(env)
 dim(ch)
-d <- full_join(env, ch, by = c("trial","study","dataid","clusterid","hhid","merge_round"))
-dim(d)
-d <- full_join(d, ch_diar, by = c("childid","dataid","clusterid","hhid","merge_round"))
-dim(d)
-d <- d %>% filter(!is.na(sample), !is.na(child_date) | !is.na(child_date_anthro))
-dim(d)
 
-table(d$round)
-table(d$merge_round)
+d <- full_join(env, ch_diar, by = c("dataid","clusterid","hhid","merge_round"))
+# dim(d1)
+# d1 <- d1 %>% filter(!is.na(sample), !is.na(child_date))
+# dim(d1)
+# 
+# d2 <- full_join(env, ch_diar2, by = c("dataid","clusterid","hhid","merge_round"))
+# dim(d2)
+# d2 <- d2 %>% filter(!is.na(sample), !is.na(child_date))
+# dim(d2)
+# 
+# table(d1$pos, d1$diar7d)
+# table(d2$pos, d2$diar7d)
+# 
+# 
+# d<-bind_rows(d1, d2)
 
-colnames(d)
+# #Subset to closest observation where CH is after env. sample collection
+# dim(d1)
+# dim(d2)
+# dim(d)
+# d <- d %>% group_by(sample, sampleid, target, dataid, clusterid, round, childid) %>% mutate(samp_diff=as.numeric(child_date-env_date), samp_diff2=ifelse(samp_diff<1, -100000, samp_diff), N=n()) %>%
+#   filter(samp_diff2-1==min(samp_diff2-1)) %>% ungroup() %>% distinct(sample, sampleid, target, dataid, clusterid, round, childid, .keep_all = T)
+# dim(d)
+# table(d$merge_type)
+# summary(d$samp_diff)
+# summary(d$samp_diff2)
+
+#merge in anthro
+d <- full_join(d, ch, by = c("trial","childid","study","dataid","clusterid","hhid","merge_round")) %>% 
+      filter(!is.na(sample), !is.na(child_date) | !is.na(child_date_anthro))
+dim(d)
 
 
 table(d$pos, d$diar7d)
 summary(as.numeric(d$child_date- d$env_date))
-
 
 
 gv_res$env_samples_after_merge <- nrow(d %>% do(drop_agg(.)) %>% distinct(sampleid, dataid,  hhid, clusterid,sample, round))
@@ -139,8 +162,9 @@ gv_res$samples_with_ch_after_merge <- nrow(d %>% filter(!is.na(haz)|!is.na(diar7
 
 
 #Get proportion dropped for days off
+summary(as.numeric(d$child_date-d$env_date))
 prop.table(table(d$child_date>=d$env_date))
-prop.table(table(d$child_date-d$env_date > 93))
+prop.table(table(d$child_date-d$env_date > 124))
 
 date_diff <- d %>% mutate(date_diff = child_date-env_date) %>% select(study, sampleid, target, dataid, round, hhid, date_diff, diar7d, haz) %>% distinct()
 
@@ -155,8 +179,8 @@ table(d$pos, !is.na(d$haz))
 
 
 
-gv_res$diar_samples_date_dropped <- gv_res$samples_with_diar_after_merge - nrow(d %>% do(drop_agg(.)) %>% filter(!is.na(diar7d)) %>% distinct(childid, sampleid, dataid, hhid))
-gv_res$haz_samples_date_dropped <- gv_res$samples_with_haz_after_merge - nrow(d %>% do(drop_agg(.)) %>% filter(!is.na(haz)) %>% distinct(childid, sampleid, dataid, hhid))
+gv_res$diar_samples_date_dropped <- gv_res$samples_with_diar_after_merge - nrow(d %>% do(drop_agg(.)) %>% filter(!is.na(diar7d)) %>% distinct(childid, sampleid, dataid, hhid, round))
+gv_res$haz_samples_date_dropped <- gv_res$samples_with_haz_after_merge - nrow(d %>% do(drop_agg(.)) %>% filter(!is.na(haz)) %>% distinct(childid, sampleid, dataid, hhid, round))
 
 
 

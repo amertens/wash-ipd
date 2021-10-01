@@ -51,8 +51,9 @@ base_plot <- function(mydf, legend_labels=sample_cats, drop_full_sparse=F){
                "Mother's hands" = my_colors[8],
                "Latrine soil" = my_colors[5],
                "House soil" = my_colors[6],
-               "Flies in kitchen" = my_colors[9],
-               "Flies in latrine" = my_colors[10],
+               # "Flies in kitchen" = my_colors[9],
+               # "Flies in latrine" = my_colors[10],
+               "Flies" = my_colors[9],
                "Sparse data" = "grey50")
   
   if(drop_full_sparse){
@@ -93,8 +94,9 @@ base_plot_diff <- function(mydf, legend_labels=sample_cats, drop_full_sparse=F){
                "Mother's hands" = my_colors[8],
                "Latrine soil" = my_colors[5],
                "House soil" = my_colors[6],
-               "Flies in kitchen" = my_colors[9],
-               "Flies in latrine" = my_colors[10],
+               # "Flies in kitchen" = my_colors[9],
+               # "Flies in latrine" = my_colors[10],
+               "Flies" = my_colors[9],
                "Sparse data" = "grey50")
   
   if(drop_full_sparse){
@@ -136,6 +138,19 @@ base_plot_diff <- function(mydf, legend_labels=sample_cats, drop_full_sparse=F){
 p_diar_1_unadj <- unadj_RR %>% 
   filter(target %in% c("Any pathogen","Any MST"), Y=="diar7d") %>%
   base_plot(drop_full_sparse=T)
+
+
+#Sprcific pathogens
+p_diar_adj_path <- adj_RR %>% 
+  filter( Y=="diar7d", target %in% any_pathogens, !c(target %in% c("Any STH","any pathogen-improved","any pathogen-unimproved"))) %>%
+  base_plot(drop_full_sparse=T)
+p_diar_adj_path
+
+p_haz_adj_path <- adj_RR %>% 
+  filter( Y=="haz", target %in% any_pathogens, !c(target %in% c("Any STH","any pathogen-improved","any pathogen-unimproved"))) %>%
+  base_plot_diff(drop_full_sparse=T)
+p_haz_adj_path
+
 
 
 p_stunt_1_adj <- adj_RR %>% 
@@ -252,7 +267,7 @@ p_whz_s1_adj <- adj_RR %>%
 
 #save figures
 save(list=ls(pattern="p_"), file=here("figures/aim2_figures.Rdata"))
-
+ls(pattern="p_")
 
 
 

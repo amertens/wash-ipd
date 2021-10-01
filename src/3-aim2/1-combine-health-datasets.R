@@ -42,7 +42,9 @@ table(d$study, is.na(d$momage))
 table(d$study, d$sex)
 table(d$study, is.na(d$sex))
 d$age[is.na(d$age)] <- d$agedays[is.na(d$age)]
+d$age_anthro[is.na(d$age_anthro)] <- d$agedays_anthro[is.na(d$age_anthro)]
 table(d$study, is.na(d$age))
+table(d$study[!is.na(d$haz)], is.na(d$age_anthro[!is.na(d$haz)]))
 
 
 #-----------------------------------------------------------
@@ -52,10 +54,6 @@ saveRDS(d, file=paste0(dropboxDir,"Data/merged_env_CH_data.rds"))
 
 
 
-
-# d %>% group_by(study, sample, target) %>%
-#   summarize(N=n(), N_pos=sum(pos), N_diar=sum(!is.na(diar7d)), N_pos_diar=sum(diar7d==1, na.rm=T), N_pos_env_diar=sum(pos==1 & diar7d==1, na.rm=T), N_haz=sum(!is.na(haz)))
-
 d %>% group_by(study) %>%
   summarize(N=n(), N_pos=sum(pos), N_diar=sum(!is.na(diar7d)), N_pos_diar=sum(diar7d==1, na.rm=T), N_haz=sum(!is.na(haz)), N_waz=sum(!is.na(waz)))
 
@@ -63,17 +61,3 @@ tab <- d %>% group_by(study, sample, target) %>%
   summarize(N=n(), N_pos=sum(pos), N_diar=sum(!is.na(diar7d)), N_pos_diar=sum(diar7d==1, na.rm=T), N_pos_env_diar=sum(pos==1 & diar7d==1, na.rm=T), N_haz=sum(!is.na(haz)))
 tab %>% filter(sample=="any sample type", target=="Any pathogen")
 tab %>% filter(sample=="any sample type", target=="Any MST")
-
-#To do:
-
-#specific issues to check
-#-diarrhea in holcomb seems reall low. See how many in primary trial at same sampling time
-#
-
-#To check: get number of diarhhea/anthro samples by study
-#check Kwong env dates. Can I get actual dates?
-#Check that there is a health measure for every env. in fuhrmeister
-#Check I am using the closest anthro measure per child in all studies
-#make a variable for just diarrhea named diarhhea_all right before setting too-far away diarrhea as NA
-#Make table for Ayse
-#Check covariate usage, especially the right child age for diarrhea and Z-scores

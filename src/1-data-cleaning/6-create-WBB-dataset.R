@@ -28,6 +28,8 @@ qPCR <- qPCR %>% mutate(env_date=dmy(paste0(intday,"-",Month.Collected,"-",2015)
 #world bank mst data
 WB <- readRDS(paste0(dropboxDir,"Data/WBB/Clean/WBB_WB_env.RDS"))  %>% mutate(study="Boehm 2016")
 
+#temp <- left_join(WB, tr, by=c("block","clusterid"))
+
 
 
 head(PEC)

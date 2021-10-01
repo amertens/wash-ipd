@@ -46,7 +46,7 @@ wbk_diar <- wbk_diar %>%
 colnames(wbk_anthro)
 wbk_anthro <- wbk_anthro %>% 
   mutate(child_date=ymd(DOB)+aged) %>% filter(!is.na(child_date)) %>%
-  subset(., select =c("childid","compoundid","child_date","studyyear","laz","waz","whz"))
+  subset(., select =c("childid","compoundid","child_date","studyyear","aged","laz","waz","whz"))
 
 #Merge WBK datasets
 dim(wbk_diar)
@@ -54,7 +54,7 @@ dim(wbk_anthro)
 
 
 
-wbk_anthro <- wbk_anthro%>% rename(child_date_anthro=child_date)
+wbk_anthro <- wbk_anthro %>% rename(child_date_anthro=child_date, age_anthro = aged)
 wbk <- full_join(wbk_diar, wbk_anthro, by=c("childid","compoundid","studyyear"))
 # subset to endline
 wbk <- wbk %>% filter(studyyear==2, !is.na(diar7d)|!is.na(laz)|!is.na(waz)|!is.na(whz)) %>% 
@@ -68,19 +68,19 @@ head(wbk)
 
 wbk <- wbk %>% mutate(trial="WBK") %>%
   rename(dataid=compoundid,
-         agedays=aged,
+         age=aged,
          haz=laz)
 table(is.na(wbk$child_date))
 
-ch <- wbk %>% subset(., select = c(trial, clusterid, dataid, hhid, childid, sex,agedays,child_date, child_date_anthro, diar7d, haz, whz, waz,ch_data))
+ch <- wbk %>% subset(., select = c(trial, clusterid, dataid, hhid, childid, sex,age,age_anthro,child_date, child_date_anthro, diar7d, haz, whz, waz,ch_data))
 
 
 wbk_res <- data.frame(
   study = "steinbaum",
   env_samples_before_merge = nrow(env_wbk %>% do(drop_agg(.)) %>% distinct(sampleid, dataid,  hhid, clusterid,sample, round)),
   env_HH_before_merge = nrow(env_wbk %>% do(drop_agg(.)) %>% distinct(dataid,  hhid, clusterid)),
-  diar_samples_before_merge = nrow(ch %>% filter(!is.na(diar7d)) %>% ungroup() %>% distinct(dataid, hhid, child_date, agedays,    sex, childid, diar7d)),
-  haz_samples_before_merge = nrow(ch %>% filter(!is.na(haz)) %>% ungroup() %>% distinct(dataid, hhid, child_date, agedays,    sex, childid, haz))
+  diar_samples_before_merge = nrow(ch %>% filter(!is.na(diar7d)) %>% ungroup() %>% distinct(dataid, hhid, child_date, age,    sex, childid, diar7d)),
+  haz_samples_before_merge = nrow(ch %>% filter(!is.na(haz)) %>% ungroup() %>% distinct(dataid, hhid, child_date, age,    sex, childid, haz))
 )
 
 dim(env_wbk)
@@ -90,8 +90,8 @@ dim(d)
 
 wbk_res$env_samples_after_merge <- nrow(d %>% do(drop_agg(.)) %>% distinct(sampleid, dataid,  hhid, clusterid,sample, round))
 wbk_res$env_HH_after_merge <- nrow(d %>% do(drop_agg(.)) %>% distinct(dataid,  hhid, clusterid))
-wbk_res$diar_samples_after_merge <- nrow(d %>% filter(!is.na(diar7d)) %>% do(drop_agg(.)) %>% distinct(dataid, hhid, agedays,    sex, diar7d))
-wbk_res$haz_samples_after_merge <- nrow(d %>% filter(!is.na(haz)) %>% do(drop_agg(.)) %>% distinct(dataid, hhid, agedays,    sex, haz))
+wbk_res$diar_samples_after_merge <- nrow(d %>% filter(!is.na(diar7d)) %>% do(drop_agg(.)) %>% distinct(dataid, hhid, age,    sex, diar7d))
+wbk_res$haz_samples_after_merge <- nrow(d %>% filter(!is.na(haz)) %>% do(drop_agg(.)) %>% distinct(dataid, hhid, age,    sex, haz))
 wbk_res$samples_with_diar_after_merge <- nrow(d %>% filter(!is.na(diar7d)) %>% do(drop_agg(.)) %>% distinct(sampleid, dataid, hhid))
 wbk_res$samples_with_haz_after_merge <- nrow(d %>% filter(!is.na(haz)) %>% do(drop_agg(.)) %>% distinct(sampleid, dataid, hhid))
 wbk_res$samples_with_ch_after_merge <- nrow(d %>% filter(!is.na(haz)|!is.na(diar7d)) %>% do(drop_agg(.)) %>% distinct(sampleid, dataid, hhid))
@@ -117,8 +117,8 @@ d <- d %>%
          waz = ifelse(child_date_anthro<env_date, NA, waz),
          waz = ifelse(is.na(child_date_anthro)|is.na(env_date), NA, waz))
 
-wbk_res$diar_samples_date_dropped <- wbk_res$samples_with_diar_after_merge - nrow(d %>% filter(!is.na(diar7d)) %>% do(drop_agg(.)) %>% distinct(sampleid, dataid, hhid, agedays,    sex, diar7d))
-wbk_res$haz_samples_date_dropped <- wbk_res$samples_with_haz_after_merge - nrow(d %>% filter(!is.na(haz)) %>% do(drop_agg(.)) %>% distinct(sampleid, dataid, hhid, agedays,    sex, haz))
+wbk_res$diar_samples_date_dropped <- wbk_res$samples_with_diar_after_merge - nrow(d %>% filter(!is.na(diar7d)) %>% do(drop_agg(.)) %>% distinct(sampleid, dataid, hhid, age,    sex, diar7d))
+wbk_res$haz_samples_date_dropped <- wbk_res$samples_with_haz_after_merge - nrow(d %>% filter(!is.na(haz)) %>% do(drop_agg(.)) %>% distinct(sampleid, dataid, hhid, age,    sex, haz))
 
 
 

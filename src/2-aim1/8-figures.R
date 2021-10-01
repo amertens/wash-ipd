@@ -8,6 +8,15 @@ unadj_RD <- readRDS(file=here("results/unadjusted_aim1_RD.Rds"))
 adj_RR <- readRDS(file=here("results/adjusted_aim1_RR_pooled.Rds")) 
 adj_RD <- readRDS(file=here("results/adjusted_aim1_RD.Rds")) 
 
+
+unadj_diff <- readRDS(file=here("results/unadjusted_aim2_abund_res.Rds"))
+adj_diff <- readRDS(file=here("results/adjusted_aim2_abund_res.Rds"))
+
+unadj_diff <- clean_res(unadj_diff) 
+adj_diff <- clean_res(adj_diff) 
+
+
+
 unadj_RR %>% distinct(study, target, sample) %>% as.data.frame()
 
 #---------------------------------------------------------------
@@ -18,6 +27,8 @@ unique(unadj_RD$target)
 unique(unadj_RD$sample)
 
 d <- unadj_RR
+table(d$sparse)
+table(d$sample_cat )
 table(d$sample)
 target_lev=target_levels
 
@@ -62,8 +73,9 @@ base_plot <- function(mydf, legend_labels=sample_cats, drop_full_sparse=F,
                "Mother's hands" = my_colors[8],
                "Latrine soil" = my_colors[5],
                "House soil" = my_colors[6],
-               "Flies in kitchen" = my_colors[9],
-               "Flies in latrine" = my_colors[10],
+               "Flies" = my_colors[9],
+               # "Flies in kitchen" = my_colors[9],
+               # "Flies in latrine" = my_colors[10],
                "Sparse data" = "grey50")
   
   if(drop_full_sparse){
@@ -101,7 +113,28 @@ base_plot <- function(mydf, legend_labels=sample_cats, drop_full_sparse=F,
 
 
 #---------------------------------------------------------------
-# Plot figures
+# Difference figures
+#---------------------------------------------------------------
+
+#need to seperate diarrhea and HAZ
+
+p_adj_s1 <- adj_diff %>% 
+  filter(Y="diar7d", !c(target %in% c("Any STH","any pathogen-improved","any pathogen-unimproved"))) %>%
+  base_plot(drop_full_sparse=T,
+            #Y_range=c(0.125,8)
+            )
+p_adj_s1
+
+
+p_adj_s1 <- adj_diff %>% 
+  filter(target %in% any_pathogens, !c(target %in% c("Any STH","any pathogen-improved","any pathogen-unimproved"))) %>%
+  base_plot(drop_full_sparse=T,
+            Y_range=c(0.125,8))
+p_adj_s1
+
+
+#---------------------------------------------------------------
+# Primary figure
 #---------------------------------------------------------------
 
 #Primary figure

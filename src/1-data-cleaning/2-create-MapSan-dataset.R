@@ -199,8 +199,9 @@ colnames(fly)
 fly <- fly %>% subset(., select= -c(compound_phase)) %>%
   rename(clusterid=compound) %>%
   mutate(tr=case_when(tr==1~"I",tr==0 ~ "C"),
-         sample=case_when(sample=="kitchen" ~ "FlyKitch",
-                          sample=="latrine" ~ "FlyLat"))
+         FlyLoc=case_when(sample=="kitchen" ~ "FlyKitch",
+                          sample=="latrine" ~ "FlyLat"),
+         sample="Fly")
 env <- env %>% rename(tr=trial_arm, pos=detect, abund=censquant) %>%
   mutate()
 head(env)
@@ -216,7 +217,7 @@ table(fly$target, fly$pos)
 
 #drop mitochondrial DNA
 fly <- fly %>% filter(target!="human_mtDNA") %>%
-  mutate(study="Capone 2021")
+  mutate(study="Capone 2021 in prep")
 
 #bind into main data
 env <- bind_rows(env, fly)

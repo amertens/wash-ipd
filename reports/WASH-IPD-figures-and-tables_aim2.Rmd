@@ -1,5 +1,5 @@
 ---
-title: "WASH IPD figure and tables"
+title: "WASH IPD Aim-2 figure and tables"
 author: "Andrew Mertens"
 output: html_document
 ---
@@ -17,6 +17,8 @@ library(rvest)
 library(officedown)
 library(officer)
 library(flextable)
+library(kableExtra)
+
 
 
 source(here("0-config.R"))
@@ -65,17 +67,185 @@ tab6 <- tab %>% filter(sample=="W", target=="Any MST")
 
 load(here("figures/aim2_figures.Rdata"))
 
+gv_res <- readRDS(file=paste0(here(),"/results/gv_merge_Ns.rds"))
+mapsan_res <- readRDS(file=paste0(here(),"/results/mapsan_merge_Ns.rds"))
+wbk_res <- readRDS(file=paste0(here(),"/results/wbk_merge_Ns.rds"))
+wbb_res <- readRDS(file=paste0(here(),"/results/wbb_merge_Ns.rds"))
+odisha_res <- readRDS(file=paste0(here(),"/results/odisha_merge_Ns.rds"))
+merge_Ns <- bind_rows(
+  gv_res, mapsan_res, wbb_res, wbk_res, odisha_res
+)
+
+
+
 ```
 
-## Data checking tables
+
+### Overall summary of results:\
+
+Most study-specific estimates are null, with inconsistent direction of effects in significant associations. Estimates pooled over multiple studies were also null, except for a small and marginally significant association between any pathogen in any sample and lower child height-for-age Z-scores (which is significant without adjustment for confounders).
+
 
 ### Overall notes on data availability:
 
-  - Odagiri only measured weight, so we only have WAZ, and Reese only measures/shared height, so we only have LAZ. 
-  - I need to get number of measures by study recorded in their primary publications for general sanity check, but may be hard to figure out exact number of samples with CH outcome within date range
-  - I need to get percent dropped by out of date range for diarrhea.
-  - The tables below show the number of samples and number of health outcomes by study the column for both positive sample and diarrhea measure is likely the limiting factor for sparse analyses.
-  -With (hopefully fully) fixed data merging/cleaning, there is now a lot less sparsity in estinates, though most estimates are still null.
+  - Odagiri et al. 2016 only measured weight, so we only have WAZ, and Reese only measures/shared height, so we only have HAZ. 
+  - The tables at the bottom of the report show the number of samples and number of health outcomes by study the column for both positive sample and diarrhea measure is likely the limiting factor for sparse analyses.
+
+### Notes on analysis
+
+ -  The analysis included baseline (pre-intervention) measurements.
+ -  All primary estimates are adjusted for intervention arm and child and household covariates.
+ -  Only child health measurements taken after environmental samples were used.
+ -  Diarrhea measurements must have occured after environmental samples, but within 4 months of environmental sample collection.
+ -  Environmental samples were matched to the most proximate child health outcome, without using multiple measurements. For example, environmental samples at baseline were matched to child anthropometry and midline, but not endline.
+
+### Notes on time ordering of environmental samples and child health outcomes, and data merging by study
+
+#### WASH Benefits Bangladesh
+
+* Endline (year 2) anthropometry and diarrhea was used for Kwong et al. 2021 (STH samples)
+* World Bank substudy diarrhea and anthropometry was used for Boehm et al. 2016
+* R01 substudy diarrhea and anthropometry was used for Fuhrmeister et al. 2020. The substudy was conducted over 8 rounds taken around 3 months apart, with environmental sampling occurring in rounds 3 and 4. Environmental samples were merged to diarrhea from the subsequent round and anthropometry from the main trial endline (year two) sampling.
+
+
+
+#### WASH Benefits Kenya
+
+  * Endline (year 2) anthropometry and diarrhea was used.
+
+
+#### Mapsan
+
+  *  The Mapsan trial had three sampling rounds, baseline, midline, and endline, each 12 months
+  *  The Mapsan trial environmental sampling data is divided into three studies which had differences in samples, microbial targets, and sampling times, Holcomb et al 2020 (baseline and midline), Capone et al 2021 (baseline and endline), and  Capone et al 2021 in prep. (baseline and midline).
+  * Diarrhea was used from concurrent rounds, while anthropometry was used from subsequent rounds, except for endline environmental samples, where concurrent anthropometry was used.
+
+#### Odisha 
+
+  *  Environmental samples were shared already merged with child health data, but samples outside of the specified time range for diarrhea or taken before environmental
+
+#### Gram Vikas
+  *  Sampling rounds were approximately 4 months apart, so anthropometry data was taken from subsequent round, and diarrhea data was taken from either the current or subsequent round, based on which sample was taken after but closer to the environmental sampling, and within 4 months.
+ 
+
+
+# Primary figures
+
+## Diarrhea
+
+#### Adjusted associations between diarrhea and any pathogen or MST marker
+
+```{r, echo=F, warning=F, message=F, fig.width = 10, fig.height = 5}
+p_diar_1_adj
+```
+
+#### Adjusted associations between diarrhea and types of pathogens
+
+```{r, echo=F, warning=F, message=F, fig.width = 10, fig.height = 5}
+p_diar_s1_adj
+```
+
+#### Adjusted associations between diarrhea and types of MST markers
+
+```{r, echo=F, warning=F, message=F, fig.width = 10, fig.height = 5}
+p_diar_2_adj
+```
+
+## Height-for-age Z-scores
+
+#### Adjusted associations between HAZ and any pathogen or MST marker
+
+```{r, echo=F, warning=F, message=F, fig.width = 10, fig.height = 5}
+p_haz_1_adj
+```
+
+#### Adjusted associations between HAZ and types of pathogens
+
+```{r, echo=F, warning=F, message=F, fig.width = 10, fig.height = 5}
+p_haz_s1_adj
+```
+
+#### Adjusted associations between HAZ and types of MST markers
+
+```{r, echo=F, warning=F, message=F, fig.width = 10, fig.height = 5}
+p_haz_2_adj
+```
+
+# Secondary figures
+
+## Diarrhea
+
+#### Adjusted associations between diarrhea and specific pathogens
+
+```{r, echo=F, warning=F, message=F, fig.width = 10, fig.height = 20}
+p_diar_adj_path
+```
+
+#### Unadjusted associations between diarrhea and any pathogen or MST marker
+
+```{r, echo=F, warning=F, message=F, fig.width = 10, fig.height = 5}
+p_diar_1_unadj
+```
+
+
+## Height-for-age Z-scores
+
+#### Adjusted associations between HAZ and specific pathogens
+
+```{r, echo=F, warning=F, message=F, fig.width = 10, fig.height = 20}
+p_haz_adj_path
+```
+
+#### Unadjusted associations between HAZ and any pathogen or MST marker
+
+```{r, echo=F, warning=F, message=F, fig.width = 10, fig.height = 5}
+p_haz_1
+```
+
+#### Adjusted associations between stunting and any pathogen or MST marker
+
+```{r, echo=F, warning=F, message=F, fig.width = 10, fig.height = 5}
+p_stunt_1_adj
+```
+
+## Weight-for-height Z-score
+
+#### Adjusted associations between WHZ and any pathogen or MST marker
+
+```{r, echo=F, warning=F, message=F, fig.width = 10, fig.height = 5}
+p_whz_1_adj
+```
+
+
+#### Adjusted associations between wasting and any pathogen or MST marker
+
+```{r, echo=F, warning=F, message=F, fig.width = 10, fig.height = 5}
+p_wast_1_adj
+```
+
+## Weight-for-age Z-score
+
+#### Adjusted associations between WAZ and any pathogen or MST marker
+
+```{r, echo=F, warning=F, message=F, fig.width = 10, fig.height = 5}
+p_waz_1_adj
+```
+
+
+#### Adjusted associations between Underweight and any pathogen or MST marker
+
+```{r, echo=F, warning=F, message=F, fig.width = 10, fig.height = 5}
+p_underwt_1_adj
+```
+
+
+
+
+
+# Tables
+
+
+## Data availability tables
 
 ### Any sample type, any pathogen
 
@@ -114,25 +284,25 @@ FitFlextableToPage(flextable(tab5))
 FitFlextableToPage(flextable(tab6))
 ```
 
+
+
+## Data checking table
+
+This table is primarily for internal data checking purposes. 
+
+```{r, echo=FALSE, warning=F, message=F}
+
+#Merge full env. with child health to see percent dropped 
+merge_Ns[,-1] <- round(merge_Ns[,-1], 2)
+
+merge_Ns <- t(merge_Ns)
+
+```
+
+
+```{r, echo=FALSE, warning=F, message=F}
+knitr::kable(merge_Ns) %>% kable_styling("striped") %>% scroll_box(width = "100%")
+```
+
    
-
-
-
-
-
-
-## Primary figures
-
-
-```{r, echo=F, warning=F, message=F, fig.width = 10, fig.height = 5}
-
-p_diar_1_adj
-
-```
-
-
-```{r, echo=F, warning=F, message=F, fig.width = 10, fig.height = 5}
-
-p_haz_1_adj
-
-```
+ 

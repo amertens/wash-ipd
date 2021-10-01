@@ -2,7 +2,7 @@
 rm(list=ls())
 source(here::here("0-config.R"))
 
-d <- readRDS(paste0(dropboxDir,"Data/merged_env_CH_data.rds"))
+d <- readRDS(paste0(dropboxDir,"Data/merged_env_CH_data_clean.rds"))
 head(d)
 d <- droplevels(d)
 table(d$study, d$pos)
@@ -12,13 +12,7 @@ table(d$study, d$sample, d$pos)
 
 d <- d %>% filter(sample!="FP") %>% droplevels()
 
-# df <- d %>% filter(!is.na(diar7d))
-# dim(df)
-# df2 <- df %>% distinct(study, sampleid, sample, target, hhid, dataid, childid, diar7d, round)
-# dim(df2)
 
-# df <- d %>% filter(target=="Any human MST")
-# table(df$sample, df$diar7d, df$study)
 
 # 1.	Child birth order/parity 
 # 2.	Asset-based wealth index 
@@ -39,14 +33,14 @@ Wvars_anthro = c("sex","age_anthro","hfiacat","momage","hhwealth", "Nhh","nrooms
 # Unadjusted RR
 #-----------------------------------
 
-outcome="haz"
-exposure="pos"
-study="Fuhrmeister 2020"
-sample="any sample type"
-sample="W"
-target= "Any pathogen"
-family="gaussian"
-Ws=Wvars
+# outcome="haz"
+# exposure="pos"
+# study="Fuhrmeister 2020"
+# sample="any sample type"
+# sample="W"
+# target= "Any pathogen"
+# family="gaussian"
+# Ws=Wvars
 
 
 fullres <- NULL

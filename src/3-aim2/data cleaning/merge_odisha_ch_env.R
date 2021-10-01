@@ -45,6 +45,7 @@ ch <- ch %>%
                       child_date)) %>%
   mutate(trial="Odisha",
          dataid=clusterid,
+         age_anthro=age,
          child_date=ymd(child_date),
          diar7d=case_when(
            diar7d==2 ~ 0, 

@@ -72,7 +72,7 @@ odisha$sampleid<-as.character(odisha$sampleid)
 
 d <- bind_rows(WBB, WBK, mapsan, gv, odisha) %>%
   mutate(study=factor(study, 
-            levels=c("Odagiri 2016", "Boehm 2016", "Reese 2017", "Steinbaum 2019", "Fuhrmeister 2020", "Holcomb 2020", "Capone 2021","Kwong 2021")))
+            levels=c("Odagiri 2016", "Boehm 2016", "Reese 2017", "Steinbaum 2019", "Fuhrmeister 2020", "Holcomb 2020", "Capone 2021", "Capone 2021 in prep","Kwong 2021")))
 table(d$study, d$target)
 
 
@@ -285,7 +285,8 @@ agg_function <- function(targets, name){
                       !(study=="Boehm 2016" & sample=="CH" & target=="General (GenBac3)"),
                       !(study=="Boehm 2016" & sample=="S" & target=="General (GenBac3)"),
                       !(study=="Fuhrmeister 2020" & sample=="CH" & target=="Cow (BacCow)"),
-                      !(study=="Holcomb 2020" & sample=="FlyLat" & target=="Human (BacHum)"))
+                      #!(study=="Holcomb 2020" & sample=="Fly" & target=="Human (BacHum)"))
+                      !(study=="Capone 2021 in prep" & sample=="Fly" & target=="Human (BacHum)"))
   
   
   
@@ -418,7 +419,7 @@ df <- d %>%
   filter(!(study=="Odagiri 2016" & sample=="W" & target=="Cow (BacCow)"),
                       !(study=="Boehm 2016" & sample=="CH" & target=="General (GenBac3)"),
                       !(study=="Fuhrmeister 2020" & sample=="CH" & target=="Cow (BacCow)"),
-                      !(study=="Holcomb 2020" & sample=="FlyLat" & target=="Human (BacHum)")) %>%
+                      !(study=="Holcomb 2020" & sample=="Fly" & target=="Human (BacHum)")) %>%
   mutate(pos=max(pos, na.rm = TRUE), sample="any sample type", animals=max(animals, na.rm=T)) %>% 
   slice(1)
 dim(df)

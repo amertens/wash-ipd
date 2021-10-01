@@ -50,20 +50,18 @@ Wvars = c("hhwealth", "Nhh","nrooms","walls", "floor","roof","elec","dadagri","l
 
 
 
-
 # d %>% distinct(study, sample, target) %>% as.data.frame()
 # 
-# table(d$study, d$trial)
-# outcome="pos"
-# study="Boehm 2016"
-# sample="any sample type"
-# target="Any general MST"
-# Ws=Wvars
-# Ws=NULL
-# family="binomial"
-# 
-# temp <- d %>% filter(study==!!(study), target==!!(target))
-# table(temp$sample, temp$pos)
+table(d$study)
+outcome="pos"
+study="Holcomb 2020"
+sample="any sample type"
+target="Human (HF183)"
+Ws=Wvars
+family="binomial"
+
+temp <- d %>% filter(study==!!(study), target==!!(target))
+table(temp$sample, temp$pos)
 
 
 
@@ -94,6 +92,7 @@ saveRDS(res, file=here("results/unadjusted_aim1_RR.Rds"))
 # res$RR[is.na(res$RR)] <- 1
 # 
 # saveRDS(res, file=here("results/unadjusted_aim1_RD.Rds"))
+
 
 
 

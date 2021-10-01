@@ -52,7 +52,7 @@ aim1_glm <- function(d, Ws=NULL, outcome="pos", study="mapsan", sample="ds", tar
   }
   
 
-  if((minN>=10 & min(table(df$Y, df$tr))>1) | length(unique(df$Y)) > 2){
+  if((minN>=5 & min(table(df$Y, df$tr))>1) | length(unique(df$Y)) > 2){
     
     if(!is.null(Ws)){
       Wdf <- df %>% ungroup() %>% select(any_of(Ws)) %>% select_if(~sum(!is.na(.)) > 0)
@@ -62,21 +62,22 @@ aim1_glm <- function(d, Ws=NULL, outcome="pos", study="mapsan", sample="ds", tar
         if(length(nearZeroVar(Wdf))>0){
           Wdf <- Wdf[,-nearZeroVar(Wdf)]
         }
-        if(family=="neg.binom"){
-          Wvars <- MICS_prescreen(Y=df$Y, W=Wdf, family="gaussian", print=F)
-        }else{
-          Wvars <- MICS_prescreen(Y=df$Y, W=Wdf, family=family, print=T)
-        }
-        if(family!="gaussian" & !is.null(Wvars)){
-          nY<-floor(min(table(df$Y))/10) -1 #minus one because 10 variables needed to estimate coef. of X
-          if(nY>=1){
-            if(length(Wvars)>nY){
-              Wvars<-Wvars[1:nY]
-            }        
+        if(ncol(Wdf)>0){
+          if(family=="neg.binom"){
+            Wvars <- MICS_prescreen(Y=df$Y, W=Wdf, family="gaussian", print=F)
           }else{
-            Wvars=NULL
+            Wvars <- MICS_prescreen(Y=df$Y, W=Wdf, family=family, print=T)
           }
-        }
+          if(family!="gaussian" & !is.null(Wvars)){
+            nY<-floor(min(table(df$Y))/10) -1 #minus one because 10 variables needed to estimate coef. of X
+            if(nY>=1){
+              if(length(Wvars)>nY){
+                Wvars<-Wvars[1:nY]
+              }        
+            }else{
+              Wvars=NULL
+            }
+          }
         if(identical(Wvars, character(0)) ){
           Wvars <- NULL
         }
@@ -86,6 +87,12 @@ aim1_glm <- function(d, Ws=NULL, outcome="pos", study="mapsan", sample="ds", tar
       df <- df %>% subset(., select =c("Y","tr","clusterid", Wvars))
       df <- df[complete.cases(df),]
       cat("N after dropping missing: ", nrow(df),"\n")
+      }else{
+        df <- df %>% subset(., select =c("Y","tr","clusterid"))
+        cat("N before dropping missing: ", nrow(df),"\n")
+        df <- df[complete.cases(df),]
+        cat("N after dropping missing: ", nrow(df),"\n")
+      }
     }else{
       df <- df %>% subset(., select =c("Y","tr","clusterid"))
       cat("N before dropping missing: ", nrow(df),"\n")
@@ -292,7 +299,8 @@ aim2_glm <- function(d, Ws=NULL, outcome="pos", exposure, study="mapsan", sample
   
   #cat(minN>=10 | length(unique(df$Y)) > 2)
   #if((minN>=10 & min(table(df$Y, df$X))>1) | (minN>=10 & length(unique(df$Y)) > 2 & length(unique(df$X)) == 2)){
-  if((minN>=2 & min(table(df$Y, df$X))>1) | (minN>=2 & length(unique(df$Y)) > 2 & length(unique(df$X)) == 2)){
+  if((minN>=2 & min(table(df$Y, df$X))>1) | (minN>=2 & length(unique(df$Y)) > 2 & length(unique(df$X)) == 2)
+     | (minN>=2 & length(unique(df$X)) > 2 & length(unique(df$Y)) >= 2)){
     
     if(!is.null(Ws)){
       Wdf <- df %>% ungroup() %>% select(any_of(Ws)) %>% select_if(~sum(!is.na(.)) > 0)

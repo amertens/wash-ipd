@@ -5,12 +5,14 @@ unadj_RR <- readRDS(here("results/unadjusted_aim1_RR.Rds"))
 adj_RR <- readRDS(here("results/adjusted_aim1_RR.Rds"))
 emm_RR <- readRDS(file=here("results/adjusted_aim1_emm.Rds")) 
 
+
 #clean results
 unadj_RR <- clean_res(unadj_RR)
 adj_RR <- clean_res(adj_RR)
 #emm_RR <- clean_res(emm_RR)
 head(unadj_RR)
 table(unadj_RR$sample_cat)
+table(unadj_RR$sparse)
 
 #make sure zoonotic origin targets have both zoo and not zoo in a study
 #-note changed based on what Ayse said
