@@ -19,6 +19,10 @@ env <- env %>% filter(trial == "Odisha") %>%
   subset(., select = -c(hhid)) %>%
   droplevels(.)
 
+#drop missing covariates and get them from child dataset
+env <- env %>% subset(., select = c(study,trial, sampleid, dataid, clusterid, tr,    sample, env_date,   target,   pos, abund, qual,  round))
+head(env)
+
 
 #-----------------------------------------------------------
 # clean Odisha
@@ -42,11 +46,12 @@ ch <- ch %>%
          landacre=land, 
          diar7d=hh106) %>% 
   subset(., select =c(childid, clusterid, hhid,age,sex,diar7d, waz,
-                      child_date)) %>%
+                      child_date, hhwealth, walls, Nhh, landacre)) %>%
   mutate(trial="Odisha",
          dataid=clusterid,
          age_anthro=age,
          child_date=ymd(child_date),
+         hhwealth=factor(ntile(hhwealth,4), levels=c("1","2","3","4")),
          diar7d=case_when(
            diar7d==2 ~ 0, 
            diar7d==1 ~ 1, 
@@ -112,7 +117,7 @@ odisha_res <- odisha_res %>%
          per_haz_samples_date_dropped= haz_samples_date_dropped/samples_with_haz_after_merge *100)
 
 
-
+summary(d$hhwealth)
 
 
 saveRDS(d, file=paste0(dropboxDir,"Data/odisha_env_CH_data.rds"))

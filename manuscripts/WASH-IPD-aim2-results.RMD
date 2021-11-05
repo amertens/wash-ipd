@@ -1,0 +1,539 @@
+---
+title: "Associations between enteropathogens detected in the environment and child growth and enteric infections: an individual participant data meta-analysis"
+author: "Andrew Mertens, Jack Colford, Oliver Cumming, Joe Brown, Jill Stewart, David Holcomb, Drew Capone, Jackie Knee, Tom Clasen, Heather Reese, Amy Pickering, Clair Null, Steve Luby, Jessica Grembi, Ben Arnold, Audrie Lin, Jade Benjamin-Chung, Laura Kwong, Lauren Steinbaum, Ali Boehm, Kara Nelson, Erica Fuhrmeister, Mahbubur Rahman, Sammy Njenga, Rassul Nala, Ruwan Thilakaratne, Ayse Ercumen (middle order not finalized)"
+#output: redoc::redoc
+output: 
+  officedown::rdocx_document:
+      reference_docx: "manuscript_format.docx"
+header-includes:
+  - \setlength{\parindent}{4em}
+  - \setlength{\parskip}{0em}
+indent: true
+bibliography: WASH-IPD.bib
+bib-humanities: FALSE
+csl: nature.csl
+
+---
+
+
+```{r, include=F}
+
+#Note: Check out this package for integrating any edits from Ayse:
+#https://github.com/noamross/redoc
+
+#CSL styles by journal
+#https://github.com/citation-style-language/styles
+
+
+knitr::opts_chunk$set(echo = FALSE, dpi=300,fig.width=7)
+
+options(warn = -1) 
+library(officedown)
+#library(janitor)
+library(knitr)
+library(here)
+# library(table1)
+# library(rvest)
+library(officer)
+library(flextable)
+library(bibtex)
+library(citr)
+library(redoc)
+library(kableExtra)
+source(here("0-config.R"))
+#citr:::insert_citation(bib_file ="WASH-IPD.bib", use_betterbiblatex =F)
+# 
+# tidy_bib_file(
+#   rmd_file = "Aim1_manuscript.Rmd"
+#   , messy_bibliography = "WASH-IPD.bib"
+#   , file = "tidy_references.bib"
+# )
+
+
+
+op = function(x, d=2) sprintf(paste0("%1.",d,"f"), x) 
+
+Print <- function(x){
+  prettyNum(round(x,2), big.mark = ",", scientific = FALSE)
+}
+
+ library(pander)
+panderOptions('digits', 2)
+panderOptions('round', 2)
+panderOptions('keep.trailing.zeros', TRUE)
+panderOptions('graph.fontsize', 8)
+
+panderOptions('table.alignment.default', function(df)
+    ifelse(sapply(df, is.numeric), 'right', 'left'))
+panderOptions('table.split.table', Inf)
+panderOptions('big.mark', ",")
+
+set_flextable_defaults(big.mark = ",", 
+  font.size = 8, theme_fun = theme_vanilla,
+  padding.bottom = 5, 
+  padding.top = 5,
+  padding.left = 5,
+  padding.right = 5)
+
+
+#Clean results function
+clean_est <- function(res, outcome="binomial"){
+  if(outcome=="binomial"){
+    
+    est = format(round(res$RR, 2), nsmall = 2)
+    ci.lb = format(round(res$ci.lb, 2), nsmall = 2) 
+    ci.ub = format(round(res$ci.ub, 2), nsmall = 2)
+    est.ci = paste0(est," (95% CI: ",ci.lb,", ",ci.ub,")")
+  }else{
+    est = format(round(res$coef, 2), nsmall = 2)
+    ci.lb = format(round(res$ci.lb, 2), nsmall = 2) 
+    ci.ub = format(round(res$ci.ub, 2), nsmall = 2)
+    est.ci = paste0(est," (95% CI: ",ci.lb,", ",ci.ub,")")
+  }
+  return(est.ci)
+}
+
+clean_res  <- function(res, outcome="binomial"){
+  if(outcome=="binomial"){
+    res$est.ci = paste0("RR=",round(as.numeric(res$RR),1)," (95% CI: ",round(res$ci.lb,1),", ",round(res$ci.ub,1),")")
+    res <- res %>% ungroup() %>%
+      select(study, sample_type, target_f, est.ci, pval, a, b, c, d, N) 
+    res$est.ci <- gsub("RR\\=1 \\(95\\% CI\\: NA, NA\\)","Not estimated",res$est.ci)
+    
+    res$pval <- as.character(round(res$pval,3))
+    res$pval[is.na(res$pval)] <- ""
+    res <- res %>% 
+      rename(Study=study,
+             Sample=sample_type,
+             Target=target_f,
+             Estimate=est.ci,
+             `p-value`=pval, 
+             `Positive,\nIntervention`=a,
+             `Negative,\nIntervention`=b,
+             `Positive,\nControl`=c,
+             `Negative,\nControl`=d,
+             `Total\nobservations`=N)
+  }else{
+    res$est.ci = paste0(round(as.numeric(res$coef),1),"Difference= (95% CI: ",round(res$ci.lb,1),", ",round(res$ci.ub,1),")")
+    res <- res %>% ungroup() %>%
+      select(sample_type, target_f, est.ci, pval, a, b, c, d, N) 
+    res$est.ci <- gsub("Difference\\=0 \\(95\\% CI\\: NA, NA\\)","Not estimated",res$est.ci)
+    res$pval <- as.character(round(res$pval,3))
+    res$pval[is.na(res$pval)] <- ""
+    res <- res %>% 
+      rename(Study=study,
+             Sample=sample_type,
+             Target=target_f,
+             Estimate=est.ci,
+             `p-value`=pval, 
+             `Positive,\nIntervention`=a,
+             `Negative,\nIntervention`=b,
+             `Positive,\nControl`=c,
+             `Negative,\nControl`=d,
+             `Total\nobservations`=N)
+  }
+  
+  return(res)
+}
+
+clean_res_tab <- function(unadj_RR, adj_RR){
+  unadj<-clean_res(unadj_RR) %>% select(Study,Sample,Target,Estimate, `p-value`) %>% 
+    rename(`Unadjusted\nEstimate`=Estimate, `Unadjusted\np-value`=`p-value`) 
+  adj<-clean_res(adj_RR)%>% rename(`Adjusted\nEstimate`=Estimate, `Adjusted\np-value`=`p-value`)
+  
+  res <- left_join(unadj, adj, by=c("Study", "Sample", "Target"))
+  res <- res %>% arrange(Study,  Sample,  Target) %>% filter(Study!="Pooled")
+  res$`Adjusted\nEstimate`[res$Study=="Odagiri 2016"] <- ""
+  res$`Adjusted\np-value`[res$Study=="Odagiri 2016"] <- ""
+  return(res)
+}
+
+FitFlextableToPage <- function(ft, pgwidth = 6){
+
+  ft_out <- ft %>% autofit()
+
+  ft_out <- width(ft_out, width = dim(ft_out)$widths*pgwidth /(flextable_dim(ft_out)$widths))
+  return(ft_out)
+}
+
+
+add_footnote_with_rlang <- function(df, col, pattern, symbol){
+  form_ <- sprintf("~ %s == '%s'", col, pattern)
+  colname <- enquo(col)
+  flextable::compose(
+    x = df, j = col, i = as.formula(form_), 
+    value = as_paragraph(
+      as_chunk(!!colname), 
+      as_chunk(symbol, props = fp_text(vertical.align = 'superscript')))
+  ) 
+}
+
+add_footnote <- function(df, col, pattern, symbol){
+  form_ <- sprintf("~ %s == '%s'", col, pattern)
+  flextable::compose(
+    x = df, j = col, i = as.formula(form_), 
+    value = as_paragraph(pattern,
+      as_chunk(symbol, props = fp_text(vertical.align = 'superscript')))
+    ) 
+}
+
+
+
+unadj_RR <- readRDS(file=here("results/unadjusted_aim2_pooled.Rds")) 
+adj_RR <- readRDS(file=here("results/adjusted_aim2_pooled.Rds")) 
+
+
+#Merge full env. with child health to see percent dropped 
+env <- readRDS(paste0(dropboxDir,"Data/cleaned_ipd_env_data.rds"))
+d <- readRDS(file=paste0(dropboxDir,"Data/merged_env_CH_data.rds"))
+
+tab <- d %>% group_by(study, sample, target) %>%
+  summarize(N=n(), N_pos=sum(pos), N_diar=sum(!is.na(diar7d)), N_pos_diar=sum(diar7d==1, na.rm=T), N_pos_env_diar=sum(pos==1 & diar7d==1, na.rm=T), N_haz=sum(!is.na(haz)))
+
+colnames(tab)[4:9] <- c("N samples","N pos. samples","N diar. meas.", "N diar. pos.","N sample. and diar. pos.", "N haz")
+
+tab1 <- tab %>% filter(sample=="any sample type", target=="Any pathogen")
+tab2 <- tab %>% filter(sample=="any sample type", target=="Any MST")
+
+load(here("figures/aim2_figures.Rdata"))
+load(here("figures/aim2_abund_figures.Rdata"))
+
+
+gv_res <- readRDS(file=paste0(here(),"/results/gv_merge_Ns.rds"))
+mapsan_res <- readRDS(file=paste0(here(),"/results/mapsan_merge_Ns.rds"))
+wbk_res <- readRDS(file=paste0(here(),"/results/wbk_merge_Ns.rds"))
+wbb_res <- readRDS(file=paste0(here(),"/results/wbb_merge_Ns.rds"))
+odisha_res <- readRDS(file=paste0(here(),"/results/odisha_merge_Ns.rds"))
+merge_Ns <- bind_rows(
+  gv_res, mapsan_res, wbb_res, wbk_res, odisha_res
+)
+
+
+
+```
+
+```{css, echo=FALSE}
+span.comment-start{
+    background: #e0f3db;
+}
+span.comment-end{
+    background: #e0f3db;
+}
+span.comment-start::after{
+    content: " (" attr(author) ", " attr(date) ") [";
+}
+span.comment-end::before{
+    content: "]"
+}
+span.comment-text{
+    background: #fdbb84;
+}
+
+
+```
+
+```{r, echo=FALSE}
+commentN <- 0
+cmt <- function(txt, cm, author, date = "2021-01-01", comN = commentN){
+  cmt_str <- paste0('<span class="comment-text">[',cm,']{.comment-start id="', comN, '" author="', author, '" date="', date, '"}', txt, '[]{.comment-end id="',commentN,'"}</span>')
+  assign("commentN", commentN + 1, envir = .GlobalEnv)
+  return(cmt_str)
+}
+```
+
+
+
+   
+## Summary
+
+
+
+## Methods
+
+We examined associations between prevalence of pathogens and MST markers in the environment and child health outcomes. 
+
+For binary outcomes, estimated prevalence ratios using modified Poisson regressions.[@zouModifiedPoissonRegression2004] For abundance outcomes, we used linear regressions to estimate differences in log-transformed gene copies and negative binomial regressions to estimate count differences in soil-transmitted helminth (STH) egg counts. Because of repeated sampling or clustered designs in some studies, we used the Huber Sandwich Estimator to calculate robust standard errors.[@freedmanSoCalledHuberSandwich2006]  For abundance measures, we imputed values for samples below the limit of quantification (LOQ) and the limit of detection (LOD). For samples below the LOD, we used half the LOD and for samples below the LOQ, we used the midpoint between the LOD and LOQ for the imputation. To avoid analyzing targets where most of the data were imputed, we only included targets where at least 50% of samples were within the quantifiable range in our analysis.
+
+All analyses were adjusted for potential confounders. Covariates were prescreened using likelihood ratio tests, and only variables associated with the outcome with a p-value < 0.2 were included in the model for each outcome. We included the following variables in the prescreening set if they were measured within an included study: child age, child sex, maternal age, household food security status, number of people in the household, age and education of primary caregiver in the household, asset-based household wealth, number of rooms, construction materials (walls, floor, roof), access to electricity, land ownership and if anyone in the household works in agriculture. For rare binary outcomes, we only included one independent variable (including the treatment arm) per 10 positive samples, or per 10 negative samples if <50% of samples were negative. We also did not estimate prevalence ratios for any targets with fewer than two positive or negative values per study arm for a given sample type. Targets with <10 negatives were also excluded from the composite "any pathogen" and "any MST marker" variables to avoid generating sparse cells; targets with <10 positives were included in the composite variables.
+
+Given the heterogeneity in study settings (e.g., local WASH conditions, climate, urbanization, population density, region-specific infectious disease patterns, intervention designs), we reported individual study-specific estimates for all analyses. For targets where data were available from  four or more studies, we tested for heterogeneity in estimates using Cochran's Q-test.[@cochranCombinationEstimatesDifferent1954a] If there was no significant heterogeneity (p-value>0.2), we pooled estimates using fixed-effects models. If there was evidence for heterogeneity but there was qualitative support for combining studies, we pooled estimates using random-effects models. 
+
+
+Aim 2: Primary outcomes for this aim include: Prevalence of diarrhea and length-for-age z-scores (LAZ). Secondary outcomes include z-scores for weight-for-age (WAZ), weight-for-length (WLZ), head circumference and middle-upper-arm-circumference, prevalence of stunting, wasting and underweight, prevalence and intensity of infection with specific enteropathogens, and prevalence of respiratory infections. We will address Aim 2 by estimating PRs and PDs for the binary health outcomes and mean differences for the continuous health outcomes for individuals with vs. without exposure to pathogens and MST markers in environmental samples. The primary outcomes of Aim 1 (prevalence of any enteropathogen, and any general, human or animal MST markers in environmental samples) will be used as the exposure variables for this aim. We will estimate the associations between these exposure variables and the primary and secondary outcomes of Aim 2. We will also estimate associations between the prevalence/abundance of a specific pathogen in environmental samples and the prevalence/abundance of the same pathogen measured in child stool. For the LAZ, stunting and head circumference outcomes, we will consider all environmental samples collected over the child's lifetime prior to the anthropometry measurement. For the other outcomes, we will only consider environmental samples collected up to three months before the measurement of the health outcome. The Aim 2 analyses will be conducted by sample type (e.g., water, hands, soil) and will pool data from all study arms. 
+
+
+All analyses with be conducted using generalized linear models, adjusting for potential confounders. We will conduct unadjusted analyzes as a sensitivity analysis. The analysis for Aim 2 will adjust for study arm. In addition, all adjusted analyses will control for child age, sex, and pre-screened covariates found to be significantly related to the outcome in bivariate likelihood ratio tests (full list of covariates above). We will use the likelihood ratio test to assess the association between each outcome and each covariate and will include covariates with a p-value<0.2 in the analysis. 
+
+
+-note we drop missing continious but add a missigness category for categorical covariates
+
+
+
+All analyses were adjusted for potential confounders. Covariates were prescreened using likelihood ratio tests, and only variables associated with the outcome with a p-value < 0.2 were included in the model for each outcome. We included the following variables in the prescreening set if they were measured within an included study: child age, child sex, maternal age, household food security status, number of people in the household, age and education of primary caregiver in the household, asset-based household wealth, number of rooms, construction materials (walls, floor, roof), access to electricity, land ownership and if anyone in the household works in agriculture. For rare binary outcomes, we only included one independent variable (including the treatment arm) per 10 positive samples, or per 10 negative samples if <50% of samples were negative. We therefore did not estimate prevalence ratios for any targets with fewer than 10 positive or negative values for a given sample type, or with fewer than two positive or negative values per study arm for a given sample type. Targets with <10 negatives were also excluded from the composite "any pathogen" and "any MST marker" variables to avoid generating sparse cells; targets with <10 positives were included in the composite variables.
+
+
+## Results
+
+Adjusted diarrheal disease prevalence ratio for any pathogen presence in any environmental sample:
+`r clean_est(adj_RR %>% filter(target=="Any pathogen", study=="Pooled", sample=="any sample type", Y=="diar7d"))` 
+
+
+Adjusted HAZ difference for any pathogen presence in any environmental sample:
+
+`r clean_est(adj_RR %>% filter(target=="Any pathogen", study=="Pooled", sample=="any sample type", Y=="haz"), outcome="gaussian")` 
+
+
+
+## Figures
+
+
+__Figure 1.__ Forest plots of intervention effects on the prevalence of any enteropathogen, and any MST markers in different types of environmental samples. Pooled estimates are presented when there are four or more study-specific estimates for a specific sample type and target combination and are denoted with diamond-shaped points. Grey crossed points denote data that were too sparse to estimate a prevalence ratio (i.e., <10 positive or negative observations). Samples of the same type from different locations (source vs. stored water, flies in kitchen vs. latrine, soil from courtyard vs. latrine) or different individuals (child vs. mother's hands) are plotted separately. All estimates are adjusted for potential confounders.
+
+
+
+__Figure 2__ Forest plots of intervention effects on the prevalence of any virus, any bacteria, any protozoa and any STH in different types of environmental samples. Pooled estimates are presented when there are four or more study-specific estimates for a specific sample type and target combination and are denoted with diamond-shaped points. Grey crossed points denote data that were too sparse to estimate a prevalence ratio (i.e., <10 positive or negative observations). Samples of the same type from different locations (source vs. stored water, flies in kitchen vs. latrine, soil from courtyard vs. latrine) or different individuals (child vs. mother's hands) are plotted separately. All estimates are adjusted for potential confounders.
+
+
+
+__Figure 3.__ Forest plots of intervention effects on the prevalence of any general, human and animal MST markers in different types of environmental samples. Pooled estimates are presented when there are four or more study-specific estimates for a specific sample type and target combination and are denoted with diamond-shaped points. Grey crossed points denote data that were too sparse to estimate a prevalence ratio (i.e., <10 positive or negative observations). Samples of the same type from different locations (source vs. stored water, flies in kitchen vs. latrine, soil from courtyard vs. latrine) or different individuals (child vs. mother's hands) are plotted separately. All estimates are adjusted for potential confounders.
+
+
+## Tables
+
+
+
+### Table 2. Mean (SD) abundances by study arm  arm and adjusted abundance differences between intervention and control arms. Means are log10 transformed concentrations for MST markers, and are mean egg counts for soil transmitted helminths (*Ascaris* and *Trichuris*). 
+
+## Supplementary Figures
+
+
+__Figure S1.__ Forest plots of intervention effects on the prevalence of specific pathogens.
+
+
+
+__Figure S2.__ Forest plots of intervention effects on the prevalence of specific MST markers.
+
+
+
+
+__Figure S3.__ Forest plots of intervention effects on any enteropathogen, and any MST markers in different types of environmental samples, stratified by whether the sample was collected during the wet versus dry season (defined by the 6 months of highest average rainfall). Significant effect modification, as determined by the p-values on the regression model interaction term, is marked with asterisks (P < 0.05 = "\*", P < 0.01 = "\*\*", P < 0.001 = "\*\*\*").
+
+
+__Figure S4.__ Forest plots of intervention effects on any enteropathogen, and any MST markers in different types of environmental samples, stratified by whether any animals were present in the compound. Significant effect modification, as determined by the p-values on the regression model interaction term, is marked with asterisks (P < 0.05 = "\*", P < 0.01 = "\*\*", P < 0.001 = "\*\*\*"). 
+
+
+
+__Figure S5.__ Forest plots of intervention effects on any enteropathogen in any type of environmental samples , stratified by whether the pathogen is zoonotically transmitted.
+
+
+
+__Figure S6.__ Forest plots of unadjusted intervention effects on the prevalence of any enteropathogen, and any MST markers in different types of environmental samples.  
+
+
+
+__Figure S7.__ Forest plots of unadjusted intervention effects on the prevalence of any virus, any bacteria, any protozoa and any STH in different types of environmental samples.
+
+
+
+__Figure S8.__ Forest plots of unadjusted intervention effects on the prevalence of any general, human and animal MST markers in different types of environmental samples.
+
+
+
+
+
+### Overall summary of results:
+
+Most study-specific estimates are null, with inconsistent direction of effects in significant associations. Estimates pooled over multiple studies were also null, except for a small and marginally significant association between any pathogen in any sample and lower child height-for-age Z-scores (which is significant without adjustment for confounders).
+
+
+### Overall notes on data availability:
+
+  - Odagiri et al. 2016 only measured weight, so we only have WAZ, and Reese only measures/shared height, so we only have HAZ. 
+  - The tables at the bottom of the report show the number of samples and number of health outcomes by study the column for both positive sample and diarrhea measure is likely the limiting factor for sparse analyses.
+
+### Notes on analysis
+
+ -  The analysis included baseline (pre-intervention) measurements.
+ -  All primary estimates are adjusted for intervention arm and child and household covariates.
+ -  Only child health measurements taken after environmental samples were used.
+ -  Diarrhea measurements must have occured after environmental samples, but within 4 months of environmental sample collection.
+ -  Environmental samples were matched to the most proximate child health outcome, without using multiple measurements. For example, environmental samples at baseline were matched to child anthropometry and midline, but not endline.
+
+### Notes on time ordering of environmental samples and child health outcomes, and data merging by study
+
+#### WASH Benefits Bangladesh
+
+* Endline (year 2) anthropometry and diarrhea was used for Kwong et al. 2021 (STH samples)
+* World Bank substudy diarrhea and anthropometry was used for Boehm et al. 2016
+* R01 substudy diarrhea and anthropometry was used for Fuhrmeister et al. 2020. The substudy was conducted over 8 rounds taken around 3 months apart, with environmental sampling occurring in rounds 3 and 4. Environmental samples were merged to diarrhea from the subsequent round and anthropometry from the main trial endline (year two) sampling.
+
+
+
+#### WASH Benefits Kenya
+
+  * Endline (year 2) anthropometry and diarrhea was used.
+
+
+#### Mapsan
+
+  *  The Mapsan trial had three sampling rounds, baseline, midline, and endline, each 12 months
+  *  The Mapsan trial environmental sampling data is divided into three studies which had differences in samples, microbial targets, and sampling times, Holcomb et al 2020 (baseline and midline), Capone et al 2021 (baseline and endline), and  Capone et al 2021 in prep. (baseline and midline).
+  * Diarrhea was used from concurrent rounds, while anthropometry was used from subsequent rounds, except for endline environmental samples, where concurrent anthropometry was used.
+
+#### Odisha 
+
+  *  Environmental samples were shared already merged with child health data, but samples outside of the specified time range for diarrhea or taken before environmental
+
+#### Gram Vikas
+  *  Sampling rounds were approximately 4 months apart, so anthropometry data was taken from subsequent round, and diarrhea data was taken from either the current or subsequent round, based on which sample was taken after but closer to the environmental sampling, and within 4 months.
+ 
+
+
+# Primary figures
+
+## Diarrhea
+
+#### Adjusted associations between diarrhea and any pathogen or MST marker
+
+```{r, echo=F, warning=F, message=F, fig.width = 6.5, fig.height = 9}
+p_diar_1_adj
+```
+
+#### Adjusted associations between diarrhea and types of pathogens
+
+```{r, echo=F, warning=F, message=F, fig.width = 6.5, fig.height = 9}
+p_diar_s1_adj
+```
+
+#### Adjusted associations between diarrhea and types of MST markers
+
+```{r, echo=F, warning=F, message=F, fig.width = 6.5, fig.height = 9}
+p_diar_2_adj
+```
+
+## Height-for-age Z-scores
+
+#### Adjusted associations between HAZ and any pathogen or MST marker
+
+```{r, echo=F, warning=F, message=F, fig.width = 6.5, fig.height = 9}
+p_haz_1_adj
+```
+
+#### Adjusted associations between HAZ and types of pathogens
+
+```{r, echo=F, warning=F, message=F, fig.width = 6.5, fig.height = 9}
+p_haz_s1_adj
+```
+
+#### Adjusted associations between HAZ and types of MST markers
+
+```{r, echo=F, warning=F, message=F, fig.width = 6.5, fig.height = 9}
+p_haz_2_adj
+```
+
+# Secondary figures
+
+## Diarrhea
+
+#### Adjusted associations between diarrhea and specific pathogens
+
+```{r, echo=F, warning=F, message=F, fig.width = 6.5, fig.height = 9}
+p_diar_adj_path
+```
+
+#### Unadjusted associations between diarrhea and any pathogen or MST marker
+
+```{r, echo=F, warning=F, message=F, fig.width = 6.5, fig.height = 9}
+p_diar_1_unadj
+```
+
+
+## Height-for-age Z-scores
+
+#### Adjusted associations between HAZ and specific pathogens
+
+```{r, echo=F, warning=F, message=F, fig.width = 6.5, fig.height = 9}
+p_haz_adj_path
+```
+
+#### Unadjusted associations between HAZ and any pathogen or MST marker
+
+```{r, echo=F, warning=F, message=F, fig.width = 6.5, fig.height = 9}
+p_haz_1
+```
+
+#### Adjusted associations between stunting and any pathogen or MST marker
+
+```{r, echo=F, warning=F, message=F, fig.width = 6.5, fig.height = 9}
+p_stunt_1_adj
+```
+
+## Weight-for-height Z-score
+
+#### Adjusted associations between WHZ and any pathogen or MST marker
+
+```{r, echo=F, warning=F, message=F, fig.width = 6.5, fig.height = 9}
+p_whz_1_adj
+```
+
+
+#### Adjusted associations between wasting and any pathogen or MST marker
+
+```{r, echo=F, warning=F, message=F, fig.width = 6.5, fig.height = 9}
+p_wast_1_adj
+```
+
+## Weight-for-age Z-score
+
+#### Adjusted associations between WAZ and any pathogen or MST marker
+
+```{r, echo=F, warning=F, message=F, fig.width = 6.5, fig.height = 9}
+p_waz_1_adj
+```
+
+
+#### Adjusted associations between Underweight and any pathogen or MST marker
+
+```{r, echo=F, warning=F, message=F, fig.width = 6.5, fig.height = 9}
+p_underwt_1_adj
+```
+
+
+#### Abundance
+
+
+```{r, echo=F, warning=F, message=F, fig.width = 6.5, fig.height = 9}
+p_abund_diar2
+p_abund_haz
+```
+
+
+
+
+
+# Tables
+
+
+## Data availability tables
+
+### Any sample type, any pathogen
+
+```{r, echo=FALSE, warning=F, message=F}
+FitFlextableToPage(flextable(tab1))
+```
+
+
+### Any sample type, any MST
+
+```{r, echo=FALSE, warning=F, message=F}
+FitFlextableToPage(flextable(tab2))
+```
+
+
+
+
+   
+ 
+
+
+## References

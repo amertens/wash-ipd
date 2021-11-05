@@ -81,7 +81,7 @@ merge_Ns <- bind_rows(
 ```
 
 
-### Overall summary of results:\
+### Overall summary of results:
 
 Most study-specific estimates are null, with inconsistent direction of effects in significant associations. Estimates pooled over multiple studies were also null, except for a small and marginally significant association between any pathogen in any sample and lower child height-for-age Z-scores (which is significant without adjustment for confounders).
 

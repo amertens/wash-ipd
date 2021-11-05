@@ -25,6 +25,7 @@ aim1_glm <- function(d, Ws=NULL, outcome="pos", study="mapsan", sample="ds", tar
   
   Wvars<-NULL
   minN<-NA
+
   
   if(family=="binomial"){
     if(length(unique(df$Y))>1 & length(unique(df$tr))>1){
@@ -255,10 +256,12 @@ cl   <- function(df,fm, cluster){
 # target="Any pathogen"
 # family="binomial"
 
-aim2_glm <- function(d, Ws=NULL, outcome="pos", exposure, study="mapsan", sample="ds", target="Mnif", family="binomial"){
+#Need to add forcedW funciton, look at washbgam for code
+
+aim2_glm <- function(d, Ws=NULL, forcedW=NULL, outcome="pos", exposure, study="mapsan", sample="ds", target="Mnif", family="binomial"){
   df <- d %>% filter(study=={{study}}, sample=={{sample}}, target=={{target}}) %>% droplevels(.)
   
-  cat(d$trial[1],", ", sample,", ", target,"\n")
+  cat(levels(df$study)[1],", ", sample,", ", target,"\n")
   cat("N before dropping missing: ", nrow(df),"\n")
   
   df$Y <- df[[outcome]]
@@ -269,12 +272,13 @@ aim2_glm <- function(d, Ws=NULL, outcome="pos", exposure, study="mapsan", sample
   df <- df %>% filter(!is.na(X))
   #print(summary(df$exposure))
   
-  Wvars<-NULL
+  forcedWdf<-Wvars<-NULL
   minN<-NA
-  
+  forcedW_n <- 0
+
   if(length(unique(df$Y))<=2){
     if(length(unique(df$Y))>1 & length(unique(df$X))>1){
-      minN <- min(table(df$Y))
+      minN <- min(table(df$Y,df$X))
     }else{
       minN <- 0
     }
@@ -284,6 +288,7 @@ aim2_glm <- function(d, Ws=NULL, outcome="pos", exposure, study="mapsan", sample
     c <- sum(df$Y==1 & df$X==0)
     d <- sum(df$Y==0 & df$X==0)
   }
+  
   if(length(unique(df$Y))>2){
     minN <- length(unique(df$Y))
     #Get cell counts
@@ -299,10 +304,19 @@ aim2_glm <- function(d, Ws=NULL, outcome="pos", exposure, study="mapsan", sample
   
   #cat(minN>=10 | length(unique(df$Y)) > 2)
   #if((minN>=10 & min(table(df$Y, df$X))>1) | (minN>=10 & length(unique(df$Y)) > 2 & length(unique(df$X)) == 2)){
-  if((minN>=2 & min(table(df$Y, df$X))>1) | (minN>=2 & length(unique(df$Y)) > 2 & length(unique(df$X)) == 2)
-     | (minN>=2 & length(unique(df$X)) > 2 & length(unique(df$Y)) >= 2)){
+  if((minN>=2 & min(table(df$Y, df$X))>1) | (minN>=2 & length(unique(df$Y)) > 2 & length(unique(df$X)) == 2) | (minN>=2 & length(unique(df$X)) > 2 & length(unique(df$Y)) >= 2)){
     
     if(!is.null(Ws)){
+      forcedW_n <- 0
+      if(!is.null(forcedW)){
+        Ws <- Ws[!(Ws %in% forcedW)]
+        forcedWdf <- df %>% ungroup() %>% select(any_of(forcedW)) %>% select_if(~sum(!is.na(.)) > 0)
+        if(length(nearZeroVar(forcedWdf))>0){
+          forcedWdf <- forcedWdf[,-nearZeroVar(forcedWdf)]
+          forcedW_n <- ncol(forcedWdf)
+        }
+      }
+      
       Wdf <- df %>% ungroup() %>% select(any_of(Ws)) %>% select_if(~sum(!is.na(.)) > 0)
       
       if(ncol(Wdf)>0){
@@ -317,6 +331,7 @@ aim2_glm <- function(d, Ws=NULL, outcome="pos", exposure, study="mapsan", sample
         }
         if(family!="gaussian" & !is.null(Wvars)){
           nY<-floor(min(table(df$Y))/10) -1 #minus one because 10 variables needed to estimate coef. of X
+          nY <- nY - forcedW_n
           if(nY>=1){
             if(length(Wvars)>nY){
               Wvars<-Wvars[1:nY]
@@ -331,7 +346,14 @@ aim2_glm <- function(d, Ws=NULL, outcome="pos", exposure, study="mapsan", sample
       }else{
         Wvars <- NULL
       }
-      df <- df %>% subset(., select =c("Y","X","clusterid", Wvars))
+      if(!is.null(forcedW)){
+        #Wvars <- c(Wvars,forcedW)
+        df <- df %>% subset(., select =c("Y","X","clusterid",Wvars))
+        df <- data.frame(df,forcedWdf)
+      }else{
+        df <- df %>% subset(., select =c("Y","X","clusterid", Wvars))
+      }
+      
       df <- df[complete.cases(df),]
       cat("N after dropping missing: ", nrow(df),"\n")
     }else{
@@ -412,6 +434,9 @@ aim2_glm <- function(d, Ws=NULL, outcome="pos", exposure, study="mapsan", sample
   }
   
   res$N<-nrow(df)
+  if(!is.null(forcedW)){
+    Wvars <- c(Wvars, colnames(forcedWdf))
+  }
   res$W <-ifelse(is.null(Wvars), "unadjusted", paste(Wvars, sep="", collapse=", "))
   res$study <- study
   #print(res)

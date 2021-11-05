@@ -119,7 +119,7 @@ d <- readRDS(file=paste0(dropboxDir,"Data/merged_env_CH_data.rds"))
 tab <- d %>% group_by(study, sample, target) %>%
   summarize(N=n(), N_pos=sum(pos), N_diar=sum(!is.na(diar7d)), N_pos_diar=sum(diar7d==1, na.rm=T), N_pos_env_diar=sum(pos==1 & diar7d==1, na.rm=T), N_haz=sum(!is.na(haz)))
 
-colnames(tab)[4:9] <- c("N samples","N diar. meas.", "N diar. pos.","N sample. and diar. pos.", "N haz")
+colnames(tab)[4:9] <- c("N samples","N pos. samples","N diar. meas.", "N diar. pos.","N sample. and diar. pos.", "N haz")
 
 tab1 <- tab %>% filter(sample=="any sample type", target=="Any pathogen")
 tab2 <- tab %>% filter(sample=="any sample type", target=="Any MST")

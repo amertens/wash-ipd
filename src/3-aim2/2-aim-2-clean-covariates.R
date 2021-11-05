@@ -17,24 +17,30 @@ Wvars_anthro = c("sex","age_anthro","hfiacat","momage","hhwealth", "Nhh","nrooms
 
 all_Wvars <- unique(c(Wvars, Wvars_anthro))
 
+
+
 #----------------------------------
 # Clean covariates
 #----------------------------------
 
+table(d$study, d$hhwealth)
+table(d$study, d$Nhh)
+table(d$study, d$nrooms)
+
 d <- d %>% group_by(trial) %>% 
-  mutate(hhwealth=factor(ntile(hhwealth,4), levels=c("1","2","3","4")),
+  mutate(#hhwealth=factor(ntile(hhwealth,4), levels=c("1","2","3","4")),
          hhwealth=fct_explicit_na(hhwealth, na_level = "Missing"),
-         Nhh=factor(case_when(
-           Nhh<5 ~ "<5",
-           Nhh>=5 & Nhh <=8 ~ "5-8",
-           Nhh>8 ~ ">8"
-         ), levels=c("5-8","<5",">8")),
+         # Nhh=factor(case_when(
+         #   Nhh<5 ~ "<5",
+         #   Nhh>=5 & Nhh <=8 ~ "5-8",
+         #   Nhh>8 ~ ">8"
+         # ), levels=c("5-8","<5",">8")),
          Nhh=fct_explicit_na(Nhh, na_level = "Missing"),
-         nrooms=as.numeric(nrooms),
-         nrooms=factor(case_when(
-           nrooms<3 ~ "1-2",
-           nrooms>2  ~ ">3",
-         ), levels=c("1-2",">3")),
+         # nrooms=as.numeric(nrooms),
+         # nrooms=factor(case_when(
+         #   nrooms<3 ~ "1-2",
+         #   nrooms>2  ~ ">3",
+         # ), levels=c("1-2",">3")),
          nrooms=fct_explicit_na(nrooms, na_level = "Missing"),
          landown=fct_explicit_na(landown, na_level = "Missing"),
          dadagri=factor(dadagri),

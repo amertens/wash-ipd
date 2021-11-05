@@ -175,9 +175,34 @@ d <- d %>% mutate(tr=case_when(tr=="Control"~"Control",
                   tr=factor(tr, levels=c("Control","Intervention")))
 table(d$tr)
 
-d <- d %>% group_by(trial) %>% 
-  mutate(hhwealth=factor(ntile(hhwealth,4), levels=c("1","2","3","4")),
-         hhwealth=fct_explicit_na(hhwealth, na_level = "Missing"),
+table(d$study)
+summary(d$hhwealth)
+summary(d$hhwealth[d$study=="Holcomb 2020"])
+summary(d$hhwealth[d$study=="Capone 2021"])
+
+
+d$hhwealth_quant <- d$hhwealth
+d$hhwealth<-NA
+#quantile hhwealth by study
+i=unique(d$study)[1]
+for(i in unique(d$study)){
+  df <- d[d$study==i,]
+  hhwealth <- factor(NA)
+  if(length(unique(df$hhwealth_quant))>4){
+    hhwealth=factor(quantcut(df$hhwealth_quant, na.rm=T), labels=c("1","2","3","4"))
+  }
+  d$hhwealth[d$study==i] <- hhwealth
+}
+#d$hhwealth[d$study=="Odagiri 2016"] <- 5
+d$hhwealth <- factor(d$hhwealth, labels=c("1","2","3","4"))
+d$hhwealth = fct_explicit_na(d$hhwealth, na_level = "Missing")
+
+table(d$study, d$hhwealth)
+
+
+#declare factors and add missing levels
+d <- d %>% 
+  mutate(#hhwealth=factor(ntile(hhwealth,4), levels=c("1","2","3","4")),
          Nhh=factor(case_when(
            Nhh<5 ~ "<5",
            Nhh>=5 & Nhh <=8 ~ "5-8",
@@ -468,6 +493,12 @@ table(d$target, d$animals)
 
 saveRDS(d, file=paste0(dropboxDir,"Data/cleaned_ipd_env_data.rds"))
 
+df <- d %>% filter(study=="Holcomb 2020", target=="Any MST",sample=="S", !is.na(pos))
+
+res_pos <- glm(pos ~ hhwealth, data=df, family="binomial")
+summary(res_pos)
+
+
 table(is.na(d$clusterid))
 table((d$pos))
 
@@ -490,5 +521,6 @@ table(d$trial, !is.na(d$landacre))
 table(d$trial, (d$momedu))
 
 
+table(d$study, (d$hhwealth))
 
 

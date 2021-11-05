@@ -18,6 +18,10 @@ env <- env %>% mutate(
 env <- env %>% filter(trial == "MapSan") %>% droplevels(.)
 table(env$study, env$sample)
 
+res <- glm(pos~hhwealth, family="binomial", data=env)
+summary(res)
+
+
 #temporarily combine capone
 #env$study[env$study=="Capone 2021 in prep"] <- "Capone 2021"
 
@@ -29,6 +33,8 @@ table(ch$diar7d)
 
 table(env$study, env$round)
 table(env$study, env$sample, env$round)
+
+table(env$study, env$hhwealth)
 
 
 
@@ -109,6 +115,10 @@ hol_anthro_ml <- merge_ch(hol_ml, ch_el %>% subset(., select = -c(diar7d, round)
 hol_diar_bl <- merge_ch(hol_bl, ch_bl %>% subset(., select =  -c(haz, whz, waz, round))) %>% mutate(round="bl") %>% filter(!is.na(diar7d),!is.na(pos))
 hol_diar_ml <- merge_ch(hol_ml, ch_ml %>% subset(., select =  -c(haz, whz, waz, round))) %>% mutate(round="ml") %>% filter(!is.na(diar7d),!is.na(pos))
 
+table(cp_bl$hhwealth)
+table(hol_bl$hhwealth)
+table(cp_diar_bl$hhwealth)
+table(hol_diar_bl$hhwealth)
 
 cp_df <- bind_rows(cp_anthro_bl, cp_anthro_ml, cp_anthro_el, cp_diar_bl, cp_diar_ml, cp_diar_el)
 hol_df <- bind_rows(hol_anthro_bl, hol_anthro_ml, hol_diar_bl, hol_diar_ml)
@@ -236,3 +246,7 @@ mapsan_res <- bind_rows(cp_res, hol_res)
 saveRDS(d, file=paste0(dropboxDir,"Data/mapsan_env_CH_data.rds"))
 saveRDS(mapsan_res, file=paste0(here(),"/results/mapsan_merge_Ns.rds"))
 saveRDS(date_diff, file=paste0(here(),"/results/mapsan_date_diff.rds"))
+
+
+table(d$study, (d$hhwealth))
+

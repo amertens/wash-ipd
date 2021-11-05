@@ -14,14 +14,6 @@ table(is.na(d$round))
 d <- d %>% filter(round!="bl", sample!="FP") %>% droplevels()
 
 table(d$study)
-# #check out new capone data
-# d <- d %>% filter(study=="Capone et al. 2021", target=="Any pathogen", sample=="S")
-# table(d$pos)
-# table(d$tr, df$pos)
-# table(df$target, df$pos)
-
-
-
 table(d$target)
 table(is.na(d$tr))
 table(is.na(d$sample))

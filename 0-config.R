@@ -13,6 +13,7 @@ library(caret)
 library(rcartocolor)
 library(metafor)
 library(washb)
+library(gtools)
 
 #set data directories
 
