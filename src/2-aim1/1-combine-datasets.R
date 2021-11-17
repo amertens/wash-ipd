@@ -181,15 +181,15 @@ summary(d$hhwealth[d$study=="Holcomb 2020"])
 summary(d$hhwealth[d$study=="Capone 2021"])
 
 
-d$hhwealth_quant <- d$hhwealth
+d$hhwealth_cont <- d$hhwealth
 d$hhwealth<-NA
 #quantile hhwealth by study
 i=unique(d$study)[1]
 for(i in unique(d$study)){
   df <- d[d$study==i,]
   hhwealth <- factor(NA)
-  if(length(unique(df$hhwealth_quant))>4){
-    hhwealth=factor(quantcut(df$hhwealth_quant, na.rm=T), labels=c("1","2","3","4"))
+  if(length(unique(df$hhwealth_cont))>4){
+    hhwealth=factor(quantcut(df$hhwealth_cont, na.rm=T), labels=c("1","2","3","4"))
   }
   d$hhwealth[d$study==i] <- hhwealth
 }
@@ -289,7 +289,7 @@ d <- d %>% subset(., select=c(study,            trial,            sampleid,     
                               tr,               sample,           env_date,         target,           pos,             
                               abund,            qual,             round,            Nhh,             
                               momage,           momedu,           dadagri,          landown, landacre,        
-                              hfiacat,          watmin,           floor,            hhwealth,         roof,            
+                              hfiacat,          watmin,           floor,            hhwealth,   hhwealth_cont,      roof,            
                               elec,             walls,            nrooms,           season,  animals))
 
 

@@ -12,8 +12,8 @@ d <- readRDS(paste0(dropboxDir,"Data/merged_env_CH_data.rds"))
 d <- d %>% filter(sample!="FP") %>% droplevels()
 
 #vector of covariates
-Wvars = c("sex","age","hfiacat","momage","hhwealth", "Nhh","nrooms","walls", "roof", "floor","elec","dadagri","landacre","landown", "momedu", "tr")         
-Wvars_anthro = c("sex","age_anthro","hfiacat","momage","hhwealth", "Nhh","nrooms","walls", "roof", "floor","elec","dadagri","landacre","landown", "momedu", "tr")         
+Wvars = c("sex","age","hfiacat","momage","hhwealth_cont", "Nhh","nrooms","walls", "roof", "floor","elec","dadagri","landacre","landown", "momedu", "tr")         
+Wvars_anthro = c("sex","age_anthro","hfiacat","momage","hhwealth_cont", "Nhh","nrooms","walls", "roof", "floor","elec","dadagri","landacre","landown", "momedu", "tr")         
 
 all_Wvars <- unique(c(Wvars, Wvars_anthro))
 

@@ -22,16 +22,17 @@ table(adj_RR$c)
 table(adj_RR$a+adj_RR$c)
 
 
-# adj_RR$sparse[adj_RR$a<10 | adj_RR$c<10] <- "yes"
-# adj_RR <- adj_RR[adj_RR$a>=20 & adj_RR$c>=20,] 
 
-adj_RR$sparse[adj_RR$Y=="diar7d" & adj_RR$n < 20] <- "yes"
-adj_RR$RR[adj_RR$Y=="diar7d" & adj_RR$n < 20] <- NA
-adj_RR$ci.lb[adj_RR$Y=="diar7d" & adj_RR$n < 20] <- NA
-adj_RR$ci.ub[adj_RR$Y=="diar7d" & adj_RR$n < 20] <- NA
+# adj_RR$sparse[adj_RR$Y=="diar7d" & adj_RR$n < 20] <- "yes"
+# adj_RR$RR[adj_RR$Y=="diar7d" & adj_RR$n < 20] <- NA
+# adj_RR$ci.lb[adj_RR$Y=="diar7d" & adj_RR$n < 20] <- NA
+# adj_RR$ci.ub[adj_RR$Y=="diar7d" & adj_RR$n < 20] <- NA
 
-
-
+res <- adj_RR %>% filter(target %in% c("Any MST"), 
+                  Y=="diar7d", study=="Holcomb 2020",
+                  sample=="any sample type")
+res$N_W
+res$W
 #---------------------------------------------------------------
 # Clean results
 #---------------------------------------------------------------
@@ -155,6 +156,12 @@ base_plot_diff <- function(mydf, legend_labels=sample_cats, drop_full_sparse=F){
 }
 
 
+unadj <- unadj_RR %>% select(study, Y,      sample, target,    RR) %>% rename(unadj.RR=RR)
+adj <- adj_RR %>% select(study, Y,      sample, target,    RR) %>% rename(adj.RR=RR)
+
+df <- full_join(unadj, adj, by = c('study', 'Y',      'sample', 'target'))
+df <- df %>% mutate(diff=adj.RR/unadj.RR)
+ggplot(df, aes(x=diff)) + geom_density() + geom_vline(xintercept = 1) #+    scale_x_continuous(trans='log10')
 
 #---------------------------------------------------------------
 # Plot figures
@@ -180,7 +187,8 @@ p_haz_1_adj <- adj_RR %>%
   filter(target %in% c("Any pathogen","Any MST"), Y=="haz") %>%
   base_plot_diff(drop_full_sparse=T)
 
-
+unadj_RR %>% filter(target %in% c("Any pathogen"), Y=="haz", study=="Fuhrmeister 2020",sample=="any sample type")
+adj_RR %>% filter(target %in% c("Any pathogen"), Y=="haz", study=="Fuhrmeister 2020",sample=="any sample type")
 
 #Specific pathogens
 p_diar_adj_path <- adj_RR %>% 

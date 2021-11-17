@@ -9,58 +9,9 @@ adj_RR <- clean_res(adj_RR) #%>% distinct()
 head(unadj_RR)
 table(unadj_RR$sample_cat)
 
+Wvars = c("sex","age","hfiacat","momage","hhwealth", "Nhh","nrooms","walls", "roof", "floor","elec","dadagri","landacre","landown", "momedu", "tr")         
+Wvars_anthro = c("sex","age_anthro","hfiacat","momage","hhwealth", "Nhh","nrooms","walls", "roof", "floor","elec","dadagri","landacre","landown", "momedu", "tr")         
 
-poolRR<-function(d, method="REML"){
-  
-  if(nrow(d)>0){
-  
-  d <- d %>% rename(untransformed_estimate=coef, untransformed_se=se)  
-  
-  fit<-NULL
-  try(fit<-rma(yi=untransformed_estimate, sei=untransformed_se, data=d, method=method, measure="RR"))
-  if(method=="REML"){
-    if(is.null(fit)){try(fit<-rma(yi=untransformed_estimate, sei=untransformed_se, data=d, method="ML", measure="RR"))}
-    if(is.null(fit)){try(fit<-rma(yi=untransformed_estimate, sei=untransformed_se, data=d, method="DL", measure="RR"))}
-    if(is.null(fit)){try(fit<-rma(yi=untransformed_estimate, sei=untransformed_se, data=d, method="HE", measure="RR"))}
-  }
-  
-  #confint(fit)
-  
-  est<-data.frame(fit$b, fit$se, fit$I2)
-  colnames(est)<-c("logRR.psi","logSE", "I2")
-  
-  est$RR<-exp(est$logRR)
-  est$ci.lb<-exp(est$logRR - 1.96 * est$logSE)
-  est$ci.ub<-exp(est$logRR + 1.96 * est$logSE)
-  est$N <- d$N[1]
-  est <- est %>% mutate(Y=d$Y[1],study="Pooled", sparse="pooled", sample_type=d$sample_type[1], sample_cat=d$sample_cat[1], target_f=d$target_f[1])
-  
-  }else{
-    est <- data.frame(Y=NA,study=NA, sparse=NA, sample_type=NA, sample_cat=NA, target_f=NA)
-  }
-  
-  return(est)
-}
-
-
-pool.cont<-function(d, method="REML"){
-    
-    fit<-NULL
-    try(fit<-rma(yi=coef, sei=se, data=d, method=method, measure="GEN"))
-    if(method=="REML"){
-      if(is.null(fit)){try(fit<-rma(yi=coef, sei=se, data=d, method="ML", measure="GEN"))}
-      if(is.null(fit)){try(fit<-rma(yi=coef, sei=se, data=d, method="DL", measure="GEN"))}
-      if(is.null(fit)){try(fit<-rma(yi=coef, sei=se, data=d, method="HE", measure="GEN"))}
-    }
-    est<-data.frame(fit$b, fit$ci.lb, fit$ci.ub, fit$I2)
-    colnames(est)<-c("coef","ci.lb","ci.ub", "I2")
- 
-    est$N <- d$N[1]
-    est <- est %>% mutate(Y=d$Y[1],study="Pooled", sparse="pooled", sample_type=d$sample_type[1], sample_cat=d$sample_cat[1], target_f=d$target_f[1])
-    
-  rownames(est) <- NULL
-  return(est)
-}
 
 
 binary_Y =c("diar7d","stunt","wast","underwt")

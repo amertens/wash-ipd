@@ -14,6 +14,7 @@ library(rcartocolor)
 library(metafor)
 library(washb)
 library(gtools)
+library(tmle)
 
 #set data directories
 

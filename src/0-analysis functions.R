@@ -313,8 +313,8 @@ aim2_glm <- function(d, Ws=NULL, forcedW=NULL, outcome="pos", exposure, study="m
         forcedWdf <- df %>% ungroup() %>% select(any_of(forcedW)) %>% select_if(~sum(!is.na(.)) > 0)
         if(length(nearZeroVar(forcedWdf))>0){
           forcedWdf <- forcedWdf[,-nearZeroVar(forcedWdf)]
-          forcedW_n <- ncol(forcedWdf)
         }
+        forcedW_n <- ncol(forcedWdf)
       }
       
       Wdf <- df %>% ungroup() %>% select(any_of(Ws)) %>% select_if(~sum(!is.na(.)) > 0)
@@ -350,6 +350,7 @@ aim2_glm <- function(d, Ws=NULL, forcedW=NULL, outcome="pos", exposure, study="m
         #Wvars <- c(Wvars,forcedW)
         df <- df %>% subset(., select =c("Y","X","clusterid",Wvars))
         df <- data.frame(df,forcedWdf)
+        Wvars = colnames(df)[-c(1:3)]
       }else{
         df <- df %>% subset(., select =c("Y","X","clusterid", Wvars))
       }
@@ -434,9 +435,9 @@ aim2_glm <- function(d, Ws=NULL, forcedW=NULL, outcome="pos", exposure, study="m
   }
   
   res$N<-nrow(df)
-  if(!is.null(forcedW)){
-    Wvars <- c(Wvars, colnames(forcedWdf))
-  }
+  # if(!is.null(forcedW)){
+  #   Wvars <- c(Wvars, colnames(forcedWdf))
+  # }
   res$W <-ifelse(is.null(Wvars), "unadjusted", paste(Wvars, sep="", collapse=", "))
   res$study <- study
   #print(res)
@@ -1024,4 +1025,307 @@ lincom <- function (lc = NULL, fit, vcv, measure = "RR", flag = NULL){
     print(coef)
   }
   return(res)
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# library(tmle)
+# d<-df
+#  Ws = Wvars_anthro
+#  forcedW=c("age", "hhwealth")
+#  outcome="haz"
+#  exposure="pos"
+#  study=df$study[1]
+#  sample=df$sample[1]
+#  target=df$target[1]
+#  family="gaussian"
+
+SL.forcedW <- function(X,...){
+  returnCols <- rep(FALSE, ncol(X))
+  returnCols[names(X) %in% c("age","hhwealth")] <- TRUE
+  return(returnCols)
+}
+
+
+
+aim2_tmle <- function(d, Ws=NULL, forcedW=NULL, outcome, exposure="pos", study="mapsan", sample="ds", target="Mnif", family="binomial", overwrite=F){
+  
+  res = NULL
+  if(overwrite==F){
+    try(res <- readRDS(file=paste0(here::here(),"/results/tmle/",outcome,"-",exposure,"-",sample,"-",target,"-",study,".RDS")))
+  }
+  if(is.null(res)){
+    
+    df <- d %>% filter(study=={{study}}, sample=={{sample}}, target=={{target}}) %>% droplevels(.)
+    
+    cat(levels(df$study)[1],", ", sample,", ", target,"\n")
+    cat("N before dropping missing: ", nrow(df),"\n")
+    
+    df$Y <- df[[outcome]]
+    df <- df %>% filter(!is.na(Y))
+    #print(summary(df$Y))
+    
+    df$X <- df[[exposure]]
+    df <- df %>% filter(!is.na(X))
+    #print(summary(df$exposure))
+    
+    forcedWdf<-Wvars<-NULL
+    minN<-NA
+    forcedW_n <- 0
+    
+    if(length(unique(df$Y))<=2){
+      if(length(unique(df$Y))>1 & length(unique(df$X))>1){
+        minN <- min(table(df$Y,df$X))
+      }else{
+        minN <- 0
+      }
+      #Get cell counts
+      a <- sum(df$Y==1 & df$X==1)
+      b <- sum(df$Y==0 & df$X==1)
+      c <- sum(df$Y==1 & df$X==0)
+      d <- sum(df$Y==0 & df$X==0)
+    }
+    
+    if(length(unique(df$Y))>2){
+      minN <- length(unique(df$Y))
+      #Get cell counts
+      a <- mean(df$Y[df$X==0], na.rm=T)
+      b <- mean(df$Y[df$X==1], na.rm=T)
+      # c <- median(df$Y[df$X==0], na.rm=T)
+      # d <- median(df$Y[df$X==1], na.rm=T)
+      c <- sd(df$Y[df$X==0], na.rm=T)
+      d <- sd(df$Y[df$X==1], na.rm=T)
+    }
+    
+    cat(minN,"\n")
+    
+    #cat(minN>=10 | length(unique(df$Y)) > 2)
+    #if((minN>=10 & min(table(df$Y, df$X))>1) | (minN>=10 & length(unique(df$Y)) > 2 & length(unique(df$X)) == 2)){
+    if((minN>=2 & min(table(df$Y, df$X))>1) | (minN>=2 & length(unique(df$Y)) > 2 & length(unique(df$X)) == 2) | (minN>=2 & length(unique(df$X)) > 2 & length(unique(df$Y)) >= 2)){
+      
+      if(!is.null(Ws)){
+        forcedW_n <- 0
+        if(!is.null(forcedW)){
+          Ws <- Ws[!(Ws %in% forcedW)]
+          forcedWdf <- df %>% ungroup() %>% select(any_of(forcedW)) %>% select_if(~sum(!is.na(.)) > 0)
+          if(length(nearZeroVar(forcedWdf))>0){
+            forcedWdf <- forcedWdf[,-nearZeroVar(forcedWdf)]
+          }
+          forcedW_n <- ncol(forcedWdf)
+        }
+        
+        Wdf <- df %>% ungroup() %>% select(any_of(Ws)) %>% select_if(~sum(!is.na(.)) > 0)
+        
+        if(ncol(Wdf)>0){
+          Wvars <- colnames(Wdf)
+        }else{
+          Wvars <- NULL
+        }
+        if(!is.null(forcedW)){
+          #Wvars <- c(Wvars,forcedW)
+          df <- df %>% subset(., select =c("Y","X","clusterid",Wvars))
+          df <- data.frame(df,forcedWdf)
+          Wvars = colnames(df)[-c(1:3)]
+        }else{
+          df <- df %>% subset(., select =c("Y","X","clusterid", Wvars))
+        }
+        
+        df <- df[complete.cases(df),]
+        cat("N after dropping missing: ", nrow(df),"\n")
+      }else{
+        df <- df %>% subset(., select =c("Y","X","clusterid"))
+        cat("N before dropping missing: ", nrow(df),"\n")
+        df <- df[complete.cases(df),]
+        cat("N after dropping missing: ", nrow(df),"\n")
+      }
+      
+      #Get cell counts
+      if(length(unique(df$Y))<=2){
+        a <- sum(df$Y==1 & df$X==1)
+        b <- sum(df$Y==0 & df$X==1)
+        c <- sum(df$Y==1 & df$X==0)
+        d <- sum(df$Y==0 & df$X==0)
+      }
+      
+  
+      #fit model
+      Ydf <- df %>% ungroup() %>% select(Y)
+      Xdf <- df %>% ungroup() %>% select(X) 
+      Wdf <- df %>% ungroup() %>% select(any_of(Wvars)) %>% select_if(~sum(!is.na(.)) > 0)
+      if(length(nearZeroVar(Wdf))>0){
+        Wdf <- Wdf[,-nearZeroVar(Wdf)]
+      }
+      
+      #XXXXXXXXXXXX
+      #To do: add prescreening to library
+      #XXXXXXXXXXXX
+      
+      #listWrappers()
+    #  SL.lib =c("SL.mean","SL.glm", "SL.glmnet")
+  
+      SL.lib=list(c("SL.glm","SL.forcedW"),c("SL.glm","screen.corRank"),
+                      c("SL.mean","All"), # not adjusted, so doesn't matter
+                      c("SL.glmnet","All"),
+                  #c("SL.ridge","All"),
+                  c("SL.randomForest","All"))
+      #SL.lib=list(c("SL.glm","SL.forcedW"))
+      
+      
+      fit <- tmle(Y=df$Y, A=df$X, W=Wdf, id=df$clusterid, family=family,
+                  Q.SL.library = SL.lib,
+                  g.SL.library = SL.lib)
+  
+      if(family=="gaussian"){
+        res <- data.frame(Y=outcome,
+                          sample=sample,
+                          target=target,
+                          coef=fit$estimates$ATE$psi,
+                          RR=NA,
+                          se=NA,
+                          Zval=NA,
+                          pval=fit$estimates$ATE$pvalue)
+        
+        res$ci.lb <- fit$estimates$ATE$CI[1]
+        res$ci.ub <- fit$estimates$ATE$CI[2]
+      }else{
+        res <- data.frame(Y=outcome,
+                          sample=sample,
+                          target=target,
+                          coef=log(fit$estimates$RR$psi),
+                          RR=fit$estimates$RR$psi,
+                          se=NA,
+                          Zval=NA,
+                          pval=fit$estimates$RR$pvalue)
+        
+        res$ci.lb <- fit$estimates$RR$CI[1]
+        res$ci.ub <- fit$estimates$RR$CI[2]
+      }
+    }else{
+      res <- data.frame(Y=outcome,
+                        sample=sample,
+                        target=target,
+                        coef=NA,
+                        RR=NA,
+                        se=NA,
+                        Zval=NA,
+                        pval=NA,
+                        ci.lb=NA,
+                        ci.ub=NA,
+                        minN=minN)
+    }
+    
+    if(length(unique(df$Y))<=2){
+      res$minN <- minN
+      res$n<-sum(df$Y, na.rm=T)
+      res$a <- a
+      res$b <- b
+      res$c <- c
+      res$d <- d
+    }else{
+      res$mean_control <- a
+      res$mean_int <- b
+      # res$med_control <- c
+      # res$median_int <- d
+      res$sd_control <- c
+      res$sd_int <- d
+    }
+    
+    res$N<-nrow(df)
+    # if(!is.null(forcedW)){
+    #   Wvars <- c(Wvars, colnames(forcedWdf))
+    # }
+    res$W <-ifelse(is.null(Wvars), "unadjusted", paste(Wvars, sep="", collapse=", "))
+    res$study <- study
+    
+  
+    
+    saveRDS(res, file=paste0(here::here(),"/results/tmle/",outcome,"-",exposure,"-",sample,"-",target,"-",study,".RDS"))
+  }
+   
+  return(res)
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+poolRR<-function(d, method="REML"){
+  
+  if(nrow(d)>0){
+    
+    d <- d %>% rename(untransformed_estimate=coef, untransformed_se=se)  
+    
+    fit<-NULL
+    try(fit<-rma(yi=untransformed_estimate, sei=untransformed_se, data=d, method=method, measure="RR"))
+    if(method=="REML"){
+      if(is.null(fit)){try(fit<-rma(yi=untransformed_estimate, sei=untransformed_se, data=d, method="ML", measure="RR"))}
+      if(is.null(fit)){try(fit<-rma(yi=untransformed_estimate, sei=untransformed_se, data=d, method="DL", measure="RR"))}
+      if(is.null(fit)){try(fit<-rma(yi=untransformed_estimate, sei=untransformed_se, data=d, method="HE", measure="RR"))}
+    }
+    
+    #confint(fit)
+    
+    est<-data.frame(fit$b, fit$se, fit$I2)
+    colnames(est)<-c("logRR.psi","logSE", "I2")
+    
+    est$RR<-exp(est$logRR)
+    est$ci.lb<-exp(est$logRR - 1.96 * est$logSE)
+    est$ci.ub<-exp(est$logRR + 1.96 * est$logSE)
+    est$N <- d$N[1]
+    est <- est %>% mutate(Y=d$Y[1],study="Pooled", sparse="pooled", sample_type=d$sample_type[1], sample_cat=d$sample_cat[1], target_f=d$target_f[1])
+    
+  }else{
+    est <- data.frame(Y=NA,study=NA, sparse=NA, sample_type=NA, sample_cat=NA, target_f=NA)
+  }
+  
+  return(est)
+}
+
+
+pool.cont<-function(d, method="REML"){
+  
+  fit<-NULL
+  try(fit<-rma(yi=coef, sei=se, data=d, method=method, measure="GEN"))
+  if(method=="REML"){
+    if(is.null(fit)){try(fit<-rma(yi=coef, sei=se, data=d, method="ML", measure="GEN"))}
+    if(is.null(fit)){try(fit<-rma(yi=coef, sei=se, data=d, method="DL", measure="GEN"))}
+    if(is.null(fit)){try(fit<-rma(yi=coef, sei=se, data=d, method="HE", measure="GEN"))}
+  }
+  est<-data.frame(fit$b, fit$ci.lb, fit$ci.ub, fit$I2)
+  colnames(est)<-c("coef","ci.lb","ci.ub", "I2")
+  
+  est$N <- d$N[1]
+  est <- est %>% mutate(Y=d$Y[1],study="Pooled", sparse="pooled", sample_type=d$sample_type[1], sample_cat=d$sample_cat[1], target_f=d$target_f[1])
+  
+  rownames(est) <- NULL
+  return(est)
 }

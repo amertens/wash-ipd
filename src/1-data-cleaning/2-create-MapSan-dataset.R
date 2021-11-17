@@ -347,11 +347,6 @@ child <- child %>%
            survey==2 ~"el"
            ))
 
-#Check if hhwealth is correlated with child health like expected
-res <- glm(haz ~ povNormal, data=child)
-summary(res)
-res <- glm(haz ~ factor(ntile(povNormal,4)), data=child)
-summary(res)
 
 #Check treatment assignments
 table(child$studyArm_ternary)
@@ -380,14 +375,26 @@ table(env2$tr, env2$studyArm_binary)
 table(env2$tr, env2$clusterid)
 table(is.na(env2$studyArm_binary))
 
-#split covariates into child and hh
-head(child)
 
-hh <- child %>% group_by(clusterid, round) %>%
-                summarise(compound_wealth=mean(povNormal, na.rm=T),
-                          compElec2=mean(compElec, na.rm=T),
-                          compAnyAnimal2=mean(compAnyAnimal, na.rm=T),
-                          CompPop2=mean(CompPop, na.rm=T)) 
+temp1 <- child[child$hhid==203301,]
+temp2 <- env2[env2$hhid==203301,] %>% filter(!is.na(clusterid))
+temp3 <- env2[env2$clusterid==2033,] %>% filter(!is.na(clusterid))
+table(temp2$sample)
+table(temp3$sample)
+
+#split covariates into child and hh and compound
+hh <- child %>% group_by(clusterid, hhid, round) %>%
+                summarise(hh_wealth=mean(povNormal, na.rm=T)) 
+
+#Get values averaged over rounds for missing rounds in certain compounds in the child dataset
+hh2 <- child %>% group_by(clusterid, hhid) %>%
+  summarise(hh_wealth2=mean(povNormal, na.rm=T)) 
+
+clust <- child %>% group_by(clusterid) %>%
+  summarise(compound_wealth=mean(povNormal, na.rm=T),
+            compElec2=mean(compElec, na.rm=T),
+            compAnyAnimal2=mean(compAnyAnimal, na.rm=T),
+            CompPop2=mean(CompPop, na.rm=T)) 
 
 
 #then merge full data
@@ -417,25 +424,51 @@ table(child$round, is.na(child$clusterid))
 table(unique(env$clusterid[env$study=="Capone 2021"]) %in% unique(child$clusterid))
 table(unique(env$hhid[env$study=="Capone 2021"]) %in% unique(child$hhid))
 
+
+
 dim(child)
 dim(env2)
 dim(child)+dim(env2)
 d1 <- full_join(env2, child,  by = c("clusterid", "hhid", "round", "studyArm_binary")) %>% filter(!is.na(pos))
-d <- full_join(d1, hh,  by = c("clusterid", "round")) %>% filter(!is.na(pos))
+d2 <- full_join(d1, hh,  by = c("clusterid", "hhid", "round")) %>% filter(!is.na(pos))
+d3 <- full_join(d2, hh2,  by = c("clusterid", "hhid")) %>% filter(!is.na(pos))
+d <- full_join(d3, clust,  by = c("clusterid")) %>% filter(!is.na(pos))
 dim(d)
 head(d)
 head(hh)
 unique(d1$clusterid)
 unique(hh$clusterid)
 
+d[d$clusterid==2033,]
+df<-d[d$hhid==203301,] %>% filter(!is.na(hhid))
+dim(df)
+df %>% select(childid, round, age_months,sample, povNormal, haz )
+
+table(d$sample, is.na(d$povNormal))
+
+d$povNormal[is.na(d$povNormal)] <- d$hh_wealth[is.na(d$povNormal)] 
+table(d$sample, is.na(d$povNormal))
+
+d$povNormal[is.na(d$povNormal)] <- d$hh_wealth2[is.na(d$povNormal)] 
+table(d$sample, is.na(d$povNormal))
+
 d$povNormal[is.na(d$povNormal)] <- d$compound_wealth[is.na(d$povNormal)] 
+table(d$sample, is.na(d$povNormal))
+
 d$compElec[is.na(d$compElec)] <- d$compElec2[is.na(d$compElec)]
 d$compAnyAnimal[is.na(d$compAnyAnimal)] <- d$compAnyAnimal2[is.na(d$compAnyAnimal)]
 d$CompPop[is.na(d$CompPop)] <- d$CompPop2[is.na(d$CompPop)] 
-d <- d %>% subset(., select = -c(compound_wealth, compElec2, compAnyAnimal2, CompPop2))
+
+
 
 table(d$study, ntile(d$povNormal,4))
+#Why is there missingness?
+ids <- unique(d$clusterid[is.na(d$povNormal)])
 
+table(ids %in% child$clusterid )
+child$povNormal[child$clusterid %in% ids]
+
+#Make sure I'm using the right merging here. 
 
 
 #rename variables to standardize
@@ -478,11 +511,11 @@ saveRDS(d, file=paste0(dropboxDir,"Data/MapSan/mapsan_cleaned.rds"))
 df <- d %>% filter(type=="ls",target=="HF183")
 df$hhwealth=factor(quantcut(df$hhwealth, na.rm=T), labels=c("1","2","3","4"))
 
-res2 <- glm(haz ~ hhwealth, data=df)
-summary(res2)
-
-res_pos <- glm(pos ~ factor(ntile(hhwealth,4)), data=d, family="binomial")
-summary(res_pos)
+# res2 <- glm(haz ~ hhwealth, data=df)
+# summary(res2)
+# 
+# res_pos <- glm(pos ~ factor(ntile(hhwealth,4)), data=d, family="binomial")
+# summary(res_pos)
 
 #Split out just env data and covariates
 colnames(d)
@@ -491,6 +524,9 @@ env_clean <- d %>% subset(., select = c(study, env_date,sampleid, clusterid, tr,
   effort, pos, abund_only_detect, abund, qual, censored, momedu,
   Nhh, hhwealth, nrooms, walls, floor, elec, season, compAnyAnimal, studyArm_binary
 )) 
+
+
+
 
 
 #Subset to hh-level observations
@@ -518,6 +554,6 @@ df <- env_clean %>% group_by(sampleid, sample) %>% summarise(N=length(unique(tr)
   
 table(is.na(env_clean$abund),is.na(env_clean$qual)) 
 
-res3 <- glm(pos ~ factor(ntile(hhwealth,4)), data=env_clean)
-summary(res3)
+# res3 <- glm(pos ~ factor(ntile(hhwealth,4)), data=env_clean)
+# summary(res3)
   

@@ -9,6 +9,9 @@ d <- droplevels(d)
 table(d$study, d$pos)
 table(d$study)
 table(d$study, d$hhwealth)
+for(i in unique(d$study)){
+  print(summary(d$hhwealth_cont[d$study==i]))
+}
 table(d$study, d$sample, d$pos)
 
 d <- d %>% filter(sample!="FP") %>% droplevels()
@@ -34,14 +37,14 @@ Wvars_anthro = c("sex","age_anthro","hfiacat","momage","hhwealth", "Nhh","nrooms
 # Unadjusted RR
 #-----------------------------------
 
-# outcome="diar7d"
-# exposure="pos"
-# study="Fuhrmeister 2020"
-# sample="any sample type"
-# target= "Any animal MST"
-# family="binomial"
-# forcedW=c("age", "hhwealth")
-# Ws=Wvars
+outcome="diar7d"
+exposure="pos"
+study="Holcomb 2020"
+sample="any sample type"
+target= "Any MST"
+family="binomial"
+forcedW=c("age", "hhwealth")
+Ws=Wvars
 
 
 fullres <- NULL

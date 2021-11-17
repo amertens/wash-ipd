@@ -18,8 +18,6 @@ env <- env %>% mutate(
 env <- env %>% filter(trial == "MapSan") %>% droplevels(.)
 table(env$study, env$sample)
 
-res <- glm(pos~hhwealth, family="binomial", data=env)
-summary(res)
 
 
 #temporarily combine capone
@@ -73,11 +71,13 @@ hol_bl <- env %>% filter(study=="Holcomb 2020", round=="bl")
 hol_ml <- env %>% filter(study=="Holcomb 2020", round=="ml") 
 
 
+
+
 #Function to split data by hh versus compound samples
 unique(env$sample)
 
-env = cp_el
-ch = ch_el %>% subset(., select = -c(haz, whz, waz, round))
+env = hol_bl 
+ch = ch_ml %>% subset(., select = -c(diar7d, round))
 
 
 merge_ch <- function(env, ch){
@@ -86,15 +86,15 @@ merge_ch <- function(env, ch){
   env_compound <- env %>% filter(sample %in% c("LS","Fly","SW","any sample type")) %>% subset(., select = -c(hhid))
   env_hh <- env %>% filter(sample %in% c("S","MH", "CH", "W" ))
   
-  d_compound <- full_join(env_compound, ch, by = c("trial","dataid","clusterid"))
+  d_compound <- left_join(env_compound, ch, by = c("trial","dataid","clusterid"))
   d_hh <- NULL
   if(nrow(env_hh)>0){
-    d_hh <- full_join(env_hh, ch, by = c("trial","dataid","clusterid", "hhid"))
+    d_hh <- left_join(env_hh, ch, by = c("trial","dataid","clusterid", "hhid"))
   }
   #table(d_hh$study, d_hh$sample)
   
   d<-bind_rows(d_compound,d_hh)
-  d <- d %>% filter(!is.na(sample), !is.na(ch_data))
+  #d <- d %>% filter(!is.na(sample), !is.na(ch_data))
   return(d)
 }
 
@@ -109,7 +109,7 @@ cp_diar_bl <- merge_ch(cp_bl, ch_bl %>% subset(., select =  -c(haz, whz, waz, ro
 cp_diar_ml <- merge_ch(cp_ml, ch_ml %>% subset(., select =  -c(haz, whz, waz, round))) %>% mutate(round="ml") %>% filter(!is.na(diar7d),!is.na(pos))
 cp_diar_el <- merge_ch(cp_el, ch_el %>% subset(., select =  -c(haz, whz, waz, round))) %>% mutate(round="el") %>% filter(!is.na(diar7d),!is.na(pos))
 
-hol_anthro_bl <- merge_ch(hol_bl, ch_ml %>% subset(., select = -c(diar7d, round))) %>% mutate(round="bl") %>% filter(!is.na(haz)|!is.na(waz)|!is.na(whz),!is.na(pos))
+hol_anthro_bl <- merge_ch(hol_bl, ch_ml %>% subset(., select = -c(diar7d, round))) %>% mutate(round="bl") #%>% filter(!is.na(haz)|!is.na(waz)|!is.na(whz),!is.na(pos))
 hol_anthro_ml <- merge_ch(hol_ml, ch_el %>% subset(., select = -c(diar7d, round))) %>% mutate(round="ml") %>% filter(!is.na(haz)|!is.na(waz)|!is.na(whz),!is.na(pos))
 
 hol_diar_bl <- merge_ch(hol_bl, ch_bl %>% subset(., select =  -c(haz, whz, waz, round))) %>% mutate(round="bl") %>% filter(!is.na(diar7d),!is.na(pos))
@@ -120,9 +120,146 @@ table(hol_bl$hhwealth)
 table(cp_diar_bl$hhwealth)
 table(hol_diar_bl$hhwealth)
 
+
+# df <- hol_anthro_bl %>% distinct(childid, hhid, age, haz, hhwealth_cont) %>% filter(!is.na(haz), !is.na(hhwealth_cont))
+# dim(df)
+df <- hol_anthro_bl %>% filter(sample %in% c( "S" )) %>% distinct(childid, hhid, age, haz, .keep_all = T) %>% filter(!is.na(haz), !is.na(hhwealth_cont)) %>% select(childid, hhid, age, haz, hhwealth_cont)
+dim(df)
+
+
+child_full <- read.csv(paste0(dropboxDir,"Data/MapSan/triPhase_database_20200824 1412_IPD.csv"))%>% 
+  rename(childid=ï..totchildID, clusterid=compID, hhid=totHHid)
+child <- read.csv(paste0(dropboxDir,"Data/MapSan/triPhase_database_20200824 1412_IPD.csv")) %>%
+  filter(actualPhase==1)  %>% filter(!is.na(anthro_hfa_2), !is.na(povNormal))  %>% 
+  rename(childid=ï..totchildID, clusterid=compID, hhid=totHHid)
+
+child <- child %>% distinct(childid, hhid, age_months, anthro_hfa_2, povNormal)
+dim(child)
+head(child)
+child$hhwealth=factor(quantcut(child$povNormal, na.rm=T), labels=c("1","2","3","4"))
+dim(child)
+res <- glm(anthro_hfa_2 ~ povNormal, data=child)
+summary(res)
+
+child2 <- child[child$hhid %in% unique(df$hhid), ]
+dim(child2)
+unique(df$hhid[!(df$hhid %in% child2$hhid)])
+unique(df$hhid[!(child2$hhid %in% df$hhid)])
+
+length(unique(df$hhid))
+length(unique(child2$hhid))
+
+df <- df %>% arrange(hhid)
+child2 <- child2 %>% arrange(hhid)
+
+df[df$childid==21110101,]
+child2[child2$childid==21110101,]
+child_full <- child_full %>% select(childid, clusterid, hhid, actualPhase , age_months, povNormal, anthro_hfa_2, ch_surveydate_coarsed  )
+child_full[child_full$childid==21110101,]
+child_full[child_full$hhid ==211101,]
+
+
+dim(child2)
+dim(df)
+
+res <- glm(anthro_hfa_2 ~ povNormal, data=child2)
+summary(res)
+res2 <- glm(haz~hhwealth_cont, data=df)
+summary(res2)
+
+head(df)
+
+#Why are these diff? The PovNormal should not be summarized for soil
+
+summary(child2$anthro_hfa_2)
+summary(df$haz)
+summary(child2$povNormal)
+summary(df$hhwealth_cont)
+
+df[df$hhid==203301,]
+
+
 cp_df <- bind_rows(cp_anthro_bl, cp_anthro_ml, cp_anthro_el, cp_diar_bl, cp_diar_ml, cp_diar_el)
 hol_df <- bind_rows(hol_anthro_bl, hol_anthro_ml, hol_diar_bl, hol_diar_ml)
 d <- bind_rows(cp_df, hol_df)
+
+
+#------------------------------
+# Check merging
+#------------------------------
+
+dim(ch_bl)
+#res_before_ch <- glm(haz~age, family="gaussian", data=ch_bl)
+res_before_ch <- glm(haz~age, family="gaussian", data=ch_ml)
+res_before_env <- glm(pos~hhwealth, family="binomial", data=hol_bl)
+
+
+summary(res_before_ch)
+summary(res_before_env)
+
+res_after_hhwealth <- glm(pos~hhwealth, family="binomial", data=hol_anthro_bl)
+summary(res_after_hhwealth)
+
+dim(ch_bl)
+df <- hol_anthro_bl %>% filter(sample=="S", target=="Human (HF183)", round=="bl")
+dim(df)
+res_after_age<- glm(haz~age, family="gaussian", data=df)
+summary(res_after_age)
+
+#Why are the hh_wealth different? 
+
+
+head(df)
+df2 <- df %>% select(dataid,hhid,childid)
+df2 <- left_join(df2, ch_ml, by=c("dataid","hhid","childid")) 
+dim(df2)
+head(df2)
+
+res_after_age<- glm(haz~age, family="gaussian", data=df2)
+summary(res_after_age)
+summary(ch_ml$age)
+summary(df$age)
+summary(df2$age)
+cor.test(df$age, df$haz)
+cor.test(df2$age, df2$haz)
+cor.test(ch_ml$age, ch_ml$haz)
+
+
+child <- read.csv(paste0(dropboxDir,"Data/MapSan/triPhase_database_20200824 1412_IPD.csv"))
+child <- child %>% rename(childid=ï..totchildID, clusterid=compID, hhid=totHHid, haz=anthro_hfa_2, hhwealth_cont=povNormal)
+child$hhwealth=factor(quantcut(child$hhwealth_cont, na.rm=T), labels=c("1","2","3","4"))
+child$hhwealth = fct_explicit_na(child$hhwealth, na_level = "Missing")
+child <- child %>% filter(!is.na(haz), !is.na(hhwealth))
+dim(child)
+res <- glm(haz ~ hhwealth, data=child)
+summary(res)
+
+#smaller sample size, but this seems completely random in results compared to the child dataset
+df_ch <- d %>% distinct(dataid,hhid,childid, haz, round, hhwealth, hhwealth_cont, age, env_date, child_date)%>% filter(!is.na(haz), !is.na(hhwealth))
+dim(df_ch)
+res <- glm(haz ~ hhwealth, data=df_ch)
+summary(res)
+
+#To do: look at specific children
+childid <- unique(df2$childid)[2]
+df[df$childid %in% childid, ] %>% subset(., select = c(childid, haz, hhwealth, hhwealth_cont, round, age))
+child[child$childid %in% childid, ] %>% subset(., select = c(childid, haz, hhwealth,hhwealth_cont, actualPhase,age_months ))
+df_ch[df_ch$childid %in% childid, ] 
+
+
+child[child$childid %in% childid, ]
+
+#childid 20420102 has hhwealth==2 in the child dataset, 1 in the hol_anthro_bl dataset
+#note check if the continious wealth score is the same
+#update to use the continious wealth score as more info?
+
+#why is hhwealth variable by child?
+
+# XXXXXXXXXXXXXXXXXXXXXXXXXX
+# Why are all the child ID's not in the child dataset?
+#but also there is not an alignment between hhwealth and haz between the two datasets
+# XXXXXXXXXXXXXXXXXXXXXXXXXX
+
 
 # #d <- full_join(env, ch, by = c("trial","dataid","clusterid"))
 # env_compound <- env %>% filter(sample %in% c("LS","FlyLat","FlyKitch","SW","any sample type")) %>% subset(., select = -c(hhid))
