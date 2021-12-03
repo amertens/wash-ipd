@@ -21,27 +21,46 @@ env_wbk <- env %>% filter(trial == "WBK") %>% droplevels(.)
 
 wbk_diar <- read.csv(paste0(dropboxDir, "Data/WBK/washb-kenya-diar.csv"))
 wbk_anthro <- read_dta(paste0(dropboxDir, "Data/WBK/washb-kenya-anthro.dta"))
-wbk_sth <- read_dta(paste0(dropboxDir, "Data/WBK/parasites_kenya_public_ca20171215.dta"))
+#wbk_sth <- read_dta(paste0(dropboxDir, "Data/WBK/parasites_kenya_public_ca20171215.dta"))
+
+#load clean dataset from the diarhhea-pathogen analysis
+wbk_sth <- readRDS(paste0(dropboxDir, "Data/WBK/clean_wbk_sth_pathogens.rds"))
+colnames(wbk_sth)
+
+wbk_sth <- wbk_sth %>%
+  subset(., select = c(childid, aged, sex,  asca_intensity,
+                       tric_intensity,    hook_intensity,ascaris_yn,        trichuris_yn,     
+                       hook_yn,           sth_yn,            giardia_yn,        sth_coinf,        
+                       sth_giar_coinf,    qpcr_Ascaris,      qpcr_Trichuris,    qpcr_Necator,     
+                       qpcr_Ancylostoma,  qpcr_Strongyloides)) %>% 
+            filter(!is.na(sth_yn) | !is.na(giardia_yn) | !is.na(qpcr_Ascaris) | !is.na(qpcr_Trichuris) | !is.na(qpcr_Necator) | !is.na(qpcr_Ancylostoma) | !is.na(qpcr_Strongyloides))
 
 
 
 #Need to get date of WBK sth collection
 #convert wbk_sth to real IDs
+colnames(wbk_sth)
 wbk_sth <- wbk_sth %>%
-  mutate(hhid=hhidr2/10 - 3252,
-         childid=childidr2/10 - 3252,
-         studyyear=2)
+  mutate(childid=childid/10 - 3252) %>%
+  rename(ch_asca_intensity=asca_intensity, 
+         ch_tric_intensity=tric_intensity, 
+         ch_hook_intensity=hook_intensity,
+         ch_ascaris=ascaris_yn, 
+         ch_trichuris=trichuris_yn, 
+         ch_hook=hook_yn, 
+         ch_sth=sth_yn, 
+         ch_giardia=giardia_yn, 
+         ch_sth_coinf=sth_coinf, 
+         ch_sth_giar_coinf=sth_giar_coinf,
+         aged_pathogen = aged)
+  
+
+
 
 colnames(wbk_diar)
 wbk_diar <- wbk_diar %>% 
   mutate(child_date=dmy(DOB)+aged, compoundid=floor(hhid/10)) %>% filter(!is.na(child_date)) %>%
   subset(., select =c("childid","child_date","hhid","compoundid","clusterid","studyyear","aged","sex","tr","diar7d")) 
-# wbk_sth <- wbk_sth %>% subset(., select =c("childid","studyyear","hhid","compoundid","deworm6m","soilw",
-#                                            "wearing_shoes","sameday_defecation", "asca_epg","asca_intensity","asca_intensity_cat",
-#                                            "tric_epg","tric_intensity","tric_intensity_cat", "hook_epg","hook_intensity",
-#                                            "hook_intensity_cat", "ascaris_yn","trichuris_yn","hook_yn","sth_yn",
-#                                            "giardia_yn","sth_coinf","sth_giar_coinf")) 
-
 
 colnames(wbk_anthro)
 wbk_anthro <- wbk_anthro %>% 
@@ -60,19 +79,31 @@ wbk <- full_join(wbk_diar, wbk_anthro, by=c("childid","compoundid","studyyear"))
 wbk <- wbk %>% filter(studyyear==2, !is.na(diar7d)|!is.na(laz)|!is.na(waz)|!is.na(whz)) %>% 
   subset(., select = -c(studyyear)) %>% mutate(ch_data=1)
 head(wbk)
-# dim(wbk_sth)
-# dim(wbk)
-# wbk <- full_join(wbk, wbk_sth, by=c("childid","hhid", "studyyear"))
-# dim(wbk)
 
+dim(wbk_sth)
+dim(wbk)
+wbk <- full_join(wbk, wbk_sth, by=c("childid","sex"))
+dim(wbk)
 
-wbk <- wbk %>% mutate(trial="WBK") %>%
+#Need to get date of WBK sth collection
+wbk <- wbk %>% group_by(childid) %>% 
+  mutate(dob = child_date-aged,
+         #dob = ifelse(is.na(dob), dmy(child_date_anthro - age_anthro), dob),
+         child_date_pathogen = dob + aged_pathogen)
+wbk$dob
+class(wbk$dob)
+class(wbk$child_date)
+head(wbk)
+table(is.na(wbk$child_date_pathogen), is.na(wbk$aged_pathogen))
+
+ch <- wbk %>% mutate(trial="WBK") %>%
   rename(dataid=compoundid,
          age=aged,
-         haz=laz)
+         haz=laz) %>%
+  subset(., select = -c(tr))
 table(is.na(wbk$child_date))
 
-ch <- wbk %>% subset(., select = c(trial, clusterid, dataid, hhid, childid, sex,age,age_anthro,child_date, child_date_anthro, diar7d, haz, whz, waz,ch_data))
+
 
 
 wbk_res <- data.frame(
@@ -83,10 +114,14 @@ wbk_res <- data.frame(
   haz_samples_before_merge = nrow(ch %>% filter(!is.na(haz)) %>% ungroup() %>% distinct(dataid, hhid, child_date, age,    sex, childid, haz))
 )
 
+
+
+
 dim(env_wbk)
 dim(ch)
 d <- full_join(env_wbk, ch, by = c("trial","hhid","dataid","clusterid")) %>% filter(!is.na(sample), !is.na(ch_data))
 dim(d)
+colnames(d)
 
 wbk_res$env_samples_after_merge <- nrow(d %>% do(drop_agg(.)) %>% distinct(sampleid, dataid,  hhid, clusterid,sample, round))
 wbk_res$env_HH_after_merge <- nrow(d %>% do(drop_agg(.)) %>% distinct(dataid,  hhid, clusterid))
@@ -107,7 +142,15 @@ date_diff <- d %>% mutate(date_diff = child_date-env_date) %>% select(study, sam
 d <- d %>%
   mutate(diar7d = ifelse(child_date<env_date, NA, diar7d),
          diar7d = ifelse(child_date-env_date > 124, NA, diar7d),
-         diar7d = ifelse(is.na(child_date)|is.na(env_date), NA, diar7d))
+         diar7d = ifelse(is.na(child_date)|is.na(env_date), NA, diar7d),
+         pathogen_date_flag = ifelse((as.numeric(child_date_pathogen - env_date) <= 124 & (as.numeric(child_date_pathogen - env_date) > 0)) ,1,0))
+summary(as.numeric(d$child_date_pathogen - d$env_date))
+table(as.numeric(d$child_date_pathogen - d$env_date)>0)
+table(as.numeric(d$child_date_pathogen - d$env_date)<=124)
+d$child_date_pathogen - d$env_date <= 124
+table(is.na(d$child_date_pathogen))
+table(is.na(d$pathogen_date_flag))
+
 
 d <- d %>%
   mutate(haz = ifelse(child_date_anthro<env_date, NA, haz),

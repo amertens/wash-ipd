@@ -21,8 +21,15 @@ table(adj_RR$a)
 table(adj_RR$c)
 table(adj_RR$a+adj_RR$c)
 
+summary(adj_RR$RR)
+adj_RR$ci.lb[adj_RR$RR < 0.05 & !is.na(adj_RR$RR)] <- NA
+adj_RR$ci.ub[adj_RR$RR < 0.05 & !is.na(adj_RR$RR)] <- NA
+adj_RR$sparse[adj_RR$RR < 0.05 & !is.na(adj_RR$RR)] <- "yes"
+adj_RR$sample_cat[adj_RR$RR < 0.05 & !is.na(adj_RR$RR)] <- "Sparse data"
+adj_RR$RR[adj_RR$RR < 0.05 & !is.na(adj_RR$RR)] <- 1
 
 
+sample_cat
 # adj_RR$sparse[adj_RR$Y=="diar7d" & adj_RR$n < 20] <- "yes"
 # adj_RR$RR[adj_RR$Y=="diar7d" & adj_RR$n < 20] <- NA
 # adj_RR$ci.lb[adj_RR$Y=="diar7d" & adj_RR$n < 20] <- NA
@@ -90,7 +97,7 @@ base_plot <- function(mydf, legend_labels=sample_cats, drop_full_sparse=F){
   geom_point(size=3, position = position_dodge(0.5), alpha=0.75) +
     geom_errorbar(aes(ymin=ci.lb, ymax=ci.ub), position = position_dodge(0.5),
                   width = 0.3, size = 1) +
-    geom_text(aes(label=N_W), color="black", position = position_dodge(0.5)) +
+    #geom_text(aes(label=N_W), color="black", position = position_dodge(0.5)) +
     scale_color_manual(breaks = legend_labels,
       values = colours, drop = FALSE) +
     scale_shape_manual(values=c(16, 13,18), guide=FALSE) + 
@@ -106,8 +113,8 @@ base_plot <- function(mydf, legend_labels=sample_cats, drop_full_sparse=F){
     theme(axis.ticks.x=element_blank(),
           legend.position = "bottom",
           strip.placement = "outside",
-          strip.text.x = element_text(size=11, face = "bold"),
-          strip.text.y = element_text(size=11, angle = 270, face = "bold"),          plot.title = element_text(hjust = 0.5, face = "plain", size=9),
+          strip.text.x = element_text(size=10, face = "bold"),
+          strip.text.y = element_text(size=10, angle = 270, face = "bold"),          plot.title = element_text(hjust = 0.5, face = "plain", size=9),
           panel.spacing = unit(0, "lines")) 
 }
 
@@ -138,7 +145,7 @@ base_plot_diff <- function(mydf, legend_labels=sample_cats, drop_full_sparse=F){
     geom_point(size=3, position = position_dodge(0.5), alpha=0.75) +
     geom_errorbar(aes(ymin=ci.lb, ymax=ci.ub), position = position_dodge(0.5),
                   width = 0.3, size = 1) +
-    geom_text(aes(label=N_W), color="black", position = position_dodge(0.5)) +
+    #geom_text(aes(label=N_W), color="black", position = position_dodge(0.5)) +
     scale_color_manual(breaks = legend_labels,
                        values = colours, drop = FALSE) +
     scale_shape_manual(values=c(16, 13,18), guide=FALSE) + 
@@ -150,8 +157,8 @@ base_plot_diff <- function(mydf, legend_labels=sample_cats, drop_full_sparse=F){
     theme(axis.ticks.x=element_blank(),
           legend.position = "bottom",
           strip.placement = "outside",
-          strip.text.x = element_text(size=11, face = "bold"),
-          strip.text.y = element_text(size=11, angle = 270, face = "bold"),          plot.title = element_text(hjust = 0.5, face = "plain", size=9),
+          strip.text.x = element_text(size=10, face = "bold"),
+          strip.text.y = element_text(size=10, angle = 270, face = "bold"),          plot.title = element_text(hjust = 0.5, face = "plain", size=9),
           panel.spacing = unit(0, "lines")) 
 }
 
@@ -178,6 +185,7 @@ p_diar_1_unadj <- unadj_RR %>%
 p_diar_1_adj <- adj_RR %>% 
   filter(target %in% c("Any pathogen","Any MST"), Y=="diar7d") %>%
   base_plot(drop_full_sparse=T)
+p_diar_1_adj
 
 p_haz_1 <- unadj_RR %>% 
   filter(target %in% c("Any pathogen","Any MST"), Y=="haz") %>%

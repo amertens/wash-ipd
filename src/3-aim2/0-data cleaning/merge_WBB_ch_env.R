@@ -14,28 +14,163 @@ env <- env %>% mutate(
                     study=="Reese 2017" ~ "Gram Vikas",
                     study=="Odagiri 2016" ~ "Odisha")) 
 
+
 env_wbb <- env %>% filter(trial == "WBB", !is.na(pos)) %>% droplevels(.)
 
 table(env_wbb$study)
 
+#Subset to HHID covariates
+colnames(env_wbb)
+cov <- env_wbb %>% distinct(dataid, clusterid, hhid, Nhh,          momage,      
+                      momedu,       dadagri,      landown,      landacre,     hfiacat,      
+                     watmin,       floor,       hhwealth_cont,roof,         elec,         walls,        nrooms)     
+head(cov)
 
+cov$hhwealth=factor(quantcut(cov$hhwealth_cont, na.rm=T), labels=c("1","2","3","4"))
+cov$hhwealth <- factor(cov$hhwealth, labels=c("1","2","3","4"))
+cov$hhwealth = fct_explicit_na(cov$hhwealth, na_level = "Missing")
+
+
+env_wbb <- env_wbb %>% subset(., select = -c(Nhh,          momage,      
+                                momedu,       dadagri,      landown,      landacre,     hfiacat,      
+                                watmin,       floor,       hhwealth_cont,roof,         elec,         walls,        nrooms))
 
 wbb <- readRDS(paste0(dropboxDir, "Data/WBB/Clean/WBB_child_health.RDS")) %>% 
   rename(haz=laz) %>%
   mutate(trial="WBB",
          aged=agedays
   )
-table(wbb$study)
-table(env_wbb$study)
 
-head(wbb)
+#load clean dataset from the diarhhea-pathogen analysis
+wbb_sth <- readRDS(paste0(dropboxDir, "Data/WBB/clean/clean_wbb_sth_pathogens.rds"))
+# and the public conversion IDs
+IDs <- read.csv(paste0(dropboxDir, "Data/WBB/public-ids.csv"))
+wbb_sth <- wbb_sth %>% rename(block_r=block,	clusterid_r=clusterid,	dataid_r=dataid)
+wbb_sth <- left_join(wbb_sth, IDs, by = c("block_r",	"clusterid_r",	"dataid_r"))
+head(wbb_sth)
+
+colnames(wbb_sth)
+
+table(wbb_sth$hhid)
+
+wbb_sth <- wbb_sth %>% subset(., select = c(
+  dataid,hhid,childid, svyweek, svyyear, sex,             agedays,         
+  clusterid,       logalepg,        loghwepg,        
+  logttepg,       posgi,           poseh,           poscr,           
+  posprot,         posmult,         ctgi,            cteh,            
+  ctcr,            qpcr.positive.Ac,qpcr.positive.Ad,qpcr.positive.Al,
+  qpcr.positive.IAC,qpcr.positive.Na,qpcr.positive.Ss,qpcr.positive.Tt,
+  qpcr.positive.Hw,qpcr.positive.Sth,qpcr.CTmean.Ac,  qpcr.CTmean.Ad,  
+  qpcr.CTmean.Al,  qpcr.CTmean.IAC, qpcr.CTmean.Na,  qpcr.CTmean.Ss,  
+  qpcr.CTmean.Tt)) %>% 
+  filter(!is.na(logalepg) | !is.na(loghwepg) | !is.na(logttepg) | 
+           !is.na(posgi) | !is.na(poseh) | !is.na(poscr) | !is.na(posprot) | 
+        !is.na(posmult) | !is.na(qpcr.positive.Ac) | !is.na(qpcr.positive.Ad) |
+          !is.na(qpcr.positive.Al) | !is.na(qpcr.positive.IAC) | !is.na(qpcr.positive.Na) |   
+          !is.na(qpcr.positive.Ss) | !is.na(qpcr.positive.Tt) | !is.na(qpcr.positive.Sth))  %>%
+  rename(#ch_ascaris=ascaris_yn, 
+         # ch_trichuris=trichuris_yn, 
+         # ch_hook=hook_yn, 
+         # ch_sth=sth_yn, 
+         # ch_giardia=posgi, 
+         # ch_sth_giar_coinf=posmult,
+         aged_pathogen = agedays) %>%
+  mutate(month=ceiling(svyweek/52*12),
+    pathogen_date = dmy(paste0("15-",month, "-", svyyear))) %>%
+  subset(., select = -c(month))  %>% 
+  subset(., select = -c(posmult,
+                                                           loghwepg,
+                                                           qpcr.CTmean.Na, #don't have hookworm in soil
+                                                           qpcr.CTmean.Ad,
+                                                           qpcr.positive.Ad,
+                                                           qpcr.positive.Na,
+                                                           qpcr.positive.Hw,
+                                                           qpcr.positive.Sth,
+                                                           qpcr.CTmean.Ss, #no threadworm
+                                                           qpcr.positive.Ss,
+                                                           qpcr.positive.Ac, #Figure out what Ac and IAC are  
+                                                           qpcr.positive.IAC,  
+                                                           qpcr.CTmean.Ac,      
+                                                           qpcr.CTmean.IAC)) %>%
+  rename(
+    ch_abund_ascaris=logalepg,
+    ch_abund_trichuris=logttepg,
+    ch_pos_giardia=posgi,
+    ch_pos_entamoeba=poseh,
+    ch_pos_crypto=poscr,
+    ch_abund_giardia=ctgi,
+    ch_abund_entamoeba=cteh,
+    ch_abund_crypto=ctcr,
+    ch_qpcr_pos_trichuris=qpcr.positive.Tt,
+    ch_qpcr_abund_trichuris=qpcr.CTmean.Tt,
+    ch_qpcr_pos_ascaris=qpcr.positive.Al,
+    ch_qpcr_abund_ascaris=qpcr.CTmean.Al) %>%
+  mutate(ch_pos_ascaris = 1*(ch_abund_ascaris>0), 
+         ch_pos_trichuris = 1*(ch_abund_trichuris>0))
+
+summary(wbb_sth$pathogen_date)
+          
 head(env_wbb)
+head(wbb_sth)
 
-table(wbb$round)
-table(is.na(wbb$round))
+#--------------------------------------------------------------
+# Clean TAC data to pathogens in the environment
+#--------------------------------------------------------------
+EE_TAC <- readRDS(paste0(dropboxDir,"Data/WBB/data.UVA.relativeCt_spikeinAdjusted_Caitlin.RDS"))
+EE_TAC$ETEC_ST
 
-table(env_wbb$round)
-table(is.na(env_wbb$round))
+EE_TAC <- EE_TAC %>% 
+  mutate(ch_pos_path_ecoli=1*(ETEC_LT+EAEC+ETEC_ST+ETEC.any +tEPEC+ aEPEC+ EPEC.any+STEC > 0),
+         ch_pos_adenovirus=1*(`Adenovirus 40/41` +  `Adenovirus pan`> 0)) %>%
+  rename(ch_abund_giardia_EE=Giardia,
+         ch_abund_norovirus=Norovirus.any,
+         ch_abund_crypto_EE =Cryptosporidium,
+         ch_abund_salmonella=Salmonella,
+         ch_abund_ascaris_EE=Ascaris,
+         ch_abund_trichuris_EE=Trichuris,
+         ch_abund_entamoeba_EE=E.histolytica,
+         ch_abund_cholera=V.cholerae,
+         ch_abund_cdiff=C.difficile,
+         ch_abund_shigella=Shig_EIEC,
+         ch_abund_rotavirus=Rotavirus,
+         ch_abund_campylobacter=Campy.pan) %>%
+  mutate(
+    ch_pos_giardia_EE=1*(ch_abund_giardia_EE> 0),
+    ch_pos_norovirus=1*(ch_abund_norovirus> 0),
+    ch_pos_crypto_EE =1*(ch_abund_crypto_EE> 0),
+    ch_pos_salmonella=1*(ch_abund_salmonella> 0),
+    ch_pos_ascaris_EE=1*(ch_abund_ascaris_EE> 0),
+    ch_pos_trichuris_EE=1*(ch_abund_trichuris_EE> 0),
+    ch_pos_entamoeba_EE=1*(ch_abund_entamoeba_EE> 0),
+    ch_pos_cholera=1*(ch_abund_cholera> 0),
+    ch_pos_cdiff=1*(ch_abund_cdiff> 0),
+    ch_pos_shigella=1*(ch_abund_shigella> 0),
+    ch_pos_rotavirus= 1*(ch_abund_rotavirus> 0),
+    ch_pos_campylobacter=1*(ch_abund_campylobacter> 0)
+  ) %>%
+  subset(., select = -c(ETEC_LT,EAEC,ETEC_ST,ETEC.any,tEPEC, aEPEC, EPEC.any,STEC,Ancyclostoma,Necator,E.bieneusi,
+                        Blastocystis,Plesiomonas,Aeromonas,PhHV,MS2,Schistosoma,H.nana,`Adenovirus 40/41`, `Adenovirus pan`,
+                        Cyclospora, Isospora, H.pylori, Sapovirus, `Cryptosporidium hominis`, `Cryptosporidium parvum`,
+                        E.intestinalis,`pan Entamoeba`, Astrovirus, Strongyloides, M.tuberculosis, `Norovirus GI`, `Norovirus GII`,
+                        B.fragilis, `Campylobacter jejuni/coli`))
+colnames(EE_TAC)
+
+
+#get midline stool dates from ee dataset and merge in
+EEdates <- read.csv("C:/Users/andre/Dropbox/WASHB-EE-analysis/WBB-EE-analysis/Data/Cleaned/Andrew/BD-EE-stool.csv")
+EEdates <- EEdates %>% subset(., select = c(childid, date2)) %>% 
+  rename(child_date_pathogen=date2) %>% mutate(child_date_pathogen=dmy(child_date_pathogen)) %>%
+  filter(!is.na(child_date_pathogen))
+
+#merge:
+dim(EE_TAC)
+dim(EEdates)
+EE_TAC<-left_join(EE_TAC, EEdates, by = c("childid")) %>% filter(!is.na(child_date_pathogen))
+dim(EE_TAC)
+head(EE_TAC)
+
+
+
 
 #Merge WBB based on sampling round
 
@@ -85,29 +220,17 @@ dim(diar_fuhr)
 ch_fuhr <- full_join(diar_fuhr, anthro_fuhr, by = c("study","dataid","clusterid", "childid", "hhid","block","merge_round","sex","momage","hfiacat")) %>% filter(!(is.na(diar7d) & is.na(haz) & is.na(waz) & is.na(whz))) %>%
   distinct(study, dataid, clusterid, childid, merge_round, .keep_all = T)
 dim(ch_fuhr)
+colnames(ch_fuhr)
 table(1*!is.na(ch_fuhr$diar7d), !is.na(ch_fuhr$haz))
 
-
-# dim(env_fuhr)
-# dim(diar_fuhr)
-# diar_env_fuhr <- full_join(env_fuhr, diar_fuhr, by = c("study","dataid","clusterid", "hhid","merge_round","momage","hfiacat")) %>% filter(!is.na(pos)) %>% arrange(sampleid, dataid,clusterid, hhid,childid, merge_round)
-# #diar_env_fuhr <- left_join(env_fuhr, diar_fuhr, by = c("dataid","clusterid", "hhid","merge_round"))
-# colnames(diar_env_fuhr)
-# 
-# #Find env. samples without diarrhea 
-# temp <- anti_join(env_fuhr, diar_fuhr, by = c("study","dataid","clusterid", "hhid","merge_round","momage","hfiacat")) %>% filter(!is.na(pos)) %>% 
-#   distinct(study,dataid,clusterid, hhid,merge_round)
-# temp2 <- anti_join(env_fuhr, diar_fuhr, by = c("study","dataid","clusterid", "hhid","merge_round")) %>% filter(!is.na(pos)) %>% 
-#   distinct(study,dataid,clusterid, hhid,merge_round)
-# wbb %>% filter(dataid=="10802" & round %in% c(4,5))
-# temp2[1,]
 
 
 
 dim(env_fuhr)
 dim(ch_fuhr)
-#ch_env_fuhr <- full_join(env_fuhr, ch_fuhr, by = c("study","dataid","clusterid", "hhid","merge_round","sex","momage","hfiacat", "childid","block")) %>%  filter(!is.na(pos) & !(is.na(diar7d) & is.na(haz) & is.na(waz) & is.na(whz))) 
-ch_env_fuhr <- full_join(env_fuhr, ch_fuhr, by = c("study","dataid","clusterid", "hhid","merge_round","momage","hfiacat")) %>%  filter(!is.na(pos) & !(is.na(diar7d) & is.na(haz) & is.na(waz) & is.na(whz))) %>% distinct(.)
+#ch_env_fuhr <- full_join(env_fuhr, ch_fuhr, by = c("study","dataid","clusterid", "hhid","merge_round","sex", "childid","block")) %>%  filter(!is.na(pos) & !(is.na(diar7d) & is.na(haz) & is.na(waz) & is.na(whz))) 
+env_fuhr <- env_fuhr %>% subset(., select = -c(hhwealth))
+ch_env_fuhr <- full_join(env_fuhr, ch_fuhr, by = c("study","dataid","clusterid", "hhid","merge_round")) %>%  filter(!is.na(pos) & !(is.na(diar7d) & is.na(haz) & is.na(waz) & is.na(whz))) %>% distinct(.)
 #diar_env_fuhr <- left_join(env_fuhr, diar_fuhr, by = c("dataid","clusterid", "hhid","merge_round"))
 dim(ch_env_fuhr)
 colnames(ch_env_fuhr)
@@ -194,6 +317,7 @@ anthro_boehm <- wbb %>% filter(round == "midline", !is.na(haz)|!is.na(waz)|!is.n
 #Check diarrhea merging
 ch_boehm <- left_join(diar_boehm, anthro_boehm, by = c("study","dataid","clusterid", "childid", "round")) %>% filter(!(is.na(diar7d) & is.na(haz) & is.na(waz) & is.na(whz)))
 dim(ch_boehm)
+colnames(ch_boehm)
 
 #env <- env_boehm %>% filter(target=="Any pathogen", sample=="any sample type")
 env <- env_boehm %>% distinct(study,dataid,clusterid, round)
@@ -201,6 +325,7 @@ dim(diar_boehm)
 dim(env)
 diar_merge_boehm <- left_join(env, diar_boehm, by = c("study","dataid","clusterid", "round")) 
 dim(diar_merge_boehm)
+colnames(diar_merge_boehm)
 
 unique(env$dataid[!(env$dataid %in% diar_boehm$dataid)])
 unique(env$dataid[!(env$dataid %in% diar_boehm_full$pid)])
@@ -256,8 +381,7 @@ boehm_res <- data.frame(
 dim(env_boehm)
 dim(diar_boehm)
 
-
-ch_env_boehm <- full_join(env_boehm, ch_boehm, by = c("study","dataid","clusterid", "hhid","round","momage","hfiacat")) %>% filter(!is.na(pos)) %>% arrange(sampleid, dataid,clusterid, hhid,childid)
+ch_env_boehm <- full_join(env_boehm, ch_boehm, by = c("study","dataid","clusterid", "hhid","round")) %>% filter(!is.na(pos)) %>% arrange(sampleid, dataid,clusterid, hhid,childid)
 table(is.na(ch_env_boehm$haz))
 dim(ch_env_boehm)
 colnames(ch_env_boehm)
@@ -293,7 +417,7 @@ WBB_main_anthro <- WBB_main_health %>% filter(!is.na(laz)|!is.na(whz)|!is.na(waz
   rename(haz=laz, agedays_anthro=agedays)
 
 ch_kwong<- left_join(WBB_main_diar, WBB_main_anthro, by=c("block","dataid",  "hhid", "clusterid","childid","sex"))
-
+colnames(ch_kwong)
 
 #Tabulate N's before merge
 kwong_res <- data.frame(
@@ -359,13 +483,43 @@ kwong_res$haz_samples_date_dropped <- kwong_res$samples_with_haz_after_merge - n
 env_wbb <- bind_rows(ch_env_fuhr, ch_env_boehm, ch_env_kwong)
 head(env_wbb)
 
+#merge ch pathogens
+#wbb_sth$childid <- as.character(wbb_sth$childid)
+dim(wbb_sth)
+dim(env_wbb)
+env_wbb <- full_join(env_wbb, wbb_sth, by=c("dataid","hhid","childid","sex", "clusterid"))
+dim(env_wbb) #10444    
+
+colnames(env_wbb)
+table(env_wbb$qpcr.positive.Sth)
+
+
+dim(wbb_sth)
+dim(env_wbb)
+#EE_TAC$childid <- as.character(EE_TAC$childid)
+EE_TAC$dataid <- floor(EE_TAC$childid/10) 
+EE_TAC$childid <- "T1"
+env_wbb$dataid
+env_wbb <- full_join(env_wbb, EE_TAC, by=c("dataid","childid")) %>% filter(!is.na(pos))
+dim(env_wbb)  
+table(is.na(env_wbb$ch_pos_campylobacter))
+table((env_wbb$ch_pos_campylobacter))
+
+table(is.na(EE_TAC$child_date_pathogen), EE_TAC$ch_pos_path_ecoli)
+table(is.na(env_wbb$child_date_pathogen), env_wbb$ch_pos_path_ecoli)
+table(is.na(env_wbb$child_date_pathogen), env_wbb$ch_pos_path_ecoli, env_wbb$study)
+
+
+#merge in covariates
+env_wbb <- env_wbb %>% subset(., select = -c(hhwealth,momage,hfiacat))
+env_wbb <- left_join(env_wbb, cov, by=c("dataid", "hhid", "clusterid"))
+colnames(env_wbb)
+
 env_wbb %>% group_by(study) %>%
   summarize(N=n(), N_pos=sum(pos), N_diar=sum(!is.na(diar7d)), N_haz=sum(!is.na(haz)))
 
-
 env_wbb %>% group_by(study, sample, target) %>%
   summarize(N=n(), N_pos=sum(pos), N_diar=sum(!is.na(diar7d)), N_pos_diar=sum(diar7d==1, na.rm=T), N_pos_env_diar=sum(pos==1 & diar7d==1, na.rm=T), N_haz=sum(!is.na(haz)))
-
 
 saveRDS(env_wbb, file=paste0(dropboxDir,"Data/WBB_env_CH_data.rds"))
 
@@ -389,6 +543,4 @@ WBB_Ns <- WBB_Ns %>%
 saveRDS(WBB_Ns, file=paste0(here(),"/results/WBB_merge_Ns.rds"))
 saveRDS(date_diff, file=paste0(here(),"/results/WBB_date_diff.rds"))
 
-#Note!!! 
-#Need to get the Kwong numbers before dropping based on dates
-#And then get the numbers after dropping.
+colnames(env_wbb)

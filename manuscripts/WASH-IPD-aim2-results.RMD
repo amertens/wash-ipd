@@ -197,6 +197,11 @@ tab2 <- tab %>% filter(sample=="any sample type", target=="Any MST")
 
 load(here("figures/aim2_figures.Rdata"))
 load(here("figures/aim2_abund_figures.Rdata"))
+load(here("figures/aim2_covar_sig_figures.Rdata"))
+load(here("figures/aim2_tmle_figures.Rdata"))
+load(here("figures/aim2_pathogen_figures.Rdata"))
+
+
 
 
 gv_res <- readRDS(file=paste0(here(),"/results/gv_merge_Ns.rds"))
@@ -286,8 +291,6 @@ Adjusted HAZ difference for any pathogen presence in any environmental sample:
 
 ## Figures
 
-
-__Figure 1.__ Forest plots of intervention effects on the prevalence of any enteropathogen, and any MST markers in different types of environmental samples. Pooled estimates are presented when there are four or more study-specific estimates for a specific sample type and target combination and are denoted with diamond-shaped points. Grey crossed points denote data that were too sparse to estimate a prevalence ratio (i.e., <10 positive or negative observations). Samples of the same type from different locations (source vs. stored water, flies in kitchen vs. latrine, soil from courtyard vs. latrine) or different individuals (child vs. mother's hands) are plotted separately. All estimates are adjusted for potential confounders.
 
 
 
@@ -498,6 +501,11 @@ p_waz_1_adj
 p_underwt_1_adj
 ```
 
+#### Adjusted associations between pathogen-specific presence in environmental samples and pathogen-specific infections
+
+```{r, echo=F, warning=F, message=F, fig.width = 6.5, fig.height = 4}
+p_pathogen
+```
 
 #### Abundance
 
@@ -508,11 +516,35 @@ p_abund_haz
 ```
 
 
+#### TMLE comparison
+```{r, echo=F, warning=F, message=F, fig.width = 6.5, fig.height = 9}
+p_diar_1_adj_tmle
+p_haz_1_adj_tmle
+```
+
+#### Covariate tables
+
+
+```{r, echo=F, warning=F, message=F, fig.width = 6.5, fig.height = 9}
+
+
+p_fuhr
+p_boehm
+p_kwong
+p_stein
+p_holc
+p_cap1
+p_cap2
+p_reese
+p_odag
+
+```
+
+
 
 
 
 # Tables
-
 
 ## Data availability tables
 

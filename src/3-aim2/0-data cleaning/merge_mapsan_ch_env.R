@@ -15,24 +15,60 @@ env <- env %>% mutate(
                     study=="Reese 2017" ~ "Gram Vikas",
                     study=="Odagiri 2016" ~ "Odisha")) 
 
-env <- env %>% filter(trial == "MapSan") %>% droplevels(.)
+
+env <- env %>% filter(trial == "MapSan") %>% droplevels(.) %>%
+  subset(., select = -c(momage, momedu, hhwealth, hhwealth_cont,
+                        Nhh, nrooms, walls, floor, elec))
+
+colnames(env)
 table(env$study, env$sample)
 
+       
+head(env)
+table(env$Nhh)
 
-
-#temporarily combine capone
-#env$study[env$study=="Capone 2021 in prep"] <- "Capone 2021"
 
 ch <- readRDS(paste0(dropboxDir, "Data/MapSan/mapsan_child_cleaned.rds")) %>% mutate(trial="MapSan", dataid=clusterid)
-ch <- ch %>% subset(., select=c(trial, round,child_date,childid, female, age_months, dataid, hhid,clusterid, diar7d, haz,whz,waz)) %>%
+colnames(ch)
+
+#rename variables to standardize
+ch <- ch %>%
+  rename(
+    hhwealth=povNormal,
+    Nhh=Hhsize,
+    nrooms=hhrooms,
+    walls=hh_walls,
+    floor=hhCement,
+    elec=compElec )%>%
+  mutate(
+    dataid=clusterid,
+    momedu=case_when(ch_careEDUorig==0 ~"No education",
+                     ch_careEDUorig==1 ~"Incomplete Primary",
+                     ch_careEDUorig==2 ~"Primary",
+                     ch_careEDUorig==3 ~"Secondary",
+                     ch_careEDUorig==4 ~"Secondary",
+                     ch_careEDUorig==5 ~"More than secondary",
+                     ch_careEDUorig==6 ~"More than secondary",
+                     ch_careEDUorig==7 ~"More than secondary",
+                     is.na(ch_careEDUorig) ~"Missing"),
+    tr=ifelse(studyArm_binary==1,"Sanitation","Control"),
+    tr = factor(tr, levels = c("Control", "Sanitation"))
+  )
+
+ch <- ch %>% subset(., select=c(trial, round,child_date,childid, female, age_months, dataid, hhid,clusterid, diar7d, haz,whz,waz,
+                                Kkasc,
+                                KKtrc,
+                                KKhkw,
+                                gpp_aden, gpp_noro, gpp_rota, gpp_cdif,
+                                gpp_camp, gpp_o157, gpp_etec, gpp_salm,
+                                gpp_stec, gpp_shig, gpp_chol, gpp_yers,
+                                gpp_cryp, gpp_enta, gpp_giar,
+                                hhwealth, momedu, Nhh, nrooms, walls, floor, elec)) %>%
   rename(sex=female, age=age_months) %>% mutate(ch_data=1, agedays=age*30.4167, agedays_anthro=agedays)
 head(ch)
 table(ch$diar7d)
 
-table(env$study, env$round)
-table(env$study, env$sample, env$round)
 
-table(env$study, env$hhwealth)
 
 
 
@@ -98,9 +134,7 @@ merge_ch <- function(env, ch){
   return(d)
 }
 
-# cp_bl <- cp_bl %>% filter(sample=="any sample type", target=="Any pathogen")
-# dim(cp_bl)
-# dim(ch_ml)
+
 cp_anthro_bl <- merge_ch(cp_bl, ch_ml %>% subset(., select = -c(diar7d, round))) %>% mutate(round="bl") %>% filter(!is.na(haz)|!is.na(waz)|!is.na(whz),!is.na(pos))
 cp_anthro_ml <- merge_ch(cp_ml, ch_el %>% subset(., select = -c(diar7d, round))) %>% mutate(round="ml") %>% filter(!is.na(haz)|!is.na(waz)|!is.na(whz),!is.na(pos))
 cp_anthro_el <- merge_ch(cp_el, ch_el %>% subset(., select = -c(diar7d, round))) %>% mutate(round="ml") %>% filter(!is.na(haz)|!is.na(waz)|!is.na(whz),!is.na(pos))
@@ -115,68 +149,7 @@ hol_anthro_ml <- merge_ch(hol_ml, ch_el %>% subset(., select = -c(diar7d, round)
 hol_diar_bl <- merge_ch(hol_bl, ch_bl %>% subset(., select =  -c(haz, whz, waz, round))) %>% mutate(round="bl") %>% filter(!is.na(diar7d),!is.na(pos))
 hol_diar_ml <- merge_ch(hol_ml, ch_ml %>% subset(., select =  -c(haz, whz, waz, round))) %>% mutate(round="ml") %>% filter(!is.na(diar7d),!is.na(pos))
 
-table(cp_bl$hhwealth)
-table(hol_bl$hhwealth)
-table(cp_diar_bl$hhwealth)
-table(hol_diar_bl$hhwealth)
 
-
-# df <- hol_anthro_bl %>% distinct(childid, hhid, age, haz, hhwealth_cont) %>% filter(!is.na(haz), !is.na(hhwealth_cont))
-# dim(df)
-df <- hol_anthro_bl %>% filter(sample %in% c( "S" )) %>% distinct(childid, hhid, age, haz, .keep_all = T) %>% filter(!is.na(haz), !is.na(hhwealth_cont)) %>% select(childid, hhid, age, haz, hhwealth_cont)
-dim(df)
-
-
-child_full <- read.csv(paste0(dropboxDir,"Data/MapSan/triPhase_database_20200824 1412_IPD.csv"))%>% 
-  rename(childid=ï..totchildID, clusterid=compID, hhid=totHHid)
-child <- read.csv(paste0(dropboxDir,"Data/MapSan/triPhase_database_20200824 1412_IPD.csv")) %>%
-  filter(actualPhase==1)  %>% filter(!is.na(anthro_hfa_2), !is.na(povNormal))  %>% 
-  rename(childid=ï..totchildID, clusterid=compID, hhid=totHHid)
-
-child <- child %>% distinct(childid, hhid, age_months, anthro_hfa_2, povNormal)
-dim(child)
-head(child)
-child$hhwealth=factor(quantcut(child$povNormal, na.rm=T), labels=c("1","2","3","4"))
-dim(child)
-res <- glm(anthro_hfa_2 ~ povNormal, data=child)
-summary(res)
-
-child2 <- child[child$hhid %in% unique(df$hhid), ]
-dim(child2)
-unique(df$hhid[!(df$hhid %in% child2$hhid)])
-unique(df$hhid[!(child2$hhid %in% df$hhid)])
-
-length(unique(df$hhid))
-length(unique(child2$hhid))
-
-df <- df %>% arrange(hhid)
-child2 <- child2 %>% arrange(hhid)
-
-df[df$childid==21110101,]
-child2[child2$childid==21110101,]
-child_full <- child_full %>% select(childid, clusterid, hhid, actualPhase , age_months, povNormal, anthro_hfa_2, ch_surveydate_coarsed  )
-child_full[child_full$childid==21110101,]
-child_full[child_full$hhid ==211101,]
-
-
-dim(child2)
-dim(df)
-
-res <- glm(anthro_hfa_2 ~ povNormal, data=child2)
-summary(res)
-res2 <- glm(haz~hhwealth_cont, data=df)
-summary(res2)
-
-head(df)
-
-#Why are these diff? The PovNormal should not be summarized for soil
-
-summary(child2$anthro_hfa_2)
-summary(df$haz)
-summary(child2$povNormal)
-summary(df$hhwealth_cont)
-
-df[df$hhid==203301,]
 
 
 cp_df <- bind_rows(cp_anthro_bl, cp_anthro_ml, cp_anthro_el, cp_diar_bl, cp_diar_ml, cp_diar_el)
@@ -184,123 +157,6 @@ hol_df <- bind_rows(hol_anthro_bl, hol_anthro_ml, hol_diar_bl, hol_diar_ml)
 d <- bind_rows(cp_df, hol_df)
 
 
-#------------------------------
-# Check merging
-#------------------------------
-
-dim(ch_bl)
-#res_before_ch <- glm(haz~age, family="gaussian", data=ch_bl)
-res_before_ch <- glm(haz~age, family="gaussian", data=ch_ml)
-res_before_env <- glm(pos~hhwealth, family="binomial", data=hol_bl)
-
-
-summary(res_before_ch)
-summary(res_before_env)
-
-res_after_hhwealth <- glm(pos~hhwealth, family="binomial", data=hol_anthro_bl)
-summary(res_after_hhwealth)
-
-dim(ch_bl)
-df <- hol_anthro_bl %>% filter(sample=="S", target=="Human (HF183)", round=="bl")
-dim(df)
-res_after_age<- glm(haz~age, family="gaussian", data=df)
-summary(res_after_age)
-
-#Why are the hh_wealth different? 
-
-
-head(df)
-df2 <- df %>% select(dataid,hhid,childid)
-df2 <- left_join(df2, ch_ml, by=c("dataid","hhid","childid")) 
-dim(df2)
-head(df2)
-
-res_after_age<- glm(haz~age, family="gaussian", data=df2)
-summary(res_after_age)
-summary(ch_ml$age)
-summary(df$age)
-summary(df2$age)
-cor.test(df$age, df$haz)
-cor.test(df2$age, df2$haz)
-cor.test(ch_ml$age, ch_ml$haz)
-
-
-child <- read.csv(paste0(dropboxDir,"Data/MapSan/triPhase_database_20200824 1412_IPD.csv"))
-child <- child %>% rename(childid=ï..totchildID, clusterid=compID, hhid=totHHid, haz=anthro_hfa_2, hhwealth_cont=povNormal)
-child$hhwealth=factor(quantcut(child$hhwealth_cont, na.rm=T), labels=c("1","2","3","4"))
-child$hhwealth = fct_explicit_na(child$hhwealth, na_level = "Missing")
-child <- child %>% filter(!is.na(haz), !is.na(hhwealth))
-dim(child)
-res <- glm(haz ~ hhwealth, data=child)
-summary(res)
-
-#smaller sample size, but this seems completely random in results compared to the child dataset
-df_ch <- d %>% distinct(dataid,hhid,childid, haz, round, hhwealth, hhwealth_cont, age, env_date, child_date)%>% filter(!is.na(haz), !is.na(hhwealth))
-dim(df_ch)
-res <- glm(haz ~ hhwealth, data=df_ch)
-summary(res)
-
-#To do: look at specific children
-childid <- unique(df2$childid)[2]
-df[df$childid %in% childid, ] %>% subset(., select = c(childid, haz, hhwealth, hhwealth_cont, round, age))
-child[child$childid %in% childid, ] %>% subset(., select = c(childid, haz, hhwealth,hhwealth_cont, actualPhase,age_months ))
-df_ch[df_ch$childid %in% childid, ] 
-
-
-child[child$childid %in% childid, ]
-
-#childid 20420102 has hhwealth==2 in the child dataset, 1 in the hol_anthro_bl dataset
-#note check if the continious wealth score is the same
-#update to use the continious wealth score as more info?
-
-#why is hhwealth variable by child?
-
-# XXXXXXXXXXXXXXXXXXXXXXXXXX
-# Why are all the child ID's not in the child dataset?
-#but also there is not an alignment between hhwealth and haz between the two datasets
-# XXXXXXXXXXXXXXXXXXXXXXXXXX
-
-
-# #d <- full_join(env, ch, by = c("trial","dataid","clusterid"))
-# env_compound <- env %>% filter(sample %in% c("LS","FlyLat","FlyKitch","SW","any sample type")) %>% subset(., select = -c(hhid))
-# env_hh <- env %>% filter(sample %in% c("S","MH", "CH",  "W" ))
-# 
-# d_compound <- full_join(env_compound, ch, by = c("trial","dataid","clusterid","round"))
-# d_hh <- full_join(env_hh, ch, by = c("trial","dataid","clusterid", "hhid","round"))
-# table(d_hh$study, d_hh$sample)
-# 
-# 
-# d<-bind_rows(d_compound,d_hh)
-# d <- d %>% filter(!is.na(sample), !is.na(ch_data))
-# 
-# table(d$sample)
-# 
-# 
-# #merge the next round's diarhhea and anthro and then see which is closer but still after env. sampling 
-# ch2 <- ch %>% filter(round!="bl") %>% mutate(round=case_when(round == "ml" ~ "bl", round == "el" ~ "ml"))
-# d_compound2 <- full_join(env_compound, ch2, by = c("trial","dataid","clusterid","round"))  %>% subset(., select = -c(hhid))
-# d_hh2 <- full_join(env_hh, ch2, by = c("trial","dataid","clusterid", "hhid","round"))
-# d2<-bind_rows(d_compound2, d_hh2)
-# d2 <- d2 %>% filter(!is.na(sample), !is.na(ch_data))
-# 
-# d$merge_type="concurrent"
-# d2$merge_type="next round"
-# 
-# table(d$study, d$sample)
-# table(d2$study, d2$sample)
-# dim(d)
-# dim(d2)
-# 
-# d<-bind_rows(d, d2)
-# 
-# #Subset to closest observation where CH is after env. sample collection
-# d <- d %>% group_by(sample, sampleid, target, dataid, clusterid, round, childid) %>% mutate(samp_diff=as.numeric(child_date-env_date), samp_diff2=ifelse(samp_diff<1, -100000, samp_diff), N=n()) %>% 
-#   filter(samp_diff2-1==min(samp_diff2-1)) %>% ungroup()
-# table(d$merge_type)
-# summary(d$samp_diff)
-# summary(d$samp_diff2)
-
-table(d$sample)
 
 cp_res$env_samples_after_merge <- nrow(cp_df %>% do(drop_agg(.)) %>% distinct(sampleid, dataid,  hhid, clusterid,sample, round))
 cp_res$env_HH_after_merge <- nrow(cp_df %>% do(drop_agg(.)) %>% distinct(dataid,  hhid, clusterid))
@@ -310,14 +166,6 @@ cp_res$samples_with_diar_after_merge <- nrow(cp_df %>% filter(!is.na(diar7d)) %>
 cp_res$samples_with_haz_after_merge <- nrow(cp_df %>% filter(!is.na(haz)) %>% do(drop_agg(.)) %>% distinct(sampleid, dataid, clusterid,sample, round))
 cp_res$samples_with_ch_after_merge <- nrow(cp_df %>% filter(!is.na(haz)|!is.na(diar7d)) %>% do(drop_agg(.)) %>% distinct(sampleid, dataid, clusterid,sample, round))
 
-
-# samples_with_diar_after_merge = cp_df %>% filter(study %in% c("Capone 2021","Capone 2021 in prep") ) %>% do(drop_agg(.)) %>% distinct(sampleid, dataid, clusterid,sample, round)
-# table(env_samples_before_merge$round)
-# table(samples_with_diar_after_merge$round)
-# head(env_samples_before_merge)
-# 
-# table(env_samples_before_merge$sample)
-# table(samples_with_diar_after_merge$sample)
 
 hol_res$env_samples_after_merge <- nrow(hol_df %>% do(drop_agg(.)) %>% distinct(sampleid, dataid,  hhid, clusterid,sample, round))
 hol_res$env_HH_after_merge <- nrow(hol_df %>% do(drop_agg(.)) %>% distinct(dataid,  hhid, clusterid))
@@ -338,6 +186,53 @@ d <- d %>%
 table(d$pos, d$diar7d)
 table(d$pos, !is.na(d$haz))
 
+#quartile HH wealth
+d$hhwealth_cont <- d$hhwealth
+d$hhwealth<-NA
+#quantile hhwealth by study
+i=unique(d$study)[1]
+for(i in unique(d$study)){
+  df <- d[d$study==i,]
+  hhwealth <- factor(NA)
+  if(length(unique(df$hhwealth_cont))>4){
+    hhwealth=factor(quantcut(df$hhwealth_cont, na.rm=T), labels=c("1","2","3","4"))
+  }
+  d$hhwealth[d$study==i] <- hhwealth
+}
+d$hhwealth <- factor(d$hhwealth, labels=c("1","2","3","4"))
+d$hhwealth = fct_explicit_na(d$hhwealth, na_level = "Missing")
+
+
+d <- d %>% 
+  mutate(#hhwealth=factor(ntile(hhwealth,4), levels=c("1","2","3","4")),
+    Nhh=factor(case_when(
+      Nhh<5 ~ "<5",
+      Nhh>=5 & Nhh <=8 ~ "5-8",
+      Nhh>8 ~ ">8"
+    ), levels=c("5-8","<5",">8")),
+    Nhh=fct_explicit_na(Nhh, na_level = "Missing"),
+    nrooms=as.numeric(nrooms),
+    nrooms=factor(case_when(
+      nrooms<3 ~ "1-2",
+      nrooms>2  ~ ">3",
+    ), levels=c("1-2",">3")),
+    nrooms=fct_explicit_na(nrooms, na_level = "Missing"),
+    landown=fct_explicit_na(landown, na_level = "Missing"),
+    dadagri=factor(dadagri),
+    dadagri=fct_explicit_na(dadagri, na_level = "Missing"),
+    momedu=factor(momedu),
+    momedu=fct_explicit_na(momedu, na_level = "Missing"),
+    hfiacat=factor(hfiacat),
+    hfiacat=fct_explicit_na(hfiacat, na_level = "Missing"),
+    walls=factor(walls),
+    walls=fct_explicit_na(walls, na_level = "Missing"),
+    roof=factor(roof),
+    roof=fct_explicit_na(roof, na_level = "Missing"),
+    floor=factor(floor),
+    floor=fct_explicit_na(floor, na_level = "Missing"),
+    elec=factor(elec),
+    elec=fct_explicit_na(elec, na_level = "Missing")
+  )
 
 cp_res$diar_samples_date_dropped <- cp_res$samples_with_diar_after_merge - nrow(d %>% filter(study %in% c("Capone 2021","Capone 2021 in prep") ) %>% do(drop_agg(.)) %>% filter(!is.na(diar7d)) %>% distinct(sampleid, dataid, clusterid,sample, round))
 cp_res$haz_samples_date_dropped <- cp_res$samples_with_haz_after_merge - nrow(d %>% filter(study %in% c("Capone 2021","Capone 2021 in prep") ) %>% do(drop_agg(.)) %>% filter(!is.na(haz)) %>% distinct(sampleid, dataid, clusterid,sample, round))
@@ -385,5 +280,8 @@ saveRDS(mapsan_res, file=paste0(here(),"/results/mapsan_merge_Ns.rds"))
 saveRDS(date_diff, file=paste0(here(),"/results/mapsan_date_diff.rds"))
 
 
+summary(d$hhwealth_cont)
 table(d$study, (d$hhwealth))
+table(d$sample, (d$floor))
+table(d$sample, (d$Nhh))
 

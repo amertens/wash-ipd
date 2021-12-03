@@ -12,7 +12,7 @@ table(d$study, d$hhwealth)
 for(i in unique(d$study)){
   print(summary(d$hhwealth_cont[d$study==i]))
 }
-table(d$study, d$sample, d$pos)
+table(d$study, d$sample, d$Nhh)
 
 d <- d %>% filter(sample!="FP") %>% droplevels()
 
@@ -91,6 +91,26 @@ head(d)
 res <- d %>% group_by(study, sample, target) %>%
     do(calc_cov_p(., Ws=Wvars, study=.$study[1], sample=.$sample[1], target=.$target[1]))
 
+unique(res$var)
+res$var <- recode(res$var,  
+                  nrooms="Number of rooms",
+                  hhwealth_cont="HH wealth",
+                  landacre="Acres owned",
+                  momedu="Mom edu.",
+                  hfiacat="HH food security",
+                  floor="Improved floor",
+                  elec="Electricity",
+                  walls="Improved walls",
+                  roof="Improved roof",
+                  momage="Mom age",
+                  age="Child age",
+                  tr="Treatment",
+                  dadagri="In agriculture",
+                  sex="Sex",
+                  Nhh="HH size",
+                  landown="Owns land")
+
+
 saveRDS(res, file=here("results/covariate_associations.Rds"))
 
 #-----------------------------------
@@ -125,7 +145,11 @@ colours <- c(`<0.001` = cols[1], `<0.01` = cols[2], `<0.05` = cols[3],
              `0.05-0.1` = cols[4], `0.1-0.2` = cols[5], `0.2-0.5` = cols[6], 
              `0.5-1` = cols[7])
 res <- droplevels(res)
-
+res <- res %>% group_by(var) %>%
+  mutate(aveP=mean(pval)) %>% ungroup() %>%
+  arrange(aveP) %>%
+  mutate(var=factor(var, levels=unique(var)),
+         target=factor(target, levels=rev(unique(target))))
 
 #-----------------------------------
 #heatmap with all targets
@@ -137,7 +161,7 @@ plot_heatmap_all <- function(res, study){
   
   p <-  ggplot(plot_df, aes(x=var, y=target, fill=pval_cat)) +
       geom_tile(colour = "grey80", size = 0.25) + 
-      facet_wrap(~sample, scales = "free") +
+      facet_wrap(~sample, scales = "free", ncol=2) +
       scale_x_discrete(expand = c(0, 0)) + 
       scale_y_discrete(expand = c(0, 0)) + 
       theme_minimal(base_size = 10) + 
@@ -174,70 +198,73 @@ p_reese <- plot_heatmap_all(res, study="Reese 2017")
 p_odag <- plot_heatmap_all(res, study="Odagiri 2016")
 
 
-#-----------------------------------
-#heatmap with all targets
-#-----------------------------------
+save(list=ls(pattern="p_"), file=here("figures/aim2_covar_sig_figures.Rdata"))
 
 
-
-plot_df <- res %>% filter(target=="Any pathogen") %>% 
-  filter(!is.na(pval)) %>%
-  droplevels()
-p <-  ggplot(plot_df, aes(x=sample, y=var, fill=pval_cat)) +
-  geom_tile(colour = "grey80", size = 0.25) + 
-  facet_wrap(~study, scales = "free") +
-  scale_x_discrete(expand = c(0, 0)) + 
-  scale_y_discrete(expand = c(0, 0)) + 
-  theme_minimal(base_size = 10) + 
-  scale_fill_manual(values = colours, drop = FALSE) + 
-  #geom_text(aes(label = est)) + 
-  theme(aspect.ratio = 1, legend.title = element_text(color = textcol, 
-                                                      size = 8), legend.margin = margin(grid::unit(0.1,"cm")), 
-        legend.text = element_text(colour = textcol, size = 7, face = "bold"), legend.key.height = grid::unit(0.2, 
-                                                        "cm"), legend.key.width = grid::unit(1, "cm"), 
-        legend.position = "right", axis.text.x = element_text(size = 8, 
-                                                              colour = textcol), axis.text.y = element_text(size = 8, 
-                                                              vjust = 0.2, colour = textcol), axis.ticks = element_line(size = 0.4), 
-        plot.title = element_text(colour = textcol, hjust = 0, 
-                                  size = 12, face = "bold"), strip.text.x = element_text(size = 10), 
-        strip.text.y = element_text(angle = 0, size = 10), 
-        plot.background = element_blank(), panel.border = element_blank(), 
-        strip.background = element_blank(), panel.background = element_rect(fill = "grey80", 
-                                                                            colour = "grey80"), panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank()) + guides(fill = guide_legend("P-value strength", 
-                                                                         ncol = 1)) #+ labs(x = Exposure, y = Outcome, title = title)
-
-p
-
-
-
-
-plot_df2 <- res %>% filter(sample=="any sample type") %>% 
-  filter(!is.na(pval)) %>%
-  droplevels()
-
-p <-  ggplot(plot_df2, aes(x=target, y=var, fill=pval_cat)) +
-  geom_tile(colour = "grey80", size = 0.25) + 
-  facet_wrap(~study, scales = "free") +
-  scale_x_discrete(expand = c(0, 0)) + 
-  scale_y_discrete(expand = c(0, 0)) + 
-  theme_minimal(base_size = 10) + 
-  scale_fill_manual(values = colours, drop = FALSE) + 
-  #geom_text(aes(label = est)) + 
-  theme(aspect.ratio = 1, legend.title = element_text(color = textcol, 
-                                                      size = 8), legend.margin = margin(grid::unit(0.1,"cm")), 
-        legend.text = element_text(colour = textcol, size = 7, face = "bold"), legend.key.height = grid::unit(0.2, 
-                                                                                                              "cm"), legend.key.width = grid::unit(1, "cm"), 
-        legend.position = "right", axis.text.x = element_text(size = 8, 
-                                                              colour = textcol), axis.text.y = element_text(size = 8, 
-                                                                                                            vjust = 0.2, colour = textcol), axis.ticks = element_line(size = 0.4), 
-        plot.title = element_text(colour = textcol, hjust = 0, 
-                                  size = 12, face = "bold"), strip.text.x = element_text(size = 10), 
-        strip.text.y = element_text(angle = 0, size = 10), 
-        plot.background = element_blank(), panel.border = element_blank(), 
-        strip.background = element_blank(), panel.background = element_rect(fill = "grey80", 
-                                                                            colour = "grey80"), panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank()) + guides(fill = guide_legend("P-value strength", 
-                                                                         ncol = 1)) #+ labs(x = Exposure, y = Outcome, title = title)
-
-p
+# #-----------------------------------
+# #heatmap with all targets
+# #-----------------------------------
+# 
+# 
+# 
+# plot_df <- res %>% filter(target=="Any pathogen") %>% 
+#   filter(!is.na(pval)) %>%
+#   droplevels()
+# p <-  ggplot(plot_df, aes(x=sample, y=var, fill=pval_cat)) +
+#   geom_tile(colour = "grey80", size = 0.25) + 
+#   facet_wrap(~study, scales = "free") +
+#   scale_x_discrete(expand = c(0, 0)) + 
+#   scale_y_discrete(expand = c(0, 0)) + 
+#   theme_minimal(base_size = 10) + 
+#   scale_fill_manual(values = colours, drop = FALSE) + 
+#   #geom_text(aes(label = est)) + 
+#   theme(aspect.ratio = 1, legend.title = element_text(color = textcol, 
+#                                                       size = 8), legend.margin = margin(grid::unit(0.1,"cm")), 
+#         legend.text = element_text(colour = textcol, size = 7, face = "bold"), legend.key.height = grid::unit(0.2, 
+#                                                         "cm"), legend.key.width = grid::unit(1, "cm"), 
+#         legend.position = "right", axis.text.x = element_text(size = 8, 
+#                                                               colour = textcol), axis.text.y = element_text(size = 8, 
+#                                                               vjust = 0.2, colour = textcol), axis.ticks = element_line(size = 0.4), 
+#         plot.title = element_text(colour = textcol, hjust = 0, 
+#                                   size = 12, face = "bold"), strip.text.x = element_text(size = 10), 
+#         strip.text.y = element_text(angle = 0, size = 10), 
+#         plot.background = element_blank(), panel.border = element_blank(), 
+#         strip.background = element_blank(), panel.background = element_rect(fill = "grey80", 
+#                                                                             colour = "grey80"), panel.grid.major = element_blank(), 
+#         panel.grid.minor = element_blank()) + guides(fill = guide_legend("P-value strength", 
+#                                                                          ncol = 1)) #+ labs(x = Exposure, y = Outcome, title = title)
+# 
+# p
+# 
+# 
+# 
+# 
+# plot_df2 <- res %>% filter(sample=="any sample type") %>% 
+#   filter(!is.na(pval)) %>%
+#   droplevels()
+# 
+# p <-  ggplot(plot_df2, aes(x=target, y=var, fill=pval_cat)) +
+#   geom_tile(colour = "grey80", size = 0.25) + 
+#   facet_wrap(~study, scales = "free") +
+#   scale_x_discrete(expand = c(0, 0)) + 
+#   scale_y_discrete(expand = c(0, 0)) + 
+#   theme_minimal(base_size = 10) + 
+#   scale_fill_manual(values = colours, drop = FALSE) + 
+#   #geom_text(aes(label = est)) + 
+#   theme(aspect.ratio = 1, legend.title = element_text(color = textcol, 
+#                                                       size = 8), legend.margin = margin(grid::unit(0.1,"cm")), 
+#         legend.text = element_text(colour = textcol, size = 7, face = "bold"), legend.key.height = grid::unit(0.2, 
+#                                                                                                               "cm"), legend.key.width = grid::unit(1, "cm"), 
+#         legend.position = "right", axis.text.x = element_text(size = 8, 
+#                                                               colour = textcol), axis.text.y = element_text(size = 8, 
+#                                                                                                             vjust = 0.2, colour = textcol), axis.ticks = element_line(size = 0.4), 
+#         plot.title = element_text(colour = textcol, hjust = 0, 
+#                                   size = 12, face = "bold"), strip.text.x = element_text(size = 10), 
+#         strip.text.y = element_text(angle = 0, size = 10), 
+#         plot.background = element_blank(), panel.border = element_blank(), 
+#         strip.background = element_blank(), panel.background = element_rect(fill = "grey80", 
+#                                                                             colour = "grey80"), panel.grid.major = element_blank(), 
+#         panel.grid.minor = element_blank()) + guides(fill = guide_legend("P-value strength", 
+#                                                                          ncol = 1)) #+ labs(x = Exposure, y = Outcome, title = title)
+# 
+# p

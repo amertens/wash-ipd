@@ -73,8 +73,8 @@ base_plot <- function(mydf, legend_labels=sample_cats, drop_full_sparse=F){
     theme(axis.ticks.x=element_blank(),
           legend.position = "bottom",
           strip.placement = "outside",
-          strip.text.x = element_text(size=11, face = "bold"),
-          strip.text.y = element_text(size=11, angle = 270, face = "bold"),          plot.title = element_text(hjust = 0.5, face = "plain", size=9),
+          strip.text.x = element_text(size=10, face = "bold"),
+          strip.text.y = element_text(size=10, angle = 270, face = "bold"),          plot.title = element_text(hjust = 0.5, face = "plain", size=9),
           panel.spacing = unit(0, "lines")) 
 }
 
@@ -116,8 +116,8 @@ base_plot_diff <- function(mydf, legend_labels=sample_cats, drop_full_sparse=F){
     theme(axis.ticks.x=element_blank(),
           legend.position = "bottom",
           strip.placement = "outside",
-          strip.text.x = element_text(size=11, face = "bold"),
-          strip.text.y = element_text(size=11, angle = 270, face = "bold"),          plot.title = element_text(hjust = 0.5, face = "plain", size=9),
+          strip.text.x = element_text(size=10, face = "bold"),
+          strip.text.y = element_text(size=10, angle = 270, face = "bold"),          plot.title = element_text(hjust = 0.5, face = "plain", size=9),
           panel.spacing = unit(0, "lines")) 
 }
 
@@ -128,15 +128,15 @@ base_plot_diff <- function(mydf, legend_labels=sample_cats, drop_full_sparse=F){
 #---------------------------------------------------------------
 
 #Primary figure
-p_diar_1_adj <- adj_RR %>% 
+p_diar_1_adj_tmle <- adj_RR %>% 
   filter(target %in% c("Any pathogen","Any MST"), Y=="diar7d") %>%
   base_plot(drop_full_sparse=T)
-p_diar_1_adj
+p_diar_1_adj_tmle
 
-p_haz_1_adj <- adj_RR %>% 
+p_haz_1_adj_tmle <- adj_RR %>% 
   filter(target %in% c("Any pathogen","Any MST"), Y=="haz") %>%
   base_plot_diff(drop_full_sparse=T)
-p_haz_1_adj
+p_haz_1_adj_tmle
 
 # #Specific pathogens
 # p_diar_adj_path <- adj_RR %>% 

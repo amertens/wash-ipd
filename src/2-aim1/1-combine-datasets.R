@@ -437,14 +437,22 @@ dim(d)
 table(d$pos)
 table(is.na(d$pos))
 
+#make sure data is correctly sorted to get right covariates for any sample type
+unique(d$sample)
+d$sample <-  factor(d$sample, levels = c("MH" , "CH", "S" ,  "W","LS","Fly","SW","FP"))
+levels(d$sample)
+
+
+
 df <- d %>% 
-  group_by(study, clusterid, dataid, tr, target, round) %>%
+  group_by(study, clusterid, dataid, hhid, tr, target, round) %>%
   filter(!is.na(pos)) %>%
   #Drop too-positive strata
   filter(!(study=="Odagiri 2016" & sample=="W" & target=="Cow (BacCow)"),
                       !(study=="Boehm 2016" & sample=="CH" & target=="General (GenBac3)"),
                       !(study=="Fuhrmeister 2020" & sample=="CH" & target=="Cow (BacCow)"),
                       !(study=="Holcomb 2020" & sample=="Fly" & target=="Human (BacHum)")) %>%
+  arrange(sample) %>%
   mutate(pos=max(pos, na.rm = TRUE), sample="any sample type", animals=max(animals, na.rm=T)) %>% 
   slice(1)
 dim(df)

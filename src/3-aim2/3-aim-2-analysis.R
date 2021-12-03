@@ -17,6 +17,9 @@ table(d$study, d$sample, d$pos)
 d <- d %>% filter(sample!="FP") %>% droplevels()
 
 
+#clean pathogen dates/child ages
+
+
 
 # 1.	Child birth order/parity 
 # 2.	Asset-based wealth index 

@@ -1170,24 +1170,18 @@ aim2_tmle <- function(d, Ws=NULL, forcedW=NULL, outcome, exposure="pos", study="
         Wdf <- Wdf[,-nearZeroVar(Wdf)]
       }
       
-      #XXXXXXXXXXXX
-      #To do: add prescreening to library
-      #XXXXXXXXXXXX
-      
-      #listWrappers()
-    #  SL.lib =c("SL.mean","SL.glm", "SL.glmnet")
+     
   
       SL.lib=list(c("SL.glm","SL.forcedW"),c("SL.glm","screen.corRank"),
-                      c("SL.mean","All"), # not adjusted, so doesn't matter
+                      c("SL.mean","All"),
                       c("SL.glmnet","All"),
-                  #c("SL.ridge","All"),
                   c("SL.randomForest","All"))
-      #SL.lib=list(c("SL.glm","SL.forcedW"))
-      
+
       
       fit <- tmle(Y=df$Y, A=df$X, W=Wdf, id=df$clusterid, family=family,
                   Q.SL.library = SL.lib,
                   g.SL.library = SL.lib)
+      #print(summary(fit))
   
       if(family=="gaussian"){
         res <- data.frame(Y=outcome,

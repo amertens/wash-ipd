@@ -16,12 +16,15 @@ env <- env %>% mutate(
                     study=="Odagiri 2016" ~ "Odisha"),
           merge_round=as.numeric(round)+1) 
 
-env <- env %>% filter(trial == "Gram Vikas") %>% droplevels(.)
+env <- env %>% filter(trial == "Gram Vikas") %>% 
+  subset(.,select = -c(momedu,elec, dadagri,  landown,  animals, hhwealth, Nhh)) %>%
+  droplevels(.)
 
+colnames(env)
 
 #Note that the GV lab data had diarrhea/anthro merged in, but 
 ch <- readRDS(paste0(dropboxDir,"Data/Gram Vikas/GV_env_cleaned.rds"))
-dim(ch)
+colnames(ch)
 ch <- ch %>% 
   mutate(study="Reese 2017",
          trial="Gram Vikas",
@@ -36,7 +39,8 @@ ch <- ch %>%
          ) %>%
   subset(., select = c(clusterid, merge_round,      hhid,     childid,     hh_st,          
                        haz, whz, sex, age_anthro, study, trial,     
-                       dataid, diar7d, child_date_anthro)) %>%
+                       dataid, diar7d, child_date_anthro,
+                       momedu,elec, dadagri,  landown,  animals, hhwealth, Nhh)) %>%
   filter(!(is.na(diar7d) & is.na(haz) & is.na(whz))) %>%
   distinct() %>% mutate(ch_data=1)
 

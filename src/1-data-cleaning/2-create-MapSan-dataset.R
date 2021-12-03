@@ -271,11 +271,11 @@ child <- child %>% select(childid, actualPhase, clusterid, hhid,
                    carerEDU,
                    ch_careEDUorig,
                    diarrhea,
-                   # Kkhas,
-                   # Kkany,
-                   # Kkasc,
-                   # KKtrc,
-                   # KKhkw,
+                   # Kkhas, #has KK
+                   # Kkany, #any sth
+                   Kkasc,
+                   KKtrc,
+                   KKhkw,
                    Hhsize,
                    hhCement,
                    # drophole,
@@ -288,19 +288,19 @@ child <- child %>% select(childid, actualPhase, clusterid, hhid,
                    # latWall,
                    compElec,
                    compAnyAnimal,
-                   # gpp_aden, gpp_noro, gpp_rota, gpp_cdif, 
-                   # gpp_camp, gpp_o157, gpp_etec, gpp_salm, 
-                   # gpp_stec, gpp_shig, gpp_chol, gpp_yers,
-                   # gpp_cryp, gpp_enta, gpp_giar,
-                   # gpp_prim,
-                   # gpp_prim_noSal,
-                   # gpp_numInf_noSal,
-                   # gpp_coInf_noSal,
-                   # gpp_vir,
-                   # gpp_bact,
-                   # gpp_par,
-                   # gpp_Num_inf,
-                   # gpp_anyInf,
+                   gpp_aden, gpp_noro, gpp_rota, gpp_cdif,
+                   gpp_camp, gpp_o157, gpp_etec, gpp_salm,
+                   gpp_stec, gpp_shig, gpp_chol, gpp_yers,
+                   gpp_cryp, gpp_enta, gpp_giar,
+                   gpp_prim,
+                   gpp_prim_noSal,
+                   gpp_numInf_noSal,
+                   gpp_coInf_noSal,
+                   gpp_vir,
+                   gpp_bact,
+                   gpp_par,
+                   gpp_Num_inf,
+                   gpp_anyInf,
                    # hl_den,
                    # hl_terc,
                    # rainfall_survey,
@@ -394,7 +394,11 @@ clust <- child %>% group_by(clusterid) %>%
   summarise(compound_wealth=mean(povNormal, na.rm=T),
             compElec2=mean(compElec, na.rm=T),
             compAnyAnimal2=mean(compAnyAnimal, na.rm=T),
-            CompPop2=mean(CompPop, na.rm=T)) 
+            CompPop2=mean(CompPop, na.rm=T),
+            comprooms=mean(hhrooms, na.rm=T),
+            compwalls=mean(hh_walls, na.rm=T),
+            compfloor=mean(hhCement, na.rm=T)
+            ) 
 
 
 #then merge full data
@@ -425,6 +429,13 @@ table(unique(env$clusterid[env$study=="Capone 2021"]) %in% unique(child$clusteri
 table(unique(env$hhid[env$study=="Capone 2021"]) %in% unique(child$hhid))
 
 
+table(env2$sample, env2$round)
+table( child$round)
+table(env2$sample, env2$studyArm_binary)
+table( child$studyArm_binary)
+table(env2$sample, env2$clusterid)
+table( child$clusterid)
+
 
 dim(child)
 dim(env2)
@@ -433,9 +444,12 @@ d1 <- full_join(env2, child,  by = c("clusterid", "hhid", "round", "studyArm_bin
 d2 <- full_join(d1, hh,  by = c("clusterid", "hhid", "round")) %>% filter(!is.na(pos))
 d3 <- full_join(d2, hh2,  by = c("clusterid", "hhid")) %>% filter(!is.na(pos))
 d <- full_join(d3, clust,  by = c("clusterid")) %>% filter(!is.na(pos))
-dim(d)
-head(d)
-head(hh)
+
+table(d$sample, is.na(d$Hhsize))
+table(d$sample, d$Hhsize)
+
+
+
 unique(d1$clusterid)
 unique(hh$clusterid)
 
@@ -459,16 +473,15 @@ d$compElec[is.na(d$compElec)] <- d$compElec2[is.na(d$compElec)]
 d$compAnyAnimal[is.na(d$compAnyAnimal)] <- d$compAnyAnimal2[is.na(d$compAnyAnimal)]
 d$CompPop[is.na(d$CompPop)] <- d$CompPop2[is.na(d$CompPop)] 
 
+#fill in compound for missing HH
+d$Hhsize[is.na(d$Hhsize)] <- d$CompPop[is.na(d$Hhsize)] 
+d$animal_in_compound[is.na(d$animal_in_compound)] <- d$compAnyAnimal[is.na(d$animal_in_compound)] 
+d$hhrooms[is.na(d$hhrooms)] <-  d$comprooms[is.na(d$hhrooms)] 
+d$hh_walls[is.na(d$hh_walls)] <-  d$compwalls[is.na(d$hh_walls)] 
+d$hhCement[is.na(d$hhCement)] <-  d$compfloor[is.na(d$hhCement)] 
 
-
-table(d$study, ntile(d$povNormal,4))
-#Why is there missingness?
-ids <- unique(d$clusterid[is.na(d$povNormal)])
-
-table(ids %in% child$clusterid )
-child$povNormal[child$clusterid %in% ids]
-
-#Make sure I'm using the right merging here. 
+table(d$sample, is.na(d$Hhsize))
+table(d$sample, (d$Hhsize))
 
 
 #rename variables to standardize
@@ -503,7 +516,10 @@ d <- d %>%
 table(is.na(d$env_date)) 
 table(is.na(d$child_date)) 
 
+
 table(d$study, d$hhwealth)
+table(d$sample, is.na(d$Nhh))
+table(d$sample, d$momedu)
 
 saveRDS(d, file=paste0(dropboxDir,"Data/MapSan/mapsan_cleaned.rds"))
 
@@ -511,11 +527,7 @@ saveRDS(d, file=paste0(dropboxDir,"Data/MapSan/mapsan_cleaned.rds"))
 df <- d %>% filter(type=="ls",target=="HF183")
 df$hhwealth=factor(quantcut(df$hhwealth, na.rm=T), labels=c("1","2","3","4"))
 
-# res2 <- glm(haz ~ hhwealth, data=df)
-# summary(res2)
-# 
-# res_pos <- glm(pos ~ factor(ntile(hhwealth,4)), data=d, family="binomial")
-# summary(res_pos)
+
 
 #Split out just env data and covariates
 colnames(d)
@@ -546,14 +558,5 @@ table(env_clean$target, env_clean$pos, env_clean$sample)
 #Save environmental data
 saveRDS(env_clean, file=paste0(dropboxDir,"Data/MapSan/mapsan_env_cleaned.rds"))
 
-table(is.na(env_clean$env_date)) 
-table((env_clean$nrooms)) 
 
-df <- env_clean %>% group_by(sampleid, sample) %>% summarise(N=length(unique(tr))) 
-  table(df$N)
-  
-table(is.na(env_clean$abund),is.na(env_clean$qual)) 
-
-# res3 <- glm(pos ~ factor(ntile(hhwealth,4)), data=env_clean)
-# summary(res3)
   

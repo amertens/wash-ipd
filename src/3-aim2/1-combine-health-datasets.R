@@ -11,11 +11,48 @@ gv <- readRDS(paste0(dropboxDir,"Data/gv_env_CH_data.rds"))
 odisha <- readRDS(paste0(dropboxDir,"Data/odisha_env_CH_data.rds"))
 
 
+#Clean pathogen-specific infections
+
+wbk <- wbk %>%  subset(., select = -c(ch_sth, 
+                                      ch_sth_coinf, ch_sth_giar_coinf, ch_hook, ch_hook_intensity, 
+                                      qpcr_Necator, qpcr_Ancylostoma, qpcr_Strongyloides)) %>%
+  rename(
+    ch_pos_giardia=ch_giardia,
+    ch_pos_ascaris=ch_ascaris,
+    ch_pos_trichuris=ch_trichuris,
+    ch_abund_giardia=ch_giardia,
+    ch_abund_ascaris=ch_asca_intensity,
+    ch_abund_trichuris=ch_tric_intensity,
+    ch_qpcr_pos_trichuris=qpcr_Trichuris,
+    ch_qpcr_pos_ascaris=qpcr_Ascaris)
+
+mapsan <- mapsan %>% rename(
+  ch_pos_giardia=gpp_giar,
+  ch_pos_adenovirus=gpp_aden,
+  ch_pos_ascaris=Kkasc,
+  ch_pos_trichuris=KKtrc,
+  ch_pos_norovirus=gpp_noro,
+  ch_pos_rotavirus=gpp_rota,
+  ch_pos_shigella=gpp_shig,
+  ch_pos_yersinia=gpp_yers,
+  ch_pos_cdiff=gpp_cdif,
+  ch_pos_campylobacter=gpp_camp,
+  ch_pos_entamoeba=gpp_enta,
+  ch_pos_crypto=gpp_cryp,
+  ch_pos_salmonella=gpp_salm,
+  ch_pos_cholera=gpp_chol) %>%
+  mutate(ch_pos_path_ecoli = 1*(gpp_o157 + gpp_etec + gpp_stec > 0)) %>%
+  subset(., select = -c(KKhkw, gpp_o157, gpp_etec, gpp_stec))
+wbk <- zap_labels(wbk)
+
 
 #d <- bind_rows(wbb, wbk, mapsan, gv, odisha)
 d <- data.table::rbindlist(list( wbb, wbk, mapsan, gv, odisha), fill=T)
 #d <- d %>% filter(!is.na(env_date) & !is.na(child_date))
 table(d$study)
+colnames(d)
+
+unique(d$target)
 
 #-----------------------------------------------------------
 # Calculate stunting/wasting/underweight
@@ -52,6 +89,7 @@ table(d$study[!is.na(d$haz)], is.na(d$age_anthro[!is.na(d$haz)]))
 #-----------------------------------------------------------
 saveRDS(d, file=paste0(dropboxDir,"Data/merged_env_CH_data.rds"))
 
+table(is.na(d$child_date_pathogen), d$ch_pos_path_ecoli, d$study)
 
 
 d %>% group_by(study) %>%
