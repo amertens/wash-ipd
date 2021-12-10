@@ -10,6 +10,11 @@ mapsan <- readRDS(paste0(dropboxDir,"Data/mapsan_env_CH_data.rds"))
 gv <- readRDS(paste0(dropboxDir,"Data/gv_env_CH_data.rds"))
 odisha <- readRDS(paste0(dropboxDir,"Data/odisha_env_CH_data.rds"))
 
+table(wbb$diar7d_full)
+table(wbk$diar7d_full)
+table(mapsan$diar7d_full)
+table(gv$diar7d_full)
+table(odisha$diar7d_full)
 
 #Clean pathogen-specific infections
 
@@ -48,8 +53,8 @@ wbk <- zap_labels(wbk)
 
 #d <- bind_rows(wbb, wbk, mapsan, gv, odisha)
 d <- data.table::rbindlist(list( wbb, wbk, mapsan, gv, odisha), fill=T)
-#d <- d %>% filter(!is.na(env_date) & !is.na(child_date))
-table(d$study)
+
+table(d$study, is.na(d$diar7d_full))
 colnames(d)
 
 unique(d$target)

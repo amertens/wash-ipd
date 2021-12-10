@@ -35,14 +35,23 @@ ch <- ch %>%
          childid=hh_mid,
          child_date_anthro =env_date,
          age_anthro=age,
-         merge_round=round
+         merge_round=round,
+         diar7d_full=diar7d
          ) %>%
   subset(., select = c(clusterid, merge_round,      hhid,     childid,     hh_st,          
                        haz, whz, sex, age_anthro, study, trial,     
-                       dataid, diar7d, child_date_anthro,
+                       dataid, diar7d, diar7d_full, child_date_anthro,
                        momedu,elec, dadagri,  landown,  animals, hhwealth, Nhh)) %>%
+  rename(hhwealth_cont=hhwealth) %>%
   filter(!(is.na(diar7d) & is.na(haz) & is.na(whz))) %>%
   distinct() %>% mutate(ch_data=1)
+
+#quartile HH wealth
+ch$hhwealth=factor(quantcut(ch$hhwealth_cont, na.rm=T), labels=c("1","2","3","4"))
+ch$hhwealth <- factor(ch$hhwealth, labels=c("1","2","3","4"))
+ch$hhwealth = fct_explicit_na(ch$hhwealth, na_level = "Missing")
+table(ch$hhwealth)
+
 
 dim(ch)
 dim(ch %>% distinct(clusterid,  merge_round,      hhid,
@@ -89,6 +98,9 @@ ch_diar <- ch %>% rename(
             mutate(merge_round = merge_round
                    ) %>%
             subset(., select = c(childid, dataid, clusterid, hhid, merge_round, diar7d, child_date, age))
+saveRDS(ch_diar, file = paste0(dropboxDir, "Data/WBK/clean-gv-diar.RDS"))
+
+
 # #Concurrent diarrhea
 # ch_diar2 <- ch %>% rename(
 #   child_date = child_date_anthro,

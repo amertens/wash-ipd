@@ -249,41 +249,32 @@ cmt <- function(txt, cm, author, date = "2021-01-01", comN = commentN){
    
 ## Summary
 
+-Pathogen-specific significant associations
+-Overall associations are null
+-specific significant findings
+
+
+Most study-specific estimates are null, with inconsistent direction of effects in significant associations. Estimates pooled over multiple studies were also null, except for a small and marginally significant association between any pathogen in any sample and lower child height-for-age Z-scores (which is significant without adjustment for confounders).
 
 
 ## Methods
 
-We examined associations between prevalence of pathogens and MST markers in the environment and child health outcomes. 
+We examined associations between prevalence of pathogens and MST markers in the environment and child health outcomes, including all-cause diarrheal disease, child growth, and pathogen-specific infections. The primary outcomes for all exposures were caregiver recall of diarrheal disease and child height-for-age Z-scores. For specific pathogen presences in the environment, primary outcomes also included the corresponding pathogen detection in child stool. Secondary outcomes include z-scores for weight-for-age (WAZ) and weight-for-length (WLZ) and prevalence of stunting, wasting and underweight. For the growth outcomes outcomes, we considered all environmental samples collected over the child's lifetime prior to the anthropometry measurement. For the diarrheal disease and pathogen-specific infection outcomes, we will only consider environmental samples collected up to four months before the measurement of the health outcome. The analyses was conducted by sample type (e.g., water, hands, soil) and pooled across study types, and used data from all study arms. 
 
-For binary outcomes, estimated prevalence ratios using modified Poisson regressions.[@zouModifiedPoissonRegression2004] For abundance outcomes, we used linear regressions to estimate differences in log-transformed gene copies and negative binomial regressions to estimate count differences in soil-transmitted helminth (STH) egg counts. Because of repeated sampling or clustered designs in some studies, we used the Huber Sandwich Estimator to calculate robust standard errors.[@freedmanSoCalledHuberSandwich2006]  For abundance measures, we imputed values for samples below the limit of quantification (LOQ) and the limit of detection (LOD). For samples below the LOD, we used half the LOD and for samples below the LOQ, we used the midpoint between the LOD and LOQ for the imputation. To avoid analyzing targets where most of the data were imputed, we only included targets where at least 50% of samples were within the quantifiable range in our analysis.
 
-All analyses were adjusted for potential confounders. Covariates were prescreened using likelihood ratio tests, and only variables associated with the outcome with a p-value < 0.2 were included in the model for each outcome. We included the following variables in the prescreening set if they were measured within an included study: child age, child sex, maternal age, household food security status, number of people in the household, age and education of primary caregiver in the household, asset-based household wealth, number of rooms, construction materials (walls, floor, roof), access to electricity, land ownership and if anyone in the household works in agriculture. For rare binary outcomes, we only included one independent variable (including the treatment arm) per 10 positive samples, or per 10 negative samples if <50% of samples were negative. We also did not estimate prevalence ratios for any targets with fewer than two positive or negative values per study arm for a given sample type. Targets with <10 negatives were also excluded from the composite "any pathogen" and "any MST marker" variables to avoid generating sparse cells; targets with <10 positives were included in the composite variables.
+For binary outcomes, we estimated prevalence ratios using modified Poisson regressions.[@zouModifiedPoissonRegression2004] For continuous outcomes (child anthropometry Z-scores), we used linear regressions to estimate adjusted mean differences. Because of repeated sampling or clustered designs in some studies, we used the Huber Sandwich Estimator to calculate robust standard errors.[@freedmanSoCalledHuberSandwich2006] All analyses were adjusted for potential confounders. We included child age and asset-based household wealth as adjustment covariates for all adjusted estimates. Other covariates were prescreened using likelihood ratio tests, and only variables associated with the outcome with a p-value < 0.2 were included in the model for each outcome. We included the following variables in the prescreening set if they were measured within an included study: child age, child sex, maternal age, household food security status, number of people in the household, age and education of primary caregiver in the household, asset-based household wealth, number of rooms, construction materials (walls, floor, roof), access to electricity, land ownership and if anyone in the household works in agriculture. Within each study, we only estimated associations when there were at least 5 cases of the binary outcome in the rarest strata of the exposure.
 
 Given the heterogeneity in study settings (e.g., local WASH conditions, climate, urbanization, population density, region-specific infectious disease patterns, intervention designs), we reported individual study-specific estimates for all analyses. For targets where data were available from  four or more studies, we tested for heterogeneity in estimates using Cochran's Q-test.[@cochranCombinationEstimatesDifferent1954a] If there was no significant heterogeneity (p-value>0.2), we pooled estimates using fixed-effects models. If there was evidence for heterogeneity but there was qualitative support for combining studies, we pooled estimates using random-effects models. 
 
 
-Aim 2: Primary outcomes for this aim include: Prevalence of diarrhea and length-for-age z-scores (LAZ). Secondary outcomes include z-scores for weight-for-age (WAZ), weight-for-length (WLZ), head circumference and middle-upper-arm-circumference, prevalence of stunting, wasting and underweight, prevalence and intensity of infection with specific enteropathogens, and prevalence of respiratory infections. We will address Aim 2 by estimating PRs and PDs for the binary health outcomes and mean differences for the continuous health outcomes for individuals with vs. without exposure to pathogens and MST markers in environmental samples. The primary outcomes of Aim 1 (prevalence of any enteropathogen, and any general, human or animal MST markers in environmental samples) will be used as the exposure variables for this aim. We will estimate the associations between these exposure variables and the primary and secondary outcomes of Aim 2. We will also estimate associations between the prevalence/abundance of a specific pathogen in environmental samples and the prevalence/abundance of the same pathogen measured in child stool. For the LAZ, stunting and head circumference outcomes, we will consider all environmental samples collected over the child's lifetime prior to the anthropometry measurement. For the other outcomes, we will only consider environmental samples collected up to three months before the measurement of the health outcome. The Aim 2 analyses will be conducted by sample type (e.g., water, hands, soil) and will pool data from all study arms. 
-
-
-All analyses with be conducted using generalized linear models, adjusting for potential confounders. We will conduct unadjusted analyzes as a sensitivity analysis. The analysis for Aim 2 will adjust for study arm. In addition, all adjusted analyses will control for child age, sex, and pre-screened covariates found to be significantly related to the outcome in bivariate likelihood ratio tests (full list of covariates above). We will use the likelihood ratio test to assess the association between each outcome and each covariate and will include covariates with a p-value<0.2 in the analysis. 
-
-
--note we drop missing continious but add a missigness category for categorical covariates
-
-
-
-All analyses were adjusted for potential confounders. Covariates were prescreened using likelihood ratio tests, and only variables associated with the outcome with a p-value < 0.2 were included in the model for each outcome. We included the following variables in the prescreening set if they were measured within an included study: child age, child sex, maternal age, household food security status, number of people in the household, age and education of primary caregiver in the household, asset-based household wealth, number of rooms, construction materials (walls, floor, roof), access to electricity, land ownership and if anyone in the household works in agriculture. For rare binary outcomes, we only included one independent variable (including the treatment arm) per 10 positive samples, or per 10 negative samples if <50% of samples were negative. We therefore did not estimate prevalence ratios for any targets with fewer than 10 positive or negative values for a given sample type, or with fewer than two positive or negative values per study arm for a given sample type. Targets with <10 negatives were also excluded from the composite "any pathogen" and "any MST marker" variables to avoid generating sparse cells; targets with <10 positives were included in the composite variables.
-
-
-### Overall summary of results:
-
-Most study-specific estimates are null, with inconsistent direction of effects in significant associations. Estimates pooled over multiple studies were also null, except for a small and marginally significant association between any pathogen in any sample and lower child height-for-age Z-scores (which is significant without adjustment for confounders).
 
 
 ### Overall notes on data availability:
 
   - Odagiri et al. 2016 only measured weight, so we only have WAZ, and Reese only measures/shared height, so we only have HAZ. 
   - The tables at the bottom of the report show the number of samples and number of health outcomes by study the column for both positive sample and diarrhea measure is likely the limiting factor for sparse analyses.
+  (Give specific numbers for these tables)
+  
 
 ### Notes on analysis
 
@@ -333,81 +324,157 @@ Adjusted HAZ difference for any pathogen presence in any environmental sample:
 
 `r clean_est(adj_RR %>% filter(target=="Any pathogen", study=="Pooled", sample=="any sample type", Y=="haz"), outcome="gaussian")` 
 
+Interquartile range for the ratio of adjusted and unadjusted prevalence rations: [0.97, 1.05]
+Interquartile range for the difference of adjusted and unadjusted prevalence rations: [-0.014,  0.061]
 
+
+## Limitations
+
+- Unmeasured confounding
+- Small sample size
+- Timing of measurements
+
+-give mean of number of confounders 
+-
+
+-
+
+plot out difference by number of confounders. 
+
+-we didn't see estimates move that much with many variables to adjust for. 
 
 
 # Primary figures
 
-## Diarrhea
-
 #### Adjusted associations between diarrhea and any pathogen or MST marker
 
-```{r, echo=F, warning=F, message=F, fig.width = 10, fig.width = 6}
+```{r, echo=F, warning=F, message=F, fig.width = 10, fig.height = 5}
 p_diar_1_adj
 ```
 
-__Figure 1.__ Forest plots of associations between child diarrheal disease and the prevalence of any enteropathogen or any MST markers in different types of environmental samples. Pooled estimates are presented when there are four or more study-specific estimates for a specific sample type and target combination and are denoted with diamond-shaped points. Grey crossed points denote data that were too sparse to estimate a prevalence ratio (i.e., <10 positive or negative observations). Samples of the same type from different locations (source vs. stored water, flies in kitchen vs. latrine, soil from courtyard vs. latrine) or different individuals (child vs. mother's hands) are plotted separately. All estimates are adjusted for potential confounders.
+__Figure 1.__ Forest plots of associations between child diarrheal disease and the prevalence of any enteropathogen or any MST markers in different types of environmental samples. Pooled estimates are presented when there are four or more study-specific estimates for a specific sample type and target combination and are denoted with diamond-shaped points. Grey crossed points denote data that were too sparse to estimate a prevalence ratio (i.e., <10 positive or negative observations). Samples of the same type from different locations (source vs. stored water, flies in kitchen vs. latrine, soil from courtyard vs. latrine) or different individuals (child vs. mother's hands) are plotted separately. Asterisks above estimates denote statistical significance (\*= P-value < 0.05, \*\*= P-value < 0.01, \*\*\*= P-value < 0.001). All estimates are adjusted for potential confounders.
 
+__Interpretation:__ Presence of any pathogen or any mst marker in any environmental samples were not associated with diarrheal disease, except any pathogen presence located on child hands in Boehm et al. 2016. 
 
-
-
-#### Adjusted associations between diarrhea and types of pathogens
-
-```{r, echo=F, warning=F, message=F, fig.width = 10, fig.width = 6}
-p_diar_s1_adj
-```
-
-
-__Figure 2.__ Forest plots of associations between child diarrheal disease and the prevalence of any virus, any bacteria, any protozoa and any STH in different types of environmental samples. Pooled estimates are presented when there are four or more study-specific estimates for a specific sample type and target combination and are denoted with diamond-shaped points. Grey crossed points denote data that were too sparse to estimate a prevalence ratio (i.e., <10 positive or negative observations). Samples of the same type from different locations (source vs. stored water, flies in kitchen vs. latrine, soil from courtyard vs. latrine) or different individuals (child vs. mother's hands) are plotted separately. All estimates are adjusted for potential confounders.
-
-
-
-#### Adjusted associations between diarrhea and types of MST markers
-
-```{r, echo=F, warning=F, message=F, fig.width = 10, fig.width = 6}
-p_diar_2_adj
-```
-
-## Height-for-age Z-scores
-
-#### Adjusted associations between HAZ and any pathogen or MST marker
-
-```{r, echo=F, warning=F, message=F, fig.width = 10, fig.width = 6}
+```{r, echo=F, warning=F, message=F, fig.width = 10, fig.height = 5}
 p_haz_1_adj
 ```
 
-#### Adjusted associations between HAZ and types of pathogens
+#### Adjusted associations between HAZ and any pathogen or MST marker
 
-```{r, echo=F, warning=F, message=F, fig.width = 10, fig.width = 6}
-p_haz_s1_adj
-```
+__Figure 2.__ Forest plots of associations between child HAZ and the prevalence of any enteropathogen or any MST markers in different types of environmental samples. Pooled estimates are presented when there are four or more study-specific estimates for a specific sample type and target combination and are denoted with diamond-shaped points. Grey crossed points denote data that were too sparse to estimate a mean difference. Samples of the same type from different locations (source vs. stored water, flies in kitchen vs. latrine, soil from courtyard vs. latrine) or different individuals (child vs. mother's hands) are plotted separately. Asterisks above estimates denote statistical significance (\*= P-value < 0.05, \*\*= P-value < 0.01, \*\*\*= P-value < 0.001). All estimates are adjusted for potential confounders.
 
-#### Adjusted associations between HAZ and types of MST markers
 
-```{r, echo=F, warning=F, message=F, fig.width = 10, fig.width = 6}
-p_haz_2_adj
-```
+__Interpretation:__ Presence of any pathogen (but not any mst marker) in any environmental sample is significantly associated with lower HAZ when pooled across studies (Adjusted mean difference: `r clean_est(adj_RR %>% filter(target=="Any pathogen", study=="Pooled", sample=="any sample type", Y=="haz"), outcome="gaussian")`). This is driven primarily by the number of slightly harmful but insignificant effects rather than by any strong effect of any pathogen in specific studies or sample types. Nevertheless, water samples with any pathogen presence were significantly associated with lower mean HAZ in Boehm et al. 2016. Any MST presence in water was also significantly associated with lower mean HAZ in Boehm 2016, but was associated with higher mean HAZ in latrine soil samples in Holcomb et al. 2020.
+
 
 
 #### Adjusted associations between pathogen-specific presence in environmental samples and pathogen-specific infections
 
-```{r, echo=F, warning=F, message=F, fig.width = 10, fig.height = 4}
+```{r, echo=F, warning=F, message=F, fig.width = 10, fig.height = 6}
 p_pathogen
 ```
 
+__Figure 3.__ Forest plots of associations between specific pathogens in environmental samples and child infections with the same pathogens. 
+Samples of the same type from different locations (source vs. stored water, flies in kitchen vs. latrine, soil from courtyard vs. latrine) or different individuals (child vs. mother's hands) are plotted separately and denoted by different colors. Asterisks above estimates denote statistical significance (\*= P-value < 0.05, \*\*= P-value < 0.01, \*\*\*= P-value < 0.001). All estimates are adjusted for potential confounders.
+
+__Interpretation:__ There is a general trend of positive associations between specific pathogens in the compound environment and an increased risk of the same pathogen infecting the child living in the compound across different pathogens and sample types. *Giardia* and pathogenic *E. coli* were two pathogens without associations between environmental presence and child infection, but associations were significant or near significant for  *Shigella*, *Ascaris*, and *Trichuris* contaminations and infections across multiple studies. *C. difficile* was only measured in latrine soil in Capone et al. 2021, but had the strongest association with *C. difficile* infections. 
+
+
+# Secondary figures
+
+#### Adjusted associations between diarrhea and types of pathogens
+
+```{r, echo=F, warning=F, message=F, fig.width = 10, fig.height = 5}
+p_diar_s1_adj
+```
+
+
+
+__Figure 4.__ Forest plots of associations between child diarrheal disease and the prevalence of any virus, any bacteria, any protozoa and any STH in different types of environmental samples. Pooled estimates are presented when there are four or more study-specific estimates for a specific sample type and target combination and are denoted with diamond-shaped points. Grey crossed points denote data that were too sparse to estimate a prevalence ratio (i.e., <5 positive or negative observations). Samples of the same type from different locations (source vs. stored water, flies in kitchen vs. latrine, soil from courtyard vs. latrine) or different individuals (child vs. mother's hands) are plotted separately. Asterisks above estimates denote statistical significance (\*= P-value < 0.05, \*\*= P-value < 0.01, \*\*\*= P-value < 0.001). All estimates are adjusted for potential confounders.
+
+__Interpretation:__ Presence of types of pathogens in environmental samples were not associated with diarrheal disease, except any viral pathogen presence located on child hands in Boehm et al. 2016.
+
+#### Adjusted associations between diarrhea and types of MST markers
+
+```{r, echo=F, warning=F, message=F, fig.width = 10, fig.height = 5}
+p_diar_2_adj
+```
+
+__Figure 5.__ Forest plots of associations between child diarrheal disease and the prevalence of any general, human, or animal MST in different types of environmental samples. Pooled estimates are presented when there are four or more study-specific estimates for a specific sample type and target combination and are denoted with diamond-shaped points. Grey crossed points denote data that were too sparse to estimate a prevalence ratio (i.e., <5 positive or negative observations). Samples of the same type from different locations (source vs. stored water, flies in kitchen vs. latrine, soil from courtyard vs. latrine) or different individuals (child vs. mother's hands) are plotted separately. Asterisks above estimates denote statistical significance (\*= P-value < 0.05, \*\*= P-value < 0.01, \*\*\*= P-value < 0.001). All estimates are adjusted for potential confounders.
+
+__Interpretation:__ No associations between specific groups of MST markers and child diarrheal disease in any sample type.
+
+#### Adjusted associations between HAZ and types of pathogens
+
+```{r, echo=F, warning=F, message=F, fig.width = 10, fig.height = 5}
+p_haz_s1_adj
+```
+
+__Figure 6.__ Forest plots of associations between child HAZ and the prevalence of groups of pathogens in different types of environmental samples. Pooled estimates are presented when there are four or more study-specific estimates for a specific sample type and target combination and are denoted with diamond-shaped points. Grey crossed points denote data that were too sparse to estimate a mean difference. Samples of the same type from different locations (source vs. stored water, flies in kitchen vs. latrine, soil from courtyard vs. latrine) or different individuals (child vs. mother's hands) are plotted separately. Asterisks above estimates denote statistical significance (\*= P-value < 0.05, \*\*= P-value < 0.01, \*\*\*= P-value < 0.001). All estimates are adjusted for potential confounders.
+
+__Interpretation:__ When separated out by group of pathogen, pathogen presence in any environmental sample is no longer significantly associated with lower HAZ when pooled across studies. However, any virus presence in water was significantly associated with lower mean HAZ in Boehm et al. 2016 and any protozoa in water was significantly associated with lower mean HAZ in Furhmeister et al. 2020, both from the WASH Benefits trial.
+
+
+
+#### Adjusted associations between HAZ and types of MST Markers
+
+```{r, echo=F, warning=F, message=F, fig.width = 10, fig.height = 5}
+p_haz_2_adj
+```
+
+
+__Figure 7.__ Forest plots of associations between child HAZ and the prevalence of groups of MST markers in different types of environmental samples. Pooled estimates are presented when there are four or more study-specific estimates for a specific sample type and target combination and are denoted with diamond-shaped points. Grey crossed points denote data that were too sparse to estimate a mean difference. Samples of the same type from different locations (source vs. stored water, flies in kitchen vs. latrine, soil from courtyard vs. latrine) or different individuals (child vs. mother's hands) are plotted separately. Asterisks above estimates denote statistical significance (*= P-value < 0.05, **= P-value < 0.01, ***= P-value < 0.001). All estimates are adjusted for potential confounders.
+
+
+__Interpretation:__ There is a general trend of presence of groups of MST markers in water samples being associated with lower mean HAZ.
+
+
+```{r, echo=F, warning=F, message=F, fig.width = 10, fig.height = 10}
+p_diar_adj_path
+```
+
+__Figure 8.__  Forest plots of associations between child diarrheal disease and the prevalence of specific pathogens in different types of environmental samples. Pooled estimates are presented when there are four or more study-specific estimates for a specific sample type and target combination and are denoted with diamond-shaped points. Grey crossed points denote data that were too sparse to estimate a prevalence ratio (i.e., <5 positive or negative observations). Samples of the same type from different locations (source vs. stored water, flies in kitchen vs. latrine, soil from courtyard vs. latrine) or different individuals (child vs. mother's hands) are plotted separately. Asterisks above estimates denote statistical significance (\*= P-value < 0.05, \*\*= P-value < 0.01, \*\*\*= P-value < 0.001). All estimates are adjusted for potential confounders.
+
+__Interpretation:__
+
+```{r, echo=F, warning=F, message=F, fig.width = 10, fig.height = 10}
+p_haz_adj_path
+```
+
+__Figure 9.__ Forest plots of associations between child HAZ and the prevalence of specific pathogens in different types of environmental samples. Pooled estimates are presented when there are four or more study-specific estimates for a specific sample type and target combination and are denoted with diamond-shaped points. Grey crossed points denote data that were too sparse to estimate a mean difference. Samples of the same type from different locations (source vs. stored water, flies in kitchen vs. latrine, soil from courtyard vs. latrine) or different individuals (child vs. mother's hands) are plotted separately. Asterisks above estimates denote statistical significance (*= P-value < 0.05, **= P-value < 0.01, ***= P-value < 0.001). All estimates are adjusted for potential confounders.
+
+__Interpretation:__
+
+# Supplimentary figures
+
+
 
 #### TMLE comparison
-```{r, echo=F, warning=F, message=F, fig.width = 10, fig.width = 6}
+```{r, echo=F, warning=F, message=F, fig.width = 10, fig.height = 6}
 p_diar_1_adj_tmle
+```
+
+
+__Figure 10.__ Comparison between associations estimated with generalized linear models (GLM) and machine-learning based targeted likelihood estimation models (TMLE) for the diarrhea outcome.
+
+
+__Interpretation:__ The estimation approach chosen did not affect our conclusions about associations between environmental contamination and diarrheal disease. 
+
+
+```{r, echo=F, warning=F, message=F, fig.width = 10, fig.height = 6}
 p_haz_1_adj_tmle
 ```
 
+__Figure 11.__ Comparison between associations estimated with generalized linear models (GLM) and machine-learning based targeted likelihood estimation models (TMLE) for the height-for-age Z-score outcome.
+
+
+__Interpretation:__ The estimation approach chosen did not affect our conclusions about associations between environmental contamination and child linear growth. 
+
 #### Covariate tables
 
-#NOTE: Why do some Holcomb samples have so few covariates? I think the compound-averaged covariates aren't being properly merged in.
-Need to check if there are more Holcomb covariates somewhere
 
-```{r, echo=F, warning=F, message=F, fig.width = 10, fig.width = 6}
+```{r, echo=F, warning=F, message=F, fig.width = 10, fig.height = 6}
 
 
 p_fuhr
@@ -422,6 +489,10 @@ p_odag
 
 ```
 
+__Figure 12.__ Associations between adjustment covariates and the presence of different pathogen and MST markers in different environmental samples. The columns are different pre-screened confounders, and the rows are specific pathogens and MST markers. Cells of the heatmaps are colored by P-values of bivariate likelihood ratio tests, and heatmaps are stratified by sample type.
+
+__Interpretation:__ Most covariates were not strongly associated with pathogen or MST marker presence in the environment, meaning they were not strong confounders of the relationship between environmental contamination with pathogen or MST markers and child infections or poor growth. Measures of household wealth generally had the strongest association with environmental contamination, though the association varied by study, sample, and microbial target. Between the low association between covariates and environmental contamination, and the generally limited differences between unadjusted, adjusted, and TMLE estimates, we believe our modeling approach adequetly adjusted for measured confounding, but unmeasured confounding may bias the results. 
+
 
 # Tables
 
@@ -434,12 +505,15 @@ FitFlextableToPage(flextable(tab1))
 ```
 
 
+
 ### Any sample type, any MST
 
 ```{r, echo=FALSE, warning=F, message=F}
  FitFlextableToPage(flextable(tab2))
 ```
 
+
+__Interpretation:__ Due to the smaller sample size of the environmental samples within the WASH trials and quasi-randomized studies, the rarity of diarrheal disease in children, and the rarity of many of the pathogen in environmental samples, data sparsity affected what was possible in this analysis. Many exposure-outcome associations were not estimated due to data sparsity, and others were estimated but could only be adjusted for a subset of potential confounders.
 
 
 ## References

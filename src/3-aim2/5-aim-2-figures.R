@@ -9,6 +9,7 @@ d <- readRDS(paste0(dropboxDir,"Data/merged_env_CH_data.rds"))
 temp<-adj_RR%>%filter(Y=="diar7d", target=="Any MST")
 table(temp$sample_cat)
 
+unique(adj_RR$target)
 
 #count number of covariates
 unadj_RR$N_W <- ""
@@ -28,8 +29,25 @@ adj_RR$sparse[adj_RR$RR < 0.05 & !is.na(adj_RR$RR)] <- "yes"
 adj_RR$sample_cat[adj_RR$RR < 0.05 & !is.na(adj_RR$RR)] <- "Sparse data"
 adj_RR$RR[adj_RR$RR < 0.05 & !is.na(adj_RR$RR)] <- 1
 
+adj_RR <- adj_RR %>% mutate(
+  sig_cat = case_when(
+    pval>=0.05 ~"",
+    pval<0.05 ~"*",
+    pval<0.01 ~"**",
+    pval<0.001 ~"***"
+  )
+)
 
-sample_cat
+
+unadj_RR <- unadj_RR %>% mutate(
+  sig_cat = case_when(
+    pval>=0.05 ~"",
+    pval<0.05 ~"*",
+    pval<0.01 ~"**",
+    pval<0.001 ~"***"
+  )
+)
+
 # adj_RR$sparse[adj_RR$Y=="diar7d" & adj_RR$n < 20] <- "yes"
 # adj_RR$RR[adj_RR$Y=="diar7d" & adj_RR$n < 20] <- NA
 # adj_RR$ci.lb[adj_RR$Y=="diar7d" & adj_RR$n < 20] <- NA
@@ -71,7 +89,7 @@ mydf <- unadj_RR %>%
   filter(study=="Odagiri 2016", target=="Any MST")
 
 
-base_plot <- function(mydf, legend_labels=sample_cats, drop_full_sparse=F){
+base_plot <- function(mydf, legend_labels=sample_cats, drop_full_sparse=F, facet_lab_size=10){
   
   my_colors = c("grey20",carto_pal(12, "Prism"))
   
@@ -92,34 +110,47 @@ base_plot <- function(mydf, legend_labels=sample_cats, drop_full_sparse=F){
       filter(n()!=sum(sparse=="yes")) %>% ungroup()
   }
   
+  minCI <- min(mydf$ci.lb, na.rm=T)-0.001
+  maxCI <- max(mydf$ci.ub, na.rm=T) +0.001
+  axislims = c(minCI, maxCI)
+  axislims[1]=ifelse(axislims[1] < 1/20, (1/20)-0.001, axislims[1])
+  axislims[2]=ifelse(axislims[2] > 20, 20.001, axislims[2])
+  axisindex= 1:9
+  axisbreaks = c(0.0625, 0.125,.25, .5,1, 2, 4, 8, 16)
+  axisindex = axisindex[axisbreaks > axislims[1] & axisbreaks < axislims[2]]
+  axisbreaks = axisbreaks[axisindex]
+  axislabels =c("1/16","1/8","1/4", "1/2","1", "2", "4", "8", "16")[axisindex]
+  
   mydf <- mydf %>% droplevels(.)
   ggplot(data = mydf, (aes(x=study, y=RR, group=sample_cat, color=sample_cat, shape=factor(sparse, levels=c("no","yes","pooled"))))) + 
-  geom_point(size=3, position = position_dodge(0.5), alpha=0.75) +
+    geom_point(size=3, position = position_dodge(0.5), alpha=0.75) +
     geom_errorbar(aes(ymin=ci.lb, ymax=ci.ub), position = position_dodge(0.5),
                   width = 0.3, size = 1) +
     #geom_text(aes(label=N_W), color="black", position = position_dodge(0.5)) +
+    #geom_text(aes(label=minN), color="black", position = position_dodge(0.5)) +
+    geom_text(aes(label=sig_cat), color="black", position = position_dodge(0.5), vjust = -0.1) +
     scale_color_manual(breaks = legend_labels,
-      values = colours, drop = FALSE) +
+                       values = colours, drop = FALSE) +
     scale_shape_manual(values=c(16, 13,18), guide=FALSE) + 
     geom_hline(yintercept = 1, linetype="dashed") +
     facet_grid(target_f~sample_type,  scales="free_y", space = "free_x") +
     scale_y_continuous(
-      breaks=c(0.0625, 0.125,.25, .5,1, 2, 4, 8, 16), 
+      breaks=axisbreaks, 
       trans='log10', 
-      labels = c("1/16","1/8","1/4", "1/2","1", "2", "4", "8", "16")
-    ) + coord_flip()+
+      labels = axislabels
+    ) + coord_flip(ylim=axislims)+
     labs(color="Sample type") + xlab("") + ylab("Prevalence ratio") + 
     theme_ki() + 
     theme(axis.ticks.x=element_blank(),
           legend.position = "bottom",
           strip.placement = "outside",
           strip.text.x = element_text(size=10, face = "bold"),
-          strip.text.y = element_text(size=10, angle = 270, face = "bold"),          plot.title = element_text(hjust = 0.5, face = "plain", size=9),
+          strip.text.y = element_text(size=facet_lab_size, angle = 270, face = "bold"),          plot.title = element_text(hjust = 0.5, face = "plain", size=9),
           panel.spacing = unit(0, "lines")) 
 }
 
 
-base_plot_diff <- function(mydf, legend_labels=sample_cats, drop_full_sparse=F){
+base_plot_diff <- function(mydf, legend_labels=sample_cats, drop_full_sparse=F, facet_lab_size = 10){
   
   my_colors = c("grey20",carto_pal(12, "Prism"))
   
@@ -146,6 +177,7 @@ base_plot_diff <- function(mydf, legend_labels=sample_cats, drop_full_sparse=F){
     geom_errorbar(aes(ymin=ci.lb, ymax=ci.ub), position = position_dodge(0.5),
                   width = 0.3, size = 1) +
     #geom_text(aes(label=N_W), color="black", position = position_dodge(0.5)) +
+    geom_text(aes(label=sig_cat), color="black", position = position_dodge(0.5), vjust = -0.1) +
     scale_color_manual(breaks = legend_labels,
                        values = colours, drop = FALSE) +
     scale_shape_manual(values=c(16, 13,18), guide=FALSE) + 
@@ -158,72 +190,69 @@ base_plot_diff <- function(mydf, legend_labels=sample_cats, drop_full_sparse=F){
           legend.position = "bottom",
           strip.placement = "outside",
           strip.text.x = element_text(size=10, face = "bold"),
-          strip.text.y = element_text(size=10, angle = 270, face = "bold"),          plot.title = element_text(hjust = 0.5, face = "plain", size=9),
+          strip.text.y = element_text(size=facet_lab_size, angle = 270, face = "bold"),          plot.title = element_text(hjust = 0.5, face = "plain", size=9),
           panel.spacing = unit(0, "lines")) 
 }
 
-
-unadj <- unadj_RR %>% select(study, Y,      sample, target,    RR) %>% rename(unadj.RR=RR)
-adj <- adj_RR %>% select(study, Y,      sample, target,    RR) %>% rename(adj.RR=RR)
-
-df <- full_join(unadj, adj, by = c('study', 'Y',      'sample', 'target'))
-df <- df %>% mutate(diff=adj.RR/unadj.RR)
-ggplot(df, aes(x=diff)) + geom_density() + geom_vline(xintercept = 1) #+    scale_x_continuous(trans='log10')
 
 #---------------------------------------------------------------
 # Plot figures
 #---------------------------------------------------------------
   
-# d <- unadj_RR %>% 
-#   filter(target %in% c("Any pathogen","Any MST")) %>% filter(study=="Holcomb 2020")
-
 #Primary figure
 p_diar_1_unadj <- unadj_RR %>% 
   filter(target %in% c("Any pathogen","Any MST"), Y=="diar7d") %>%
   base_plot(drop_full_sparse=T)
+ggsave(p_diar_1_unadj, file = paste0(here::here(),"/figures/pngs/aim2_p_diar_1_unadj.png"), width = 10, height = 6)
 
 p_diar_1_adj <- adj_RR %>% 
   filter(target %in% c("Any pathogen","Any MST"), Y=="diar7d") %>%
   base_plot(drop_full_sparse=T)
 p_diar_1_adj
+ggsave(p_diar_1_adj, file = paste0(here::here(),"/figures/pngs/aim2_p_diar_1_adj.png"), width = 10, height = 6)
 
 p_haz_1 <- unadj_RR %>% 
   filter(target %in% c("Any pathogen","Any MST"), Y=="haz") %>%
   base_plot_diff(drop_full_sparse=T)
+ggsave(p_haz_1, file = paste0(here::here(),"/figures/pngs/aim2_p_haz_1_unadj.png"), width = 10, height = 6)
 
 p_haz_1_adj <- adj_RR %>% 
   filter(target %in% c("Any pathogen","Any MST"), Y=="haz") %>%
   base_plot_diff(drop_full_sparse=T)
+ggsave(p_haz_1_adj, file = paste0(here::here(),"/figures/pngs/aim2_p_haz_1_adj.png"), width = 10, height = 6)
 
-unadj_RR %>% filter(target %in% c("Any pathogen"), Y=="haz", study=="Fuhrmeister 2020",sample=="any sample type")
-adj_RR %>% filter(target %in% c("Any pathogen"), Y=="haz", study=="Fuhrmeister 2020",sample=="any sample type")
 
 #Specific pathogens
 p_diar_adj_path <- adj_RR %>% 
   filter( Y=="diar7d", target %in% any_pathogens, !c(target %in% c("Any STH","any pathogen-improved","any pathogen-unimproved"))) %>%
-  base_plot(drop_full_sparse=T)
-p_diar_adj_path
+  base_plot(drop_full_sparse=T, facet_lab_size = 8)
+ggsave(p_diar_adj_path, file = paste0(here::here(),"/figures/pngs/p_diar_adj_path.png"), width = 10, height = 14)
+
 
 p_haz_adj_path <- adj_RR %>% 
   filter( Y=="haz", target %in% any_pathogens, !c(target %in% c("Any STH","any pathogen-improved","any pathogen-unimproved"))) %>%
-  base_plot_diff(drop_full_sparse=T)
-p_haz_adj_path
+  base_plot_diff(drop_full_sparse=T, facet_lab_size = 8)
+ggsave(p_haz_adj_path, file = paste0(here::here(),"/figures/pngs/aim2_p_haz_adj_path.png"), width = 10, height = 14)
+
 
 
 
 p_stunt_1_adj <- adj_RR %>% 
   filter(target %in% c("Any pathogen","Any MST"), Y=="stunt") %>%
   base_plot(drop_full_sparse=T)
+ggsave(p_stunt_1_adj, file = paste0(here::here(),"/figures/pngs/aim2_p_stunt_1_adj.png"), width = 10, height = 6)
 
 
 p_wast_1_adj <- adj_RR %>% 
   filter(target %in% c("Any pathogen","Any MST"), Y=="wast") %>%
   base_plot(drop_full_sparse=T)
+ggsave(p_wast_1_adj, file = paste0(here::here(),"/figures/pngs/aim2_p_wast_1_adj.png"), width = 10, height = 6)
 
 
 p_underwt_1_adj <- adj_RR %>% 
   filter(target %in% c("Any pathogen","Any MST"), Y=="underwt") %>%
   base_plot(drop_full_sparse=T)
+ggsave(p_underwt_1_adj, file = paste0(here::here(),"/figures/pngs/aim2_p_underwt_1_adj.png"), width = 10, height = 6)
 
 
 
@@ -232,24 +261,30 @@ p_underwt_1_adj <- adj_RR %>%
 p_diar_2_unadj <- unadj_RR %>% 
   filter(target %in% c("Any human MST","Any animal MST","Any general MST"), Y=="diar7d") %>%
   base_plot(drop_full_sparse=T)
+ggsave(p_diar_2_unadj, file = paste0(here::here(),"/figures/pngs/aim2_p_diar_2_unadj.png"), width = 10, height = 6)
+
 p_diar_2_adj <- adj_RR %>% 
   filter(target %in% c("Any human MST","Any animal MST","Any general MST"), Y=="diar7d") %>%
   base_plot(drop_full_sparse=T)
+ggsave(p_diar_2_adj, file = paste0(here::here(),"/figures/pngs/aim2_p_diar_2_adj.png"), width = 10, height = 6)
 
 
 p_diar_s1_adj <- adj_RR %>% 
   filter(target %in% c("Any bacteria", "Any protozoa", "Any STH", "Any virus"), Y=="diar7d") %>%
   base_plot(drop_full_sparse=T)
+ggsave(p_diar_s1_adj, file = paste0(here::here(),"/figures/pngs/aim2_p_diar_s1_adj.png"), width = 10, height = 6)
 
 
 p_haz_2 <- unadj_RR %>% 
   filter(target %in% c("Any human MST","Any animal MST","Any general MST"), Y=="haz") %>%
   base_plot_diff(drop_full_sparse=T)
+ggsave(p_haz_2, file = paste0(here::here(),"/figures/pngs/aim2_p_haz_2.png"), width = 10, height = 6)
 
 
 p_haz_s1 <- unadj_RR %>% 
   filter(target %in% c("Any bacteria", "Any protozoa", "Any STH", "Any virus"), Y=="haz") %>%
   base_plot_diff(drop_full_sparse=T)
+ggsave(p_haz_s1, file = paste0(here::here(),"/figures/pngs/aim2_p_haz_s1.png"), width = 10, height = 6)
 
 
 
@@ -257,11 +292,13 @@ p_haz_s1 <- unadj_RR %>%
 p_haz_2_adj <- adj_RR %>% 
   filter(target %in% c("Any human MST","Any animal MST","Any general MST"), Y=="haz") %>%
   base_plot_diff(drop_full_sparse=T)
+ggsave(p_haz_2_adj, file = paste0(here::here(),"/figures/pngs/aim2_p_haz_2_adj.png"), width = 10, height = 6)
 
 
 p_haz_s1_adj <- adj_RR %>% 
   filter(target %in% c("Any bacteria", "Any protozoa", "Any STH", "Any virus"), Y=="haz") %>%
   base_plot_diff(drop_full_sparse=T)
+ggsave(p_haz_s1_adj, file = paste0(here::here(),"/figures/pngs/aim2_p_haz_s1_adj.png"), width = 10, height = 6)
 
 
 

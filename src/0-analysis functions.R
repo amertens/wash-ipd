@@ -258,7 +258,7 @@ cl   <- function(df,fm, cluster){
 
 #Need to add forcedW funciton, look at washbgam for code
 
-aim2_glm <- function(d, Ws=NULL, forcedW=NULL, outcome="pos", exposure, study="mapsan", sample="ds", target="Mnif", family="binomial"){
+aim2_glm <- function(d, Ws=NULL, forcedW=NULL, outcome="pos", exposure, study="mapsan", sample="ds", target="Mnif", family="binomial", minN_thres = 5){
   df <- d %>% filter(study=={{study}}, sample=={{sample}}, target=={{target}}) %>% droplevels(.)
   
   cat(levels(df$study)[1],", ", sample,", ", target,"\n")
@@ -304,7 +304,7 @@ aim2_glm <- function(d, Ws=NULL, forcedW=NULL, outcome="pos", exposure, study="m
   
   #cat(minN>=10 | length(unique(df$Y)) > 2)
   #if((minN>=10 & min(table(df$Y, df$X))>1) | (minN>=10 & length(unique(df$Y)) > 2 & length(unique(df$X)) == 2)){
-  if((minN>=2 & min(table(df$Y, df$X))>1) | (minN>=2 & length(unique(df$Y)) > 2 & length(unique(df$X)) == 2) | (minN>=2 & length(unique(df$X)) > 2 & length(unique(df$Y)) >= 2)){
+  if((minN>=minN_thres & min(table(df$Y, df$X))>1) | (minN>=minN_thres & length(unique(df$Y)) > 2 & length(unique(df$X)) == 2) | (minN>=minN_thres & length(unique(df$X)) > 2 & length(unique(df$Y)) >= 2)){
     
     if(!is.null(Ws)){
       forcedW_n <- 0
@@ -379,6 +379,7 @@ aim2_glm <- function(d, Ws=NULL, forcedW=NULL, outcome="pos", exposure, study="m
     #fit model
     fit <- mpreg(formula = as.formula(f), df = df, vcv=FALSE, family=family)
     coef <- as.data.frame(t(fit[2,]))
+    
     if(family=="gaussian"){
       res <- data.frame(Y=outcome,
                         sample=sample,
@@ -1112,10 +1113,10 @@ aim2_tmle <- function(d, Ws=NULL, forcedW=NULL, outcome, exposure="pos", study="
     }
     
     cat(minN,"\n")
-    
+    minN_thres = 5
     #cat(minN>=10 | length(unique(df$Y)) > 2)
     #if((minN>=10 & min(table(df$Y, df$X))>1) | (minN>=10 & length(unique(df$Y)) > 2 & length(unique(df$X)) == 2)){
-    if((minN>=2 & min(table(df$Y, df$X))>1) | (minN>=2 & length(unique(df$Y)) > 2 & length(unique(df$X)) == 2) | (minN>=2 & length(unique(df$X)) > 2 & length(unique(df$Y)) >= 2)){
+    if((minN>=minN_thres & min(table(df$Y, df$X))>1) | (minN>=minN_thres & length(unique(df$Y)) > 2 & length(unique(df$X)) == 2) | (minN>=minN_thres & length(unique(df$X)) > 2 & length(unique(df$Y)) >= 2)){
       
       if(!is.null(Ws)){
         forcedW_n <- 0

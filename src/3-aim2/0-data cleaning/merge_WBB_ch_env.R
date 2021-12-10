@@ -182,10 +182,21 @@ head(EE_TAC)
 #then each environmental datapoint should have a subsequent diarrhea datapoint within the next 3ish months.
 env_fuhr <- env_wbb %>% filter(study=="Fuhrmeister 2020") %>% mutate(merge_round=as.numeric(round))
 diar_fuhr <- wbb %>% filter(round %in% c(4,5),  !is.na(diar7d)) %>% 
-  mutate(merge_round=as.numeric(round)-1, study="Fuhrmeister 2020") %>%
+  mutate(merge_round=as.numeric(round)-1, 
+         study="Fuhrmeister 2020", 
+         diar7d_full=diar7d) %>%
   select(study, block, clusterid, dataid, hhid, 
          merge_round, child_date, agedays, sex,             
-         childid, diar7d,momage, hfiacat)
+         childid, diar7d, diar7d_full, momage, hfiacat)
+
+
+# #get full diarrhea disease
+# diar_fuhr_full <- wbb %>% filter(!is.na(diar7d)) %>% 
+#   mutate(merge_round=as.numeric(round)-1, study="Fuhrmeister 2020") %>%
+#   rename(diar7d_full=diar7d) %>%
+#   select(study, clusterid, dataid, hhid, 
+#          merge_round, child_date, agedays, sex,             
+#          childid, diar7d_full)
 
 #Get endline anthropometry
 # Erica's R3 and R4 sampling definitely preceded the main trial endline anthro measurements so there should not be missings there either.
@@ -291,8 +302,9 @@ diar_boehm <- diar_boehm_full %>% rename(diar7d=loose7dprev,
          childid=toupper(childid),
          clusterid=as.numeric(clusterid),
          agedays=agedays*30.4167,
-         study="Boehm 2016") %>%
-  distinct(clusterid, dataid, agedays,childid,intday, intmo,diar7d, round, study)
+         study="Boehm 2016",
+         diar7d_full=diar7d) %>%
+  distinct(clusterid, dataid, agedays,childid,intday, intmo,diar7d, diar7d_full, round, study)
 
 dim(diar_boehm)
 table(diar_boehm$childid)
@@ -409,7 +421,10 @@ head(env_kwong)
 WBB_main_health <- readRDS(paste0(dropboxDir, "Data/WBB/Clean/WBB_child_health.RDS"))
 WBB_main_health <- WBB_main_health %>% filter(round=="endline")
 head(WBB_main_health)
-WBB_main_diar <- WBB_main_health %>% filter(!is.na(diar7d)) %>% subset(., select=c(block, clusterid, dataid, hhid, childid , child_date, agedays,sex, diar7d))
+WBB_main_diar <- WBB_main_health %>% 
+  filter(!is.na(diar7d)) %>% 
+  subset(., select=c(block, clusterid, dataid, hhid, childid , child_date, agedays,sex, diar7d)) %>%
+  mutate(diar7d_full=diar7d)
 
 
 WBB_main_anthro <- WBB_main_health %>% filter(!is.na(laz)|!is.na(whz)|!is.na(waz)) %>%
@@ -453,7 +468,8 @@ date_diff <- ch_env_kwong %>% mutate(date_diff = child_date-env_date) %>% select
 
 
 ch_env_kwong <- ch_env_kwong %>%
-  mutate(diar7d = ifelse(child_date<env_date, NA, diar7d),
+  mutate(diar7d_full=diar7d,
+         diar7d = ifelse(child_date<env_date, NA, diar7d),
          diar7d = ifelse(child_date-env_date > 124, NA, diar7d),
          diar7d = ifelse(is.na(child_date)|is.na(env_date), NA, diar7d))
 
@@ -544,3 +560,5 @@ saveRDS(WBB_Ns, file=paste0(here(),"/results/WBB_merge_Ns.rds"))
 saveRDS(date_diff, file=paste0(here(),"/results/WBB_date_diff.rds"))
 
 colnames(env_wbb)
+
+table(env_wbb$diar7d_full)

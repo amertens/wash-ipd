@@ -39,25 +39,32 @@ ch <- ch %>%
          clusterid=villid,
          age=currage,
          sex=hh104,
-         hhwealth=assetf1,
+         hhwealth_cont=assetf1,
          walls=housestruc,
          Nhh=hhpop,
          child_date=visitdate1,
          landacre=land, 
          diar7d=hh106) %>% 
   subset(., select =c(childid, clusterid, hhid,age,sex,diar7d, waz,
-                      child_date, hhwealth, walls, Nhh, landacre)) %>%
+                      child_date, hhwealth_cont, walls, Nhh, landacre)) %>%
   mutate(trial="Odisha",
          dataid=clusterid,
          age_anthro=age,
          child_date=ymd(child_date),
-         hhwealth=factor(ntile(hhwealth,4), levels=c("1","2","3","4")),
+         #hhwealth=factor(ntile(hhwealth,4), levels=c("1","2","3","4")),
          diar7d=case_when(
            diar7d==2 ~ 0, 
            diar7d==1 ~ 1, 
            diar7d==99 | diar7d==92 ~ NA_real_
-         )) %>%
+         ),         
+         diar7d_full=diar7d) %>%
   filter(!is.na(diar7d) | !is.na(waz))  %>% mutate(ch_data=1)
+
+#quartile HH wealth
+ch$hhwealth=factor(quantcut(ch$hhwealth_cont, na.rm=T), labels=c("1","2","3","4"))
+ch$hhwealth <- factor(ch$hhwealth, labels=c("1","2","3","4"))
+ch$hhwealth = fct_explicit_na(ch$hhwealth, na_level = "Missing")
+
 
 
 odisha_res <- data.frame(
@@ -76,6 +83,10 @@ d <- full_join(env, ch, by = c("trial","dataid","clusterid"))
 d <- d %>% filter(!is.na(sample), !is.na(ch_data))
 dim(d)
 
+saveRDS(d, file = paste0(dropboxDir, "Data/WBK/clean-odisha-diar.RDS"))
+
+
+table(d$hhwealth)
 
 odisha_res$env_samples_after_merge <- nrow(d %>% do(drop_agg(.)) %>% distinct(sampleid, dataid, clusterid,sample, round))
 odisha_res$env_HH_after_merge <- nrow(d %>% do(drop_agg(.)) %>% distinct(dataid, clusterid))

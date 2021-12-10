@@ -42,6 +42,7 @@ ch <- ch %>%
     elec=compElec )%>%
   mutate(
     dataid=clusterid,
+    diar7d_all=diar7d,
     momedu=case_when(ch_careEDUorig==0 ~"No education",
                      ch_careEDUorig==1 ~"Incomplete Primary",
                      ch_careEDUorig==2 ~"Primary",
@@ -55,7 +56,7 @@ ch <- ch %>%
     tr = factor(tr, levels = c("Control", "Sanitation"))
   )
 
-ch <- ch %>% subset(., select=c(trial, round,child_date,childid, female, age_months, dataid, hhid,clusterid, diar7d, haz,whz,waz,
+ch <- ch %>% subset(., select=c(trial, round,child_date,childid, female, age_months, dataid, hhid,clusterid, diar7d, diar7d_all, haz,whz,waz,
                                 Kkasc,
                                 KKtrc,
                                 KKhkw,
@@ -68,6 +69,7 @@ ch <- ch %>% subset(., select=c(trial, round,child_date,childid, female, age_mon
 head(ch)
 table(ch$diar7d)
 
+saveRDS(ch, file = paste0(dropboxDir, "Data/WBK/clean-mapsan-diar.RDS"))
 
 
 
@@ -182,6 +184,7 @@ date_diff <- d %>% mutate(date_diff = child_date-env_date) %>% select(study, sam
 d <- d %>% 
   filter(child_date +14 >=env_date) %>% #add 14 because child data had been coarsened to the month
   mutate(
+    diar7d_full=diar7d,
     diar7d = ifelse(child_date-env_date > 124, NA, diar7d))
 table(d$pos, d$diar7d)
 table(d$pos, !is.na(d$haz))

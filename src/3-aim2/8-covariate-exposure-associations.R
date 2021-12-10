@@ -31,8 +31,16 @@ d <- d %>% distinct(study, sample, target, clusterid, hhid, pos, .keep_all = T)
 # a.	Indicator for works in agriculture 
 # 9.	Land ownership 
 
-Wvars = c("sex","age","hfiacat","momage","hhwealth_cont", "Nhh","nrooms","walls", "roof", "floor","elec","dadagri","landacre","landown", "momedu", "tr")         
+Wvars = c("sex","age","hfiacat","momage","hhwealth", "Nhh","nrooms","walls", "roof", "floor","elec","dadagri","landacre","landown", "momedu", "tr")         
 
+for(i in Wvars){
+  cat(i,":\n")
+  if(length(unique(d[[i]]))>10){
+    print(table(d$study, is.na(d[[i]])))
+  }else{
+    print(table(d$study, d[[i]]))
+  }
+}
 
 #-----------------------------------
 #washb_prescreen by study and outcome for all covariates
@@ -161,7 +169,7 @@ plot_heatmap_all <- function(res, study){
   
   p <-  ggplot(plot_df, aes(x=var, y=target, fill=pval_cat)) +
       geom_tile(colour = "grey80", size = 0.25) + 
-      facet_wrap(~sample, scales = "free", ncol=2) +
+      facet_wrap(~sample, scales = "free") +
       scale_x_discrete(expand = c(0, 0)) + 
       scale_y_discrete(expand = c(0, 0)) + 
       theme_minimal(base_size = 10) + 

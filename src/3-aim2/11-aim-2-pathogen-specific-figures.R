@@ -8,10 +8,14 @@ adj_RR$N_W[adj_RR$W=="unadjusted"] <- 0
 
 adj_RR %>% filter(target=="Ascaris", sample=="S")
 adj_RR %>% filter(target=="Trichuris", sample=="S")
-table(adj_RR$Y)
+temp<-adj_RR %>% filter(target=="Trichuris")
+unique(adj_RR$Y)
 
-#Drop QPCR outcomes from plot to avoid overplotting
-adj_RR <- adj_RR %>% filter(!grepl("qpcr",Y))
+#Drop non-QPCR sth outcomes from plot to avoid overplotting
+#adj_RR <- adj_RR %>% filter(!grepl("qpcr",Y))
+adj_RR <- adj_RR %>% filter(!(study=="Kwong 2021" & (Y=="ch_pos_ascaris" | Y=="ch_pos_trichuris")))
+
+adj_RR <- adj_RR %>% filter(sample!="any sample type")
 
 
 #---------------------------------------------------------------
@@ -20,6 +24,16 @@ adj_RR <- adj_RR %>% filter(!grepl("qpcr",Y))
 
 adj_RR$sparse <- "no"
 adj_RR <- clean_res(adj_RR)
+
+adj_RR <- adj_RR %>% mutate(
+  sig_cat = case_when(
+    pval>=0.05 ~"",
+    pval<0.05 ~"*",
+    pval<0.01 ~"**",
+    pval<0.001 ~"***"
+  )
+)
+
 sample_cats = levels(adj_RR$sample_cat)[levels(adj_RR$sample_cat)!="Any sample"]
 
 
@@ -28,10 +42,9 @@ sample_cats = levels(adj_RR$sample_cat)[levels(adj_RR$sample_cat)!="Any sample"]
 #---------------------------------------------------------------
 
 
-# mydf <- unadj_RR %>% 
-#   filter(target %in% c("Any MST"), Y=="diar7d") %>% 
-#   filter(study=="Odagiri 2016", target=="Any MST")
-
+mydf <- adj_RR 
+legend_labels=sample_cats
+drop_full_sparse=F
 
 pathogen_plot <- function(mydf, legend_labels=sample_cats, drop_full_sparse=F){
   
@@ -54,19 +67,20 @@ pathogen_plot <- function(mydf, legend_labels=sample_cats, drop_full_sparse=F){
   
   mydf <- mydf %>% droplevels(.)
   ggplot(data = mydf, (aes(x=study, y=RR, group=sample_cat, color=sample_cat, shape=factor(sparse, levels=c("no","yes","pooled"))))) + 
-  geom_point(size=3, position = position_dodge(0.5), alpha=0.75) +
-    geom_errorbar(aes(ymin=ci.lb, ymax=ci.ub), position = position_dodge(0.5),
+  geom_point(size=3, position = position_dodge(1), alpha=0.75) +
+    geom_errorbar(aes(ymin=ci.lb, ymax=ci.ub), position = position_dodge(1),
                   width = 0.3, size = 1) +
     scale_color_manual(breaks = legend_labels,
       values = colours, drop = FALSE) +
+    geom_text(aes(label=sig_cat), color="black", position = position_dodge(1), vjust = -0.1) +
     scale_shape_manual(values=c(16, 13,18), guide=FALSE) + 
     geom_hline(yintercept = 1, linetype="dashed") +
-    facet_wrap(~target_f,  nrow=2) +
+    facet_wrap(~target_f,  nrow=3) +
     scale_y_continuous(
       breaks=c(.25, .5,1, 2, 4, 8, 16, 32), 
       trans='log10', 
       labels = c("1/4", "1/2","1", "2", "4", "8", "16", "32")
-    ) + coord_flip()+
+    ) + coord_flip(ylim=c(0.225,33)) +
     labs(color="Sample type") + xlab("") + ylab("Prevalence ratio") + 
     theme_ki() + 
     theme(axis.ticks.x=element_blank(),
@@ -87,6 +101,7 @@ adj_RR
 p_pathogen <- adj_RR %>% 
   pathogen_plot(drop_full_sparse=T)
 
+ggsave(p_pathogen, file = paste0(here::here(),"/figures/pngs/aim2_p_pathogen.png"), width = 10, height = 6)
 
 
 #save figures

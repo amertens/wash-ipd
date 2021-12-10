@@ -51,7 +51,7 @@ overwrite=F
 fullres_adj <- NULL
 res_diar_adj <- d %>% group_by(study, sample, target) %>%
   do(res=aim2_tmle(., Ws = Wvars, forcedW=c("age", "hhwealth"), outcome="diar7d", exposure="pos",
-                   study=.$study[1], sample=.$sample[1], target=.$target[1], family="binomial", overwrite=T)) 
+                   study=.$study[1], sample=.$sample[1], target=.$target[1], family="binomial", overwrite=F)) 
 saveRDS(res_diar_adj, file=here("results/tmle_aim2_res_diarlist.Rds"))
 
 
@@ -62,7 +62,7 @@ saveRDS(res_diar_adj, file=here("results/tmle_aim2_res_diarlist.Rds"))
 
 res_haz_adj <- d %>% group_by(study, sample, target) %>%
   do(res=aim2_tmle(., Ws = Wvars_anthro, forcedW=c("age", "hhwealth"), outcome="haz", exposure="pos", 
-                   study=.$study[1], sample=.$sample[1], target=.$target[1], family="gaussian", overwrite=T)) 
+                   study=.$study[1], sample=.$sample[1], target=.$target[1], family="gaussian", overwrite=F)) 
 saveRDS(res_haz_adj, file=here("results/tmle_aim2_res_hazlist.Rds"))
 
 # res_haz_adj$sparse <- ifelse(is.na(res_haz_adj$coef), "yes", "no")

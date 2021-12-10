@@ -32,15 +32,14 @@ table(is.na(d$child_date_pathogen), d$ch_pos_path_ecoli, d$study)
 d <- d %>% filter(!(grepl("Any ",target) & target != "Any STH"),
                   !(target %in% c("Zoonotic E. coli","Non-zoonotic E. coli")))
 
-#drop dates out of range.
-dim(d)
-d <- d %>% filter(!is.na(pathogen_date))
-dim(d)
-d <- d %>% filter(pathogen_date - env_date >= 0 & pathogen_date - env_date <= 124)
-dim(d)
+# #drop dates out of range.
+# dim(d)
+# d <- d %>% filter(!is.na(pathogen_date))
+# dim(d)
+# d <- d %>% filter(pathogen_date - env_date >= 0 & pathogen_date - env_date <= 124)
+# dim(d)
 
-XXXXXXXXXXXXXXXXX
-XXXXXXXXXXXXXXXX
+
 
 df <- d %>% filter(target=="Ascaris") %>% droplevels()
 table(df$study, df$ch_pos_ascaris, df$sample)
@@ -105,9 +104,9 @@ Wvars = c("sex","age","hfiacat","momage","hhwealth", "Nhh","nrooms","walls", "ro
 
 outcome="ch_pos_rotavirus"
 exposure="pos"
-study="Boehm 2016"
+study="Kwong 2021"
 sample="S"
-target= "Rotavirus"
+target= "Ascaris"
 family="binomial"
 forcedW=c("age", "hhwealth")
 Ws=Wvars
@@ -115,8 +114,12 @@ Ws=Wvars
 #
 table(is.na(d$child_date_pathogen), d$ch_pos_path_ecoli, d$study)
 
+df <- d %>% filter(study=={{study}}) %>% droplevels(.)
+table(df$target)
 
-df <- d %>% filter(study=={{study}} , sample=={{sample}}, target=={{target}}) %>% droplevels(.)
+table(d$study)
+
+df <- d %>% filter(study=={{study}} ,    target=={{target}}) %>% droplevels(.)
 dim(df)
 
 table(df$child_date_pathogen - df$env_date)
@@ -124,8 +127,7 @@ table(df$child_date_pathogen - df$env_date)
 table(is.na(df$child_date_pathogen))
 table(is.na(df$child_date_pathogen), df$ch_pos_path_ecoli)
 
-table(is.na(d$child_date_pathogen_sth), is.na(d$child_date_pathogen))
-      
+
       #need to figure out how to use the EE date or QPCR data
 
 #Make function that checks the sampling timing
@@ -146,25 +148,47 @@ table(is.na(d$child_date_pathogen_sth), is.na(d$child_date_pathogen))
 res_full <- NULL
 #Don't forc W for Giardia because of convergence errors
 res_adj1 <- d %>% group_by(study, sample) %>%
-  do(aim2_glm(., Ws = Wvars, forcedW=NULL, outcome=paired_pathogens$outcome[1], exposure="pos", study=.$study[1], sample=.$sample[1], target=paired_pathogens$exposure[1], family="binomial")) 
+  do(aim2_glm(., Ws = Wvars, forcedW=NULL, outcome=paired_pathogens$outcome[1], exposure="pos", study=.$study[1], sample=.$sample[1], target=paired_pathogens$exposure[1], family="binomial", minN_thres=5)) 
 res_full <- bind_rows(res_full, res_adj1)
 for(i in 2:nrow(paired_pathogens)){
   res_adj <- d %>% group_by(study, sample) %>%
-    do(aim2_glm(., Ws = Wvars, forcedW=c("age", "hhwealth"), outcome=paired_pathogens$outcome[i], exposure="pos", study=.$study[1], sample=.$sample[1], target=paired_pathogens$exposure[i], family="binomial")) 
+    do(aim2_glm(., Ws = Wvars, forcedW=c("age", "hhwealth"), outcome=paired_pathogens$outcome[i], exposure="pos", study=.$study[1], sample=.$sample[1], target=paired_pathogens$exposure[i], family="binomial", minN_thres=5)) 
   res_full <- bind_rows(res_full, res_adj)
 }
 res_full <- res_full %>% filter(!is.na(RR))
 #LS pathogenic E-coli failed to converge. Rerun here
 res_adj2 <- d %>% group_by(study, sample) %>%
-  do(aim2_glm(., Ws = Wvars[Wvars!="sex"], forcedW=NULL, outcome="ch_pos_path_ecoli", exposure="pos", study="Capone 2021", sample=.$sample[1], target="Pathogenic E. coli", family="binomial")) 
-res_adj2 <- res_adj2 %>% filter(!is.na(RR))
-res_full <- res_full %>% filter(Y!="ch_pos_path_ecoli" | sample!="LS")
-res_full <- bind_rows(res_full, res_adj2)
+  do(aim2_glm(., Ws = Wvars[Wvars!="sex"], forcedW=NULL, outcome="ch_pos_path_ecoli", exposure="pos", study="Capone 2021", sample=.$sample[1], target="Pathogenic E. coli", family="binomial", minN_thres=5)) 
+res_adj2 <- res_adj2 %>% filter(!is.na(RR),sample=="LS")
+
+#LS Trichuris failed to converge. Rerun here
+res_adj3 <- d %>% group_by(study, sample) %>%
+  do(aim2_glm(., Ws = Wvars[Wvars!="walls"], forcedW=NULL, outcome="ch_pos_trichuris", exposure="pos", study="Capone 2021", sample=.$sample[1], target="Trichuris", family="binomial", minN_thres=5)) 
+res_adj3 <- res_adj3 %>% filter(!is.na(RR),sample=="LS")
+res_adj3
+
+# df <- d %>% filter(sample=="LS", study=="Capone 2021", target=="Trichuris")
+# Ws = Wvars
+# forcedW=NULL
+# outcome="ch_pos_trichuris"
+# exposure="pos"
+# study="Capone 2021"
+# sample="LS"
+# target="Trichuris"
+# family="binomial"
+# minN_thres=5
+# table(df$tr)
+
+
+res_full <- res_full %>% 
+  filter(!(Y=="ch_pos_path_ecoli" & sample=="LS")) %>% 
+  filter(!(Y=="ch_pos_trichuris" & sample=="LS"))
+res_full <- bind_rows(res_full, res_adj2, res_adj3)
 
 res_full_cont <- NULL
 for(i in 1:nrow(paired_pathogens_cont)){
   res_adj_cont <- d %>% group_by(study, sample) %>%
-    do(aim2_glm(., Ws = Wvars, forcedW=c("age", "hhwealth"), outcome=paired_pathogens_cont$outcome[i], exposure="pos", study=.$study[1], sample=.$sample[1], target=paired_pathogens_cont$exposure[i], family="gaussian")) 
+    do(aim2_glm(., Ws = Wvars, forcedW=c("age", "hhwealth"), outcome=paired_pathogens_cont$outcome[i], exposure="pos", study=.$study[1], sample=.$sample[1], target=paired_pathogens_cont$exposure[i], family="gaussian", minN_thres=5)) 
   res_full_cont <- bind_rows(res_full_cont, res_adj_cont)
 }
 

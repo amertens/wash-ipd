@@ -370,6 +370,9 @@ table(r01_diar$childid)
 table(diar$childid)
 
 diar <- bind_rows(diar, r01_diar)
+saveRDS(diar, file = paste0(dropboxDir, "Data/WBK/clean-wbb-diar.RDS"))
+
+
 
 # temp <- diar2 %>% group_by( dataid, childid ) %>% summarize(sex1=first(sex), sex2=last(sex))
 # table(temp$sex1, temp$sex2)

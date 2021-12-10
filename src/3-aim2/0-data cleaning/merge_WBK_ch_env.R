@@ -61,6 +61,9 @@ colnames(wbk_diar)
 wbk_diar <- wbk_diar %>% 
   mutate(child_date=dmy(DOB)+aged, compoundid=floor(hhid/10)) %>% filter(!is.na(child_date)) %>%
   subset(., select =c("childid","child_date","hhid","compoundid","clusterid","studyyear","aged","sex","tr","diar7d")) 
+saveRDS(wbk_diar, file = paste0(dropboxDir, "Data/WBK/clean-wbk-diar.RDS"))
+
+
 
 colnames(wbk_anthro)
 wbk_anthro <- wbk_anthro %>% 
@@ -140,7 +143,8 @@ wbk_res$samples_with_ch_after_merge <- nrow(d %>% filter(!is.na(haz)|!is.na(diar
 date_diff <- d %>% mutate(date_diff = child_date-env_date) %>% select(study, sampleid, target, dataid, round, hhid, date_diff, diar7d, haz) %>% distinct()
 
 d <- d %>%
-  mutate(diar7d = ifelse(child_date<env_date, NA, diar7d),
+  mutate(diar7d_full = diar7d,
+         diar7d = ifelse(child_date<env_date, NA, diar7d),
          diar7d = ifelse(child_date-env_date > 124, NA, diar7d),
          diar7d = ifelse(is.na(child_date)|is.na(env_date), NA, diar7d),
          pathogen_date_flag = ifelse((as.numeric(child_date_pathogen - env_date) <= 124 & (as.numeric(child_date_pathogen - env_date) > 0)) ,1,0))

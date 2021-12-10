@@ -123,6 +123,12 @@ clean_res <- function(d, target_lev=target_levels){
   d$target_f <- gsub("Pathogenic E. coli","Pathogenic\nE. coli",d$target_f)
   target_lev <- gsub("MST","MST\nMarker",target_lev)
   d$target_f <- gsub("MST","MST\nMarker",d$target_f)
+  target_lev <- gsub("Campylobacter","Campylo-\nbacter",target_lev)
+  d$target_f <- gsub("Campylobacter","Campylo-\nbacter",d$target_f)
+  target_lev <- gsub("Cryptosporidium","Crypto-\nsporidium",target_lev)
+  d$target_f <- gsub("Cryptosporidium","Crypto-\nsporidium",d$target_f)
+  target_lev <- gsub("Pan enterovirus","Pan\nenterovirus",target_lev)
+  d$target_f <- gsub("Pan enterovirus","Pan\nenterovirus",d$target_f)
   
   d$target_f <- factor(d$target_f, levels = c(target_lev, unique(d$target_f)[!(unique(d$target_f) %in% target_lev)]) ) 
   

@@ -71,7 +71,6 @@ res_diar <- d %>% group_by(study, sample, target) %>%
    do(aim2_glm(., outcome="diar7d", exposure="abund", study=.$study[1], sample=.$sample[1], target=.$target[1], family="binomial")) 
 res_diar$sparse <- ifelse(is.na(res_diar$RR), "yes", "no")
 res_diar$RR[is.na(res_diar$RR)] <- 1
-fullres <- bind_rows(fullres, res_diar)
 
 res_haz <- d %>% group_by(study, sample, target) %>%
   mutate(abund=log10(abund)) %>%
