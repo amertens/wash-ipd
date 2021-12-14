@@ -18,6 +18,17 @@ adj_diff$W
 adj_diff$N_W <- str_count(adj_diff$W,",") + 1
 adj_diff$N_W[adj_diff$W=="unadjusted"] <- 0
 
+adj_diff <- adj_diff %>% mutate(
+  sig_cat = case_when(
+    pval<0.001 ~"***",
+    pval<0.01 ~"**",
+    pval<0.05 ~"*",
+    pval>=0.05 ~""
+  )
+)
+
+
+
 #------------------------------------
 #Diarrhea plot
 #------------------------------------
@@ -51,7 +62,7 @@ drop_full_sparse=F
 
 p_abund_diar <- ggplot(data = d, (aes(x=study, y=RR, group=sample_cat, color=sample_cat, shape=factor(sparse, levels=c("no","yes","pooled"))))) + 
   geom_point(size=3, position = position_dodge(0.5)) +
-  geom_text(aes(label=N_W), nudge_x=0.1) +
+  geom_text(aes(label=sig_cat), color="black", position = position_dodge(0.5), vjust = -0.1) +
   geom_errorbar(aes(ymin=ci.lb, ymax=ci.ub), position = position_dodge(0.5),
                 width = 0.3, size = 1) +
   scale_color_manual(breaks = legend_labels,
@@ -75,7 +86,7 @@ p_abund_diar2 <- ggplot(data = d, (aes(x=study, y=RR, group=sample_cat, color=sa
   geom_point(size=3, position = position_dodge(0.5), alpha=0.75) +
   geom_errorbar(aes(ymin=ci.lb, ymax=ci.ub),  position = position_dodge(0.5),
                 width = 0.3, size = 1) +
-  geom_text(aes(label=N_W), color="black", position = position_dodge(0.5)) +
+  geom_text(aes(label=sig_cat), color="black", position = position_dodge(0.5), vjust = -0.1) +
   scale_color_manual(breaks = legend_labels,
                      values = colours, drop = FALSE) +
   scale_shape_manual(values=c(16, 13,18), guide=FALSE) + 
@@ -115,7 +126,7 @@ p_abund_haz <- ggplot(data = dhaz, (aes(x=study, y=coef, group=sample_cat, color
   geom_point(size=3, position = position_dodge(0.5), alpha=0.75) +
   geom_errorbar(aes(ymin=ci.lb, ymax=ci.ub), position = position_dodge(0.5),
                 width = 0.3, size = 1) +
-  geom_text(aes(label=N_W), color="black", position = position_dodge(0.5)) +
+  geom_text(aes(label=sig_cat), color="black", position = position_dodge(0.5), vjust = -0.1) +
   scale_color_manual(breaks = legend_labels,
                      values = colours, drop = FALSE) +
   scale_shape_manual(values=c(16, 13,18), guide=FALSE) + 

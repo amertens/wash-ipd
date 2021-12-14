@@ -31,23 +31,22 @@ adj_RR$RR[adj_RR$RR < 0.05 & !is.na(adj_RR$RR)] <- 1
 
 adj_RR <- adj_RR %>% mutate(
   sig_cat = case_when(
-    pval>=0.05 ~"",
-    pval<0.05 ~"*",
+    pval<0.001 ~"***",
     pval<0.01 ~"**",
-    pval<0.001 ~"***"
+    pval<0.05 ~"*",
+    pval>=0.05 ~""
   )
 )
 
 
 unadj_RR <- unadj_RR %>% mutate(
   sig_cat = case_when(
-    pval>=0.05 ~"",
-    pval<0.05 ~"*",
+    pval<0.001 ~"***",
     pval<0.01 ~"**",
-    pval<0.001 ~"***"
+    pval<0.05 ~"*",
+    pval>=0.05 ~""
   )
 )
-
 # adj_RR$sparse[adj_RR$Y=="diar7d" & adj_RR$n < 20] <- "yes"
 # adj_RR$RR[adj_RR$Y=="diar7d" & adj_RR$n < 20] <- NA
 # adj_RR$ci.lb[adj_RR$Y=="diar7d" & adj_RR$n < 20] <- NA

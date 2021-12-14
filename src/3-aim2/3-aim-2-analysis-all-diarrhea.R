@@ -9,6 +9,7 @@ d <- readRDS(paste0(dropboxDir,"Data/all-diar.RDS"))
 adj_RR <- readRDS(file=here("results/adjusted_aim2_pooled.Rds")) %>% 
   mutate(time="4 months") %>%
   filter(Y=="diar7d")
+adj_RR$sample_cat_f[adj_RR$study=="Pooled"] <- "Any sample type"
 
 head(d)
 d <- droplevels(d)
@@ -93,19 +94,49 @@ res_diar_adj_1mo$sparse <- ifelse(is.na(res_diar_adj_1mo$RR), "yes", "no")
 res_diar_adj_1mo$RR[is.na(res_diar_adj_1mo$RR)] <- 1
 res_diar_adj_1mo <- res_diar_adj_1mo %>% mutate(time="1 month")
 
-fullres_adj <- bind_rows(res_diar_adj, res_diar_adj_1mo)
-fullres_adj <- clean_res(fullres_adj)
+#Pool results
+res_diar_adj_1mo <- clean_res(res_diar_adj_1mo)
+res_diar_adj <- clean_res(res_diar_adj)
+
+res_RR_adj1mo <- res_diar_adj_1mo %>% filter(sample_cat!="Sparse data") %>%
+  group_by(sample, target) %>%
+  filter(!is.na(se)) %>% mutate(N=n()) %>%
+  filter(N>=4)%>% 
+  do(poolRR(.)) %>% do(clean_res(.)) %>% mutate(time="1 month")
+
+res_RR_adj <- res_diar_adj %>% filter(sample_cat!="Sparse data") %>%
+  group_by(sample, target) %>%
+  filter(!is.na(se)) %>% mutate(N=n()) %>%
+  filter(N>=4)%>% 
+  do(poolRR(.))  %>% do(clean_res(.)) %>% mutate(time="All")
+
+
+fullres_adj <- bind_rows(res_diar_adj, res_RR_adj, res_diar_adj_1mo, res_RR_adj1mo)
 fullres_adj <- bind_rows(fullres_adj, adj_RR)
 fullres_adj <- fullres_adj %>% filter(RR!=1)
 
 saveRDS(fullres_adj, file=here("results/aim2_sens_diar_time_res.Rds"))
 
 plotdf <- fullres_adj %>% group_by(study, target, sample) %>% filter(n()>1)
+plotdf$study <- factor(plotdf$study, levels = unique(plotdf$study))
+levels(plotdf$study)
+
+plotdf <- plotdf %>% mutate(
+  sig_cat = case_when(
+    pval<0.001 ~"***",
+    pval<0.01 ~"**",
+    pval<0.05 ~"*",
+    pval>=0.05 ~""
+  )
+)
+
 
 
 mydf <- plotdf %>%
     filter(target %in% c("Any pathogen","Any MST")) 
   
+
+temp<-mydf %>% filter(study=="Pooled")
 
 legend_labels = levels(fullres_adj$sample_cat)[levels(fullres_adj$sample_cat)!="Any sample"]
 
@@ -138,11 +169,11 @@ facet_lab_size=10
   mydf <- mydf %>% droplevels(.)
   mydf$time <- factor(mydf$time, levels = c("All", "4 months", "1 month"))
 
-p <- ggplot(data = mydf, (aes(x=study, y=RR, group=time, color=sample_cat, shape=time))) + 
+p_diar_time <- ggplot(data = mydf, (aes(x=study, y=RR, group=time, color=sample_cat, shape=time))) + 
   geom_point(size=3, position = position_dodge(0.5), alpha=0.75) +
   geom_errorbar(aes(ymin=ci.lb, ymax=ci.ub), position = position_dodge(0.5),
                 width = 0.3, size = 1) +
-  #geom_text(aes(label=sig_cat), color="black", position = position_dodge(0.5), vjust = -0.1) +
+  geom_text(aes(label=sig_cat), color="black", position = position_dodge(0.5), vjust = -0.01) +
   scale_color_manual(breaks = legend_labels,
                      values = colours, drop = FALSE, guide="none") +
   scale_shape_manual(values=c(13,16, 18)) + 
@@ -162,5 +193,6 @@ p <- ggplot(data = mydf, (aes(x=study, y=RR, group=time, color=sample_cat, shape
         strip.text.y = element_text(size=facet_lab_size, angle = 270, face = "bold"),          plot.title = element_text(hjust = 0.5, face = "plain", size=9),
         panel.spacing = unit(0, "lines")) 
 
-ggsave(p, file = paste0(here::here(),"/figures/pngs/aim2_p_diar_time_comp.png"), width = 10, height = 6)
+ggsave(p_diar_time, file = paste0(here::here(),"/figures/pngs/aim2_p_diar_time_comp.png"), width = 10, height = 6)
 
+save(list=ls(pattern="p_"), file=here("figures/aim2_diar_time_figures.Rdata"))

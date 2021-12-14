@@ -200,6 +200,8 @@ load(here("figures/aim2_abund_figures.Rdata"))
 load(here("figures/aim2_covar_sig_figures.Rdata"))
 load(here("figures/aim2_tmle_figures.Rdata"))
 load(here("figures/aim2_pathogen_figures.Rdata"))
+load(here("figures/aim2_diar_time_figures.Rdata"))
+
 
 
 gv_res <- readRDS(file=paste0(here(),"/results/gv_merge_Ns.rds"))
@@ -446,7 +448,20 @@ __Figure 9.__ Forest plots of associations between child HAZ and the prevalence 
 
 __Interpretation:__
 
+
+#ADD! ABUNDANCE DIFFERENCE FIGURES (MAYBE SUPP)
+"p_abund_diar"              "p_abund_diar2"             "p_abund_haz" 
+
 # Supplimentary figures
+
+#### Timing of diarrheal disease
+```{r, echo=F, warning=F, message=F, fig.width = 10, fig.height = 6}
+p_diar_time
+```
+
+__Figure 10.__ Comparison between associations estimated with...
+
+__Interpretation:__ The timing....
 
 
 
@@ -456,7 +471,7 @@ p_diar_1_adj_tmle
 ```
 
 
-__Figure 10.__ Comparison between associations estimated with generalized linear models (GLM) and machine-learning based targeted likelihood estimation models (TMLE) for the diarrhea outcome.
+__Figure 11.__ Comparison between associations estimated with generalized linear models (GLM) and machine-learning based targeted likelihood estimation models (TMLE) for the diarrhea outcome.
 
 
 __Interpretation:__ The estimation approach chosen did not affect our conclusions about associations between environmental contamination and diarrheal disease. 
@@ -466,7 +481,7 @@ __Interpretation:__ The estimation approach chosen did not affect our conclusion
 p_haz_1_adj_tmle
 ```
 
-__Figure 11.__ Comparison between associations estimated with generalized linear models (GLM) and machine-learning based targeted likelihood estimation models (TMLE) for the height-for-age Z-score outcome.
+__Figure 12.__ Comparison between associations estimated with generalized linear models (GLM) and machine-learning based targeted likelihood estimation models (TMLE) for the height-for-age Z-score outcome.
 
 
 __Interpretation:__ The estimation approach chosen did not affect our conclusions about associations between environmental contamination and child linear growth. 
@@ -489,9 +504,26 @@ p_odag
 
 ```
 
-__Figure 12.__ Associations between adjustment covariates and the presence of different pathogen and MST markers in different environmental samples. The columns are different pre-screened confounders, and the rows are specific pathogens and MST markers. Cells of the heatmaps are colored by P-values of bivariate likelihood ratio tests, and heatmaps are stratified by sample type.
+__Figure 13.__ Associations between adjustment covariates and the presence of different pathogen and MST markers in different environmental samples. The columns are different pre-screened confounders, and the rows are specific pathogens and MST markers. Cells of the heatmaps are colored by P-values of bivariate likelihood ratio tests, and heatmaps are stratified by sample type.
 
 __Interpretation:__ Most covariates were not strongly associated with pathogen or MST marker presence in the environment, meaning they were not strong confounders of the relationship between environmental contamination with pathogen or MST markers and child infections or poor growth. Measures of household wealth generally had the strongest association with environmental contamination, though the association varied by study, sample, and microbial target. Between the low association between covariates and environmental contamination, and the generally limited differences between unadjusted, adjusted, and TMLE estimates, we believe our modeling approach adequetly adjusted for measured confounding, but unmeasured confounding may bias the results. 
+
+
+
+
+
+__Figure 14.__ Comparison between associations estimated with and without including potential confounders for the binary diarrhea and growth outcomes. Points mark the ratio of relative risks estimated using adjusted and unadjusted generalized linear models. The blue line shows the average ratio between adjusted estimates and unadjusted estimates, fitted using a cubic spline.
+
+__Interpretation:__ The average ratio in binary outcomes between environmental samples positive for pathogens or MST markers and those negative for pathogens or MST markers is slightly larger in magnitude after covariate adjustment. On average the covariate adjustment had small effects on the results though it was slightly greater when a larger number of covariates were used for adjustment. 
+
+```{r, echo=F, warning=F, message=F, fig.width = 10, fig.height = 6}
+p_diff
+```
+
+__Figure 16.__ Comparison between associations estimated with and without including potential confounders for the continious growth outcomes. Points mark the differences between mean differences estimated using adjusted and unadjusted generalized linear models. The blue line shows the average difference in differences between adjusted estimates and unadjusted estimates, fitted using a cubic spline.
+
+__Interpretation:__ The average difference in Z-scores between environmental samples positive for pathogens or MST markers and those negative for pathogens or MST markers is slightly larger in magnitude after covariate adjustment, but on average the covariate adjustment had small effects on the results and did not vary by number of covariates used for adjustment. 
+
 
 
 # Tables
