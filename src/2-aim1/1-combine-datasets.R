@@ -19,7 +19,7 @@ mapsan <- readRDS(paste0(dropboxDir,"Data/MapSan/mapsan_env_cleaned.rds")) %>%
   mutate( trial="MapSan",
          momedu=factor(momedu)) %>%
   rename(animals=compAnyAnimal)
-
+table(mapsan$animals)
 
 #Wash benefits
 WBB <- readRDS(paste0(dropboxDir, "Data/WBB/Clean/WBB_env.RDS"))
@@ -104,8 +104,8 @@ d <- d %>% mutate(
   target = case_when(
     target=="ECVG" ~ "Pathogenic E. coli",
     target=="Hum" ~ "Human (HumM2)",
-    target=="BC" ~ "Cow (BacCow)",
-    target=="BacCow" ~ "Cow (BacCow)",
+    target=="BC" ~ "Animal (BacCow)",
+    target=="BacCow" ~ "Animal (BacCow)",
     target=="BacCan" ~ "Dog (BacCan)",
     target=="Gia" ~ "Giardia",
     target=="Noro" ~ "Norovirus",
@@ -306,10 +306,10 @@ agg_function <- function(targets, name){
     # ungroup()
   
   #Drop too-positive strata
-  df <- df %>% filter(!(study=="Odagiri 2016" & sample=="W" & target=="Cow (BacCow)"), 
+  df <- df %>% filter(!(study=="Odagiri 2016" & sample=="W" & target=="Animal (BacCow)"), 
                       !(study=="Boehm 2016" & sample=="CH" & target=="General (GenBac3)"),
                       !(study=="Boehm 2016" & sample=="S" & target=="General (GenBac3)"),
-                      !(study=="Fuhrmeister 2020" & sample=="CH" & target=="Cow (BacCow)"),
+                      !(study=="Fuhrmeister 2020" & sample=="CH" & target=="Animal (BacCow)"),
                       #!(study=="Holcomb 2020" & sample=="Fly" & target=="Human (BacHum)"))
                       !(study=="Capone 2021 in prep" & sample=="Fly" & target=="Human (BacHum)"))
   
@@ -448,9 +448,9 @@ df <- d %>%
   group_by(study, clusterid, dataid, hhid, tr, target, round) %>%
   filter(!is.na(pos)) %>%
   #Drop too-positive strata
-  filter(!(study=="Odagiri 2016" & sample=="W" & target=="Cow (BacCow)"),
+  filter(!(study=="Odagiri 2016" & sample=="W" & target=="Animal (BacCow)"),
                       !(study=="Boehm 2016" & sample=="CH" & target=="General (GenBac3)"),
-                      !(study=="Fuhrmeister 2020" & sample=="CH" & target=="Cow (BacCow)"),
+                      !(study=="Fuhrmeister 2020" & sample=="CH" & target=="Animal (BacCow)"),
                       !(study=="Holcomb 2020" & sample=="Fly" & target=="Human (BacHum)")) %>%
   arrange(sample) %>%
   mutate(pos=max(pos, na.rm = TRUE), sample="any sample type", animals=max(animals, na.rm=T)) %>% 
@@ -530,5 +530,5 @@ table(d$trial, (d$momedu))
 
 
 table(d$study, (d$hhwealth))
-
+unique(d$target)
 

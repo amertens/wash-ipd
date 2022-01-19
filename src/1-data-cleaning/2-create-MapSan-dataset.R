@@ -81,8 +81,8 @@ colnames(env)
 colnames(soil)
 head(soil)
 soil <- soil %>% 
-  mutate(animal_in_compound = ifelse(dog_observed=="Yes" | chicken_duck_observed=="Yes" | cat_observed=="Yes", 1, 0)) %>%
-  subset(., select=c(compound_phase, phase, compound, env_date, adenovirus_40_41:campylobacter_jejuni_coli, trial_arm, animal_in_compound)) %>%
+  mutate(animals_observed_latrine = ifelse(dog_observed=="Yes" | chicken_duck_observed=="Yes" | cat_observed=="Yes", 1, 0)) %>%
+  subset(., select=c(compound_phase, phase, compound, env_date, adenovirus_40_41:campylobacter_jejuni_coli, trial_arm, animals_observed_latrine)) %>%
   gather(adenovirus_40_41:campylobacter_jejuni_coli, key = target, value = detect ) %>%
   mutate(sample="LS", dataid=compound, logquant=NA, env_date=ymd(mdy(env_date))) %>%
   rename(sampleid=compound_phase, clusterid=compound, round=phase )
@@ -96,13 +96,13 @@ unique(soil$target)
 ecoli_measures <- c("enteroaggregative_Ecoli","enteropathogenic_Ecoli","enterotoxigenic_Ecoli","shiga_toxin_producing_Ecoli")
 ecoli_measures_zoo <- c("enteropathogenic_Ecoli","shiga_toxin_producing_Ecoli")
 ecoli_measures_not_zoo <- c("enteroaggregative_Ecoli","enterotoxigenic_Ecoli")
-soil_pathogenic <- soil %>% group_by(sampleid, env_date, clusterid, dataid, round, trial_arm, animal_in_compound, sample) %>%
+soil_pathogenic <- soil %>% group_by(sampleid, env_date, clusterid, dataid, round, trial_arm, animals_observed_latrine, sample) %>%
   summarise(detect = 1*(sum(detect==1 & target %in% ecoli_measures)>0)) %>%
   mutate(target="pathogenic_ecoli")
-soil_zoo <- soil %>% group_by(sampleid, env_date, clusterid, dataid, round, trial_arm, animal_in_compound, sample) %>%
+soil_zoo <- soil %>% group_by(sampleid, env_date, clusterid, dataid, round, trial_arm, animals_observed_latrine, sample) %>%
   summarise(detect = 1*(sum(detect==1 & target %in% ecoli_measures_zoo)>0)) %>%
   mutate(target="EC_zoo")
-soil_measures_not_zoo <- soil %>% group_by(sampleid, env_date, clusterid, dataid, round, trial_arm, animal_in_compound, sample) %>%
+soil_measures_not_zoo <- soil %>% group_by(sampleid, env_date, clusterid, dataid, round, trial_arm, animals_observed_latrine, sample) %>%
   summarise(detect = 1*(sum(detect==1 & target %in% ecoli_measures_not_zoo)>0)) %>%
   mutate(target="EC_not_zoo")
 
@@ -475,10 +475,17 @@ d$CompPop[is.na(d$CompPop)] <- d$CompPop2[is.na(d$CompPop)]
 
 #fill in compound for missing HH
 d$Hhsize[is.na(d$Hhsize)] <- d$CompPop[is.na(d$Hhsize)] 
-d$animal_in_compound[is.na(d$animal_in_compound)] <- d$compAnyAnimal[is.na(d$animal_in_compound)] 
 d$hhrooms[is.na(d$hhrooms)] <-  d$comprooms[is.na(d$hhrooms)] 
 d$hh_walls[is.na(d$hh_walls)] <-  d$compwalls[is.na(d$hh_walls)] 
 d$hhCement[is.na(d$hhCement)] <-  d$compfloor[is.na(d$hhCement)] 
+
+d$animals_observed_latrine <- ceiling(d$animals_observed_latrine)
+d$compAnyAnimal <- ceiling(d$compAnyAnimal)
+
+
+table(d$sample, d$compAnyAnimal)
+table(d$sample, d$animals_observed_latrine)
+
 
 table(d$sample, is.na(d$Hhsize))
 table(d$sample, (d$Hhsize))

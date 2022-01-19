@@ -259,6 +259,7 @@ cl   <- function(df,fm, cluster){
 #Need to add forcedW funciton, look at washbgam for code
 
 aim2_glm <- function(d, Ws=NULL, forcedW=NULL, outcome="pos", exposure, study="mapsan", sample="ds", target="Mnif", family="binomial", minN_thres = 5){
+
   df <- d %>% filter(study=={{study}}, sample=={{sample}}, target=={{target}}) %>% droplevels(.)
   
   cat(levels(df$study)[1],", ", sample,", ", target,"\n")
@@ -278,7 +279,11 @@ aim2_glm <- function(d, Ws=NULL, forcedW=NULL, outcome="pos", exposure, study="m
 
   if(length(unique(df$Y))<=2){
     if(length(unique(df$Y))>1 & length(unique(df$X))>1){
-      minN <- min(table(df$Y,df$X))
+      if(length(unique(df$X))>2){
+        minN <- min(table(df$Y))
+      }else{
+        minN <- min(table(df$Y,df$X))
+      }
     }else{
       minN <- 0
     }
@@ -1289,8 +1294,8 @@ poolRR<-function(d, method="REML"){
     
     #confint(fit)
     
-    est<-data.frame(fit$b, fit$se, fit$I2)
-    colnames(est)<-c("logRR.psi","logSE", "I2")
+    est<-data.frame(fit$b, fit$se, fit$I2, fit$pval)
+    colnames(est)<-c("logRR.psi","logSE", "I2", "pval")
     
     est$RR<-exp(est$logRR)
     est$ci.lb<-exp(est$logRR - 1.96 * est$logSE)
@@ -1315,12 +1320,353 @@ pool.cont<-function(d, method="REML"){
     if(is.null(fit)){try(fit<-rma(yi=coef, sei=se, data=d, method="DL", measure="GEN"))}
     if(is.null(fit)){try(fit<-rma(yi=coef, sei=se, data=d, method="HE", measure="GEN"))}
   }
-  est<-data.frame(fit$b, fit$ci.lb, fit$ci.ub, fit$I2)
-  colnames(est)<-c("coef","ci.lb","ci.ub", "I2")
+  est<-data.frame(fit$b, fit$ci.lb, fit$ci.ub, fit$I2, fit$pval)
+  colnames(est)<-c("coef","ci.lb","ci.ub", "I2", "pval")
+
   
   est$N <- d$N[1]
   est <- est %>% mutate(Y=d$Y[1],study="Pooled", sparse="pooled", sample_type=d$sample_type[1], sample_cat=d$sample_cat[1], target_f=d$target_f[1])
   
   rownames(est) <- NULL
   return(est)
+}
+
+
+
+aim2_subgroup <- function(d, Vvar, Ws=NULL, forcedW=NULL, outcome="pos", exposure, study="mapsan", sample="ds", target="Mnif", family="binomial", minN_thres = 5){
+  
+  df <- d %>% filter(study=={{study}}, sample=={{sample}}, target=={{target}}) %>% droplevels(.)
+  
+  cat(levels(df$study)[1],", ", sample,", ", target,"\n")
+  cat("N before dropping missing: ", nrow(df),"\n")
+  
+  df$Y <- df[[outcome]]
+  df <- df %>% filter(!is.na(Y))
+
+  df$X <- df[[exposure]]
+  df <- df %>% filter(!is.na(X))
+  
+  df$V <- df[[Vvar]]
+  df <- df %>% filter(!is.na(V))
+  
+  forcedWdf<-Wvars<-NULL
+  minN<-NA
+  minN_v0 <- minN_v1 <- 0
+  forcedW_n <- 0
+  
+  
+  if(length(unique(df$Y))<=2){
+    if(length(unique(df$Y))>1 & length(unique(df$X))>1 & length(unique(df$V))>1){
+      #minN <- min(table(df$Y))
+      minN <- min(table(df$Y, df$X, df$V))
+      minN_v0 <- min(table(df$Y[df$V==0], df$tr[df$V==0]))
+      minN_v1 <- min(table(df$Y[df$V==1], df$tr[df$V==1]))
+    }else{
+      minN <- 0
+    }
+    #Get cell counts
+    a <- sum(df$Y==1 & df$X==1)
+    b <- sum(df$Y==0 & df$X==1)
+    c <- sum(df$Y==1 & df$X==0)
+    d <- sum(df$Y==0 & df$X==0)
+  }
+  
+  if(length(unique(df$Y))>2 & length(unique(df$V))>1){
+    minN <- min(table(df$X, df$V))
+    #Get cell counts
+    a <- mean(df$Y[df$X==0], na.rm=T)
+    b <- mean(df$Y[df$X==1], na.rm=T)
+    c <- sd(df$Y[df$X==0], na.rm=T)
+    d <- sd(df$Y[df$X==1], na.rm=T)
+  }else{
+    minN <- 0
+  }
+  
+  cat(minN,"\n")
+  
+  if((minN>=minN_thres & min(table(df$Y, df$X))>1) | (minN>=minN_thres & length(unique(df$Y)) > 2 & length(unique(df$X)) == 2) | (minN>=minN_thres & length(unique(df$X)) > 2 & length(unique(df$Y)) >= 2)){
+    
+    if(!is.null(Ws)){
+      forcedW_n <- 0
+      if(!is.null(forcedW)){
+        Ws <- Ws[!(Ws %in% forcedW)]
+        forcedWdf <- df %>% ungroup() %>% select(any_of(forcedW)) %>% select_if(~sum(!is.na(.)) > 0)
+        if(length(nearZeroVar(forcedWdf))>0){
+          forcedWdf <- forcedWdf[,-nearZeroVar(forcedWdf)]
+        }
+        forcedW_n <- ncol(forcedWdf)
+      }
+      
+      Wdf <- df %>% ungroup() %>% select(any_of(Ws)) %>% select_if(~sum(!is.na(.)) > 0)
+      
+      if(ncol(Wdf)>0){
+        #drop covariates with near zero variance
+        if(length(nearZeroVar(Wdf))>0){
+          Wdf <- Wdf[,-nearZeroVar(Wdf)]
+        }
+        if(family=="neg.binom"){
+          Wvars <- MICS_prescreen(Y=df$Y, W=Wdf, family="gaussian", print=F)
+        }else{
+          Wvars <- MICS_prescreen(Y=df$Y, W=Wdf, family=family, print=F)
+        }
+        if(family!="gaussian" & !is.null(Wvars)){
+          nY<-floor(min(table(df$Y))/10) -1 #minus one because 10 variables needed to estimate coef. of X
+          nY <- nY - forcedW_n
+          if(nY>=1){
+            if(length(Wvars)>nY){
+              Wvars<-Wvars[1:nY]
+            }        
+          }else{
+            Wvars=NULL
+          }
+        }
+        if(identical(Wvars, character(0)) ){
+          Wvars <- NULL
+        }
+      }else{
+        Wvars <- NULL
+      }
+      if(!is.null(forcedW)){
+        #Wvars <- c(Wvars,forcedW)
+        df <- df %>% subset(., select =c("Y","X","V","clusterid",Wvars))
+        df <- data.frame(df,forcedWdf)
+        Wvars = colnames(df)[-c(1:3)]
+      }else{
+        df <- df %>% subset(., select =c("Y","X","V","clusterid", Wvars))
+      }
+      
+      df <- df[complete.cases(df),]
+      cat("N after dropping missing: ", nrow(df),"\n")
+    }else{
+      df <- df %>% subset(., select =c("Y","X","V","clusterid"))
+      cat("N before dropping missing: ", nrow(df),"\n")
+      df <- df[complete.cases(df),]
+      cat("N after dropping missing: ", nrow(df),"\n")
+    }
+    
+    #Get cell counts
+    if(length(unique(df$Y))<=2){
+      a <- sum(df$Y==1 & df$X==1)
+      b <- sum(df$Y==0 & df$X==1)
+      c <- sum(df$Y==1 & df$X==0)
+      d <- sum(df$Y==0 & df$X==0)
+    }
+    
+    #model formula
+    f <- ifelse(is.null(Wvars),
+                "Y ~ X + V",
+                paste0("Y ~ X + V + ", paste(Wvars, collapse = " + ")))
+ 
+    #fit model
+    fullfit <- mpreg(formula = as.formula(f), df = df, vcv=TRUE, family=family)
+    fit <- fullfit$fit
+    
+    contrasts1 <- contrasts2 <- rep(0, nrow(fit))
+    contrasts1[2] <- 1
+    contrasts2[2:3] <- 1
+    
+    meas <- ifelse(family=="gaussian","RD","RR")
+    v1 <- suppressWarnings(lincom(lc = contrasts1, fit = fullfit$fit, vcv = fullfit$vcovCL, measure = meas, flag = 1))
+    v2 <- suppressWarnings(lincom(lc = contrasts2, fit = fullfit$fit, vcv = fullfit$vcovCL, measure = meas, flag = 1))
+    res <- bind_rows(data.frame(v1),data.frame(v2))
+    res$Vlevel<-c(0,1)
+    res$nV <- NA
+    res$nV[1] <- sum(df$V==0)
+    res$nV[2] <- sum(df$V==1)
+    res$int.p <- fit[3,4]
+    
+    
+    res <- data.frame(Y=outcome,
+                      V=Vvar,
+                      sample=sample,
+                      target=target,
+                      res)
+    
+    
+  }else{
+
+    
+    res <-res_v0 <-res_v1 <- NULL
+    if((minN_v0 >= 1 | minN_v1 >= 1)){
+      if(minN_v0 >= 1 & min(table(df$Y[df$V==0], df$X[df$V==0]))>=1& length(unique(df$Y[df$V==0]))>1 & length(unique(df$X[df$V==0]))>1){
+        res_v0 <- subgroup_single_level_est_aim2(df=df, Vvar=Vvar, Vlevel=0, family=family, Ws=Ws, outcome=outcome, sample=sample, target=target)
+        #cat("d")
+        Wvars <- res_v0[[2]]
+        res_v0 <- res_v0[[1]]
+      }
+      if(minN_v1 >= 1 & min(table(df$Y[df$V==1], df$X[df$V==1]))>=1 & length(unique(df$Y[df$V==1]))>1 & length(unique(df$X[df$V==1]))>1){
+        res_v1 <- subgroup_single_level_est_aim2(df=df, Vvar=Vvar, Vlevel=1, family=family, Ws=Ws, outcome=outcome, sample=sample, target=target)
+        Wvars <- res_v1[[2]]
+        res_v1 <- res_v1[[1]]
+      }
+    }
+    if(is.null(res_v0)){
+      res_v0 <- data.frame(Y=outcome,
+                           sample=sample,
+                           target=target,
+                           V=Vvar,
+                           Vlevel=0,
+                           coef=NA,
+                           RR=NA,
+                           se=NA,
+                           Zval=NA,
+                           pval=NA,
+                           ci.lb=NA,
+                           ci.ub=NA)
+    }
+    if(is.null(res_v1)){
+      res_v1 <- data.frame(Y=outcome,
+                           sample=sample,
+                           target=target,
+                           V=Vvar,
+                           Vlevel=1,
+                           coef=NA,
+                           RR=NA,
+                           se=NA,
+                           Zval=NA,
+                           pval=NA,
+                           ci.lb=NA,
+                           ci.ub=NA)
+    }
+    res <- bind_rows(res_v0,res_v1)
+    
+  }
+  
+  # if(length(unique(df$Y))<=2){
+  #   res$minN <- minN
+  #   res$n<-sum(df$Y, na.rm=T)
+  #   res$a <- a
+  #   res$b <- b
+  #   res$c <- c
+  #   res$d <- d
+  # }else{
+  #   res$mean_control <- a
+  #   res$mean_int <- b
+  #   res$sd_control <- c
+  #   res$sd_int <- d
+  # }
+  
+  res$N<-nrow(df)
+  res$W <-ifelse(is.null(Wvars), "unadjusted", paste(Wvars, sep="", collapse=", "))
+  res$study <- study
+  return(res)
+}
+
+
+
+subgroup_single_level_est_aim2 <- function(df, Vvar, Vlevel, family, Ws, outcome, sample, target){
+  df <- df[df[[Vvar]]==Vlevel,]
+  
+  if((min(table(df$Y, df$X))>1 & length(unique(df$Y)) >= 2 )| length(unique(df$Y)) > 2){
+    
+    Wvars <- NULL
+    if(!is.null(Ws)){
+      Wdf <- df %>% ungroup() %>% select(any_of(Ws)) %>% select_if(~sum(!is.na(.)) > 0)
+      
+      if(ncol(Wdf)>0){
+        #drop covariates with near zero variance
+        if(length(nearZeroVar(Wdf))>0){
+          Wdf <- Wdf[,-nearZeroVar(Wdf)]
+        }
+        if(ncol(Wdf)>0){
+          
+          if(family=="neg.binom"){
+            Wvars <- MICS_prescreen(Y=df$Y, W=Wdf, family="gaussian", print=F)
+          }else{
+            Wvars <- MICS_prescreen(Y=df$Y, W=Wdf, family=family, print=T)
+          }
+          if(family!="gaussian" & !is.null(Wvars)){
+            nY<-floor(min(table(df$Y))/10) -1 #minus one because 10 variables needed to estimate coef. of X
+            if(nY>=1){
+              if(length(Wvars)>nY){
+                Wvars<-Wvars[1:nY]
+              }        
+            }else{
+              Wvars=NULL
+            }
+          }
+          if(identical(Wvars, character(0)) ){
+            Wvars <- NULL
+          }
+        }else{
+          Wvars <- NULL
+        }
+      }else{
+        Wvars <- NULL
+      }
+      df <- df %>% subset(., select =c("Y","X","V","clusterid", Wvars))
+      df <- df[complete.cases(df),]
+      cat("N after dropping missing: ", nrow(df),"\n")
+    }else{
+      df <- df %>% subset(., select =c("Y","X","V","clusterid"))
+      df <- df[complete.cases(df),]
+      cat("N after dropping missing: ", nrow(df),"\n")
+    }
+    
+    #Get cell counts after dropping
+    if(length(unique(df$Y))<=2){
+      a <- sum(df$Y==1 & df$X==1)
+      b <- sum(df$Y==0 & df$X==1)
+      c <- sum(df$Y==1 & df$X==0)
+      d <- sum(df$Y==0 & df$X==0)
+    }
+    
+    #model formula
+    f <- ifelse(is.null(Wvars),
+                "Y ~ X",
+                paste0("Y ~ X + ", paste(Wvars, collapse = " + ")))
+    # cat("a")
+    
+    fit <- mpreg(formula = as.formula(f), df = df, vcv=FALSE, family=family)
+    #cat("b")
+    
+    coef <- as.data.frame(t(fit[2,]))
+    if(family=="gaussian"){
+      res <- data.frame(Y=outcome,
+                        sample=sample,
+                        target=target,
+                        coef=coef$Estimate,
+                        RR=NA,
+                        se=coef$`Std. Error`,
+                        Zval=coef$`z value`,
+                        pval=coef$`Pr(>|z|)`)
+      
+      res$ci.lb <- res$coef - 1.96*res$se
+      res$ci.ub <- res$coef + 1.96*res$se
+    }else{
+      res <- data.frame(Y=outcome,
+                        sample=sample,
+                        target=target,
+                        coef=coef$Estimate,
+                        RR=exp(coef$Estimate),
+                        se=coef$`Std. Error`,
+                        Zval=coef$`z value`,
+                        pval=coef$`Pr(>|z|)`)
+      
+      res$ci.lb <- exp(res$coef - 1.96*res$se)
+      res$ci.ub <- exp(res$coef + 1.96*res$se) 
+    }
+    
+  }else{
+    res <- data.frame(Y=outcome,
+                      sample=sample,
+                      target=target,
+                      V=Vvar,
+                      coef=NA,
+                      RR=NA,
+                      se=NA,
+                      Zval=NA,
+                      pval=NA,
+                      ci.lb=NA,
+                      ci.ub=NA)
+  }
+  
+  
+  res$V <- Vvar
+  res$Vlevel<- Vlevel
+  res$nV <- sum(df$V==Vlevel)
+  res$int.p <- NA
+  #cat("c")
+  
+  return(list(res, Wvars))
 }

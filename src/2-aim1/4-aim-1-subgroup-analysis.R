@@ -44,7 +44,6 @@ d=d_wet
 # table(temp$sample, temp$pos)
 #
 #
-res <- aim1_subgroup(d=d_animals, Vvar=Vvar, outcome="pos", study=study, sample=sample, target=target, family="binomial")
 #aim1_subgroup(d=d_wet, Vvar="wet", outcome="pos", study=d_wet$study[1], sample=d_wet$sample[1], target=d_wet$target[1], family="binomial")
 
 

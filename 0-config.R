@@ -83,7 +83,7 @@ zoonotic_pathogens = c("Zoonotic E. coli","Campylobacter", "Salmonella", "Crypto
 #MST's:
 general_MST = c("General (GenBac3)","General (BacUni)")
 
-animal_MST = c( "Cow (BacCow)",   
+animal_MST = c( "Animal (BacCow)",   
                 "Ruminant (BacR)",              "Avian (GFD)",
                 "Avian (Helicobacter)", "Dog (BacCan)" )
 
