@@ -548,6 +548,8 @@ env_wbb %>% group_by(study, sample, target) %>%
 
 saveRDS(env_wbb, file=paste0(dropboxDir,"Data/WBB_env_CH_data.rds"))
 
+env_wbb$ch_pos_cholera
+
 #Save N's
 WBB_Ns <- bind_rows(fuhr_res, boehm_res, kwong_res)
 WBB_Ns$percent_diar_samples_dropped <- 100 - WBB_Ns$diar_samples_after_merge/WBB_Ns$diar_samples_before_merge * 100

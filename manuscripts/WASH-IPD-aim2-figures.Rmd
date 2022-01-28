@@ -1,0 +1,586 @@
+---
+title: "Figures and Tables"
+author: "Associations between detection of enteropathogens and microbial source tracking markers in the environment and child enteric infections and growth: an individual participant data meta-analysis"
+#output: redoc::redoc
+output: 
+  word_document:
+    reference_docx:  "tables_format.docx"
+header-includes:
+  - \setlength{\parindent}{4em}
+  - \setlength{\parskip}{0em}
+indent: true
+bibliography: WASH-IPD.bib
+bib-humanities: FALSE
+csl: nature.csl
+
+---
+
+
+```{r, include=F}
+
+#Note: Check out this package for integrating any edits from Ayse:
+#https://github.com/noamross/redoc
+
+#CSL styles by journal
+#https://github.com/citation-style-language/styles
+
+
+knitr::opts_chunk$set(echo = FALSE, dpi=300,fig.width=7)
+
+options(warn = -1) 
+library(officedown)
+#library(janitor)
+library(knitr)
+library(here)
+# library(table1)
+# library(rvest)
+library(officer)
+library(flextable)
+library(bibtex)
+library(citr)
+library(redoc)
+library(kableExtra)
+library(ggforce)
+library(RColorBrewer)
+
+textcol = "grey20"
+cols = (brewer.pal(n = 9, name = "Spectral"))
+colours <- c(`<0.01 increase risk` = cols[1], `<0.05 increase risk` = cols[2], 
+             `0.05-0.2 increase risk` = cols[3],
+             `0.2-1` = cols[5],  
+             `0.05-0.2 decrease risk` = cols[7], `<0.05 decrease risk` = cols[8], 
+             `<0.01 decrease risk` = cols[9], `Not estimated` = "gray80")
+
+panel_spacing = 0.65
+
+source(here("0-config.R"))
+#citr:::insert_citation(bib_file ="WASH-IPD.bib", use_betterbiblatex =F)
+# 
+# tidy_bib_file(
+#   rmd_file = "Aim1_manuscript.Rmd"
+#   , messy_bibliography = "WASH-IPD.bib"
+#   , file = "tidy_references.bib"
+# )
+
+
+
+op = function(x, d=2) sprintf(paste0("%1.",d,"f"), x) 
+
+Print <- function(x){
+  prettyNum(round(x,2), big.mark = ",", scientific = FALSE)
+}
+
+ library(pander)
+panderOptions('digits', 2)
+panderOptions('round', 2)
+panderOptions('keep.trailing.zeros', TRUE)
+panderOptions('graph.fontsize', 8)
+
+panderOptions('table.alignment.default', function(df)
+    ifelse(sapply(df, is.numeric), 'right', 'left'))
+panderOptions('table.split.table', Inf)
+panderOptions('big.mark', ",")
+
+set_flextable_defaults(big.mark = ",", 
+  font.size = 8, theme_fun = theme_vanilla,
+  padding.bottom = 5, 
+  padding.top = 5,
+  padding.left = 5,
+  padding.right = 5)
+
+
+#Clean results function
+clean_est <- function(res, outcome="binomial"){
+  if(outcome=="binomial"){
+    
+    est = format(round(res$RR, 2), nsmall = 2)
+    ci.lb = format(round(res$ci.lb, 2), nsmall = 2) 
+    ci.ub = format(round(res$ci.ub, 2), nsmall = 2)
+    est.ci = paste0(est," (95% CI: ",ci.lb,", ",ci.ub,")")
+  }else{
+    est = format(round(res$coef, 2), nsmall = 2)
+    ci.lb = format(round(res$ci.lb, 2), nsmall = 2) 
+    ci.ub = format(round(res$ci.ub, 2), nsmall = 2)
+    est.ci = paste0(est," (95% CI: ",ci.lb,", ",ci.ub,")")
+  }
+  return(est.ci)
+}
+
+clean_res  <- function(res, outcome="binomial"){
+  if(outcome=="binomial"){
+    res$est.ci = paste0("RR=",round(as.numeric(res$RR),1)," (95% CI: ",round(res$ci.lb,1),", ",round(res$ci.ub,1),")")
+    res <- res %>% ungroup() %>%
+      select(study, sample_type, target_f, est.ci, pval, a, b, c, d, N) 
+    res$est.ci <- gsub("RR\\=1 \\(95\\% CI\\: NA, NA\\)","Not estimated",res$est.ci)
+    
+    res$pval <- as.character(round(res$pval,3))
+    res$pval[is.na(res$pval)] <- ""
+    res <- res %>% 
+      rename(Study=study,
+             Sample=sample_type,
+             Target=target_f,
+             Estimate=est.ci,
+             `p-value`=pval, 
+             `Positive,\nIntervention`=a,
+             `Negative,\nIntervention`=b,
+             `Positive,\nControl`=c,
+             `Negative,\nControl`=d,
+             `Total\nobservations`=N)
+  }else{
+    res$est.ci = paste0(round(as.numeric(res$coef),1),"Difference= (95% CI: ",round(res$ci.lb,1),", ",round(res$ci.ub,1),")")
+    res <- res %>% ungroup() %>%
+      select(sample_type, target_f, est.ci, pval, a, b, c, d, N) 
+    res$est.ci <- gsub("Difference\\=0 \\(95\\% CI\\: NA, NA\\)","Not estimated",res$est.ci)
+    res$pval <- as.character(round(res$pval,3))
+    res$pval[is.na(res$pval)] <- ""
+    res <- res %>% 
+      rename(Study=study,
+             Sample=sample_type,
+             Target=target_f,
+             Estimate=est.ci,
+             `p-value`=pval, 
+             `Positive,\nIntervention`=a,
+             `Negative,\nIntervention`=b,
+             `Positive,\nControl`=c,
+             `Negative,\nControl`=d,
+             `Total\nobservations`=N)
+  }
+  
+  return(res)
+}
+
+clean_res_tab <- function(unadj_RR, adj_RR){
+  unadj<-clean_res(unadj_RR) %>% select(Study,Sample,Target,Estimate, `p-value`) %>% 
+    rename(`Unadjusted\nEstimate`=Estimate, `Unadjusted\np-value`=`p-value`) 
+  adj<-clean_res(adj_RR)%>% rename(`Adjusted\nEstimate`=Estimate, `Adjusted\np-value`=`p-value`)
+  
+  res <- left_join(unadj, adj, by=c("Study", "Sample", "Target"))
+  res <- res %>% arrange(Study,  Sample,  Target) %>% filter(Study!="Pooled")
+  res$`Adjusted\nEstimate`[res$Study=="Odagiri 2016"] <- ""
+  res$`Adjusted\np-value`[res$Study=="Odagiri 2016"] <- ""
+  return(res)
+}
+
+FitFlextableToPage <- function(ft, pgwidth = 10){
+
+  ft_out <- ft %>% autofit()
+
+  ft_out <- width(ft_out, width = dim(ft_out)$widths*pgwidth /(flextable_dim(ft_out)$widths))
+  return(ft_out)
+}
+
+
+add_footnote_with_rlang <- function(df, col, pattern, symbol){
+  form_ <- sprintf("~ %s == '%s'", col, pattern)
+  colname <- enquo(col)
+  flextable::compose(
+    x = df, j = col, i = as.formula(form_), 
+    value = as_paragraph(
+      as_chunk(!!colname), 
+      as_chunk(symbol, props = fp_text(vertical.align = 'superscript')))
+  ) 
+}
+
+add_footnote <- function(df, col, pattern, symbol){
+  form_ <- sprintf("~ %s == '%s'", col, pattern)
+  flextable::compose(
+    x = df, j = col, i = as.formula(form_), 
+    value = as_paragraph(pattern,
+      as_chunk(symbol, props = fp_text(vertical.align = 'superscript')))
+    ) 
+}
+
+
+
+unadj_RR <- readRDS(file=here("results/unadjusted_aim2_pooled.Rds")) 
+adj_RR <- readRDS(file=here("results/adjusted_aim2_pooled.Rds")) 
+adj_emm <- readRDS(file=here("results/subgroup_aim2_pooled.Rds")) 
+
+adj_RR_bin <- adj_RR %>% filter(Y %in% c("diar7d"), !is.na(pval))
+adj_RR_cont <- adj_RR %>% filter(Y %in% c("haz"), !is.na(pval)) 
+
+
+#Get percents significant
+
+
+#Merge full env. with child health to see percent dropped 
+env <- readRDS(paste0(dropboxDir,"Data/cleaned_ipd_env_data.rds"))
+d <- readRDS(file=paste0(dropboxDir,"Data/merged_env_CH_data.rds"))
+
+tab <- d %>% group_by(study, sample, target) %>%
+  summarize(N=n(), N_pos=sum(pos), N_diar=sum(!is.na(diar7d)), N_pos_diar=sum(diar7d==1, na.rm=T), N_pos_env_diar=sum(pos==1 & diar7d==1, na.rm=T), N_haz=sum(!is.na(haz)))
+
+colnames(tab)[4:9] <- c("N samples","N pos. samples","N diar. meas.", "N diar. pos.","N sample. and diar. pos.", "N haz")
+
+tab1 <- tab %>% filter(sample=="any sample type", target=="Any pathogen")
+tab2 <- tab %>% filter(sample=="any sample type", target=="Any MST")
+
+load(here("figures/all_tables.Rdata"))
+load(here("figures/aim2_figures.Rdata"))
+load(here("figures/aim2_pathogen_specific_figures.Rdata"))
+load(here("figures/aim2_abund_figures.Rdata"))
+load(here("figures/aim2_covar_sig_figures.Rdata"))
+load(here("figures/aim2_tmle_figures.Rdata"))
+load(here("figures/aim2_pathogen_figures.Rdata"))
+load(here("figures/aim2_diar_time_figures.Rdata"))
+load(here("figures/aim2_adjusted_unadjusted_comp_figures.Rdata"))
+load(here("figures/aim2_subgroup_figures.Rdata"))
+load(here("figures/aim2_subgroup_figures_age.Rdata"))
+load(here("figures/aim2_path_heatmap.Rdata"))
+load(here("figures/aim2_abund_heatmap.Rdata"))
+
+
+
+gv_res <- readRDS(file=paste0(here(),"/results/gv_merge_Ns.rds"))
+mapsan_res <- readRDS(file=paste0(here(),"/results/mapsan_merge_Ns.rds"))
+wbk_res <- readRDS(file=paste0(here(),"/results/wbk_merge_Ns.rds"))
+wbb_res <- readRDS(file=paste0(here(),"/results/wbb_merge_Ns.rds"))
+odisha_res <- readRDS(file=paste0(here(),"/results/odisha_merge_Ns.rds"))
+merge_Ns <- bind_rows(
+  gv_res, mapsan_res, wbb_res, wbk_res, odisha_res
+)
+
+
+
+```
+
+```{css, echo=FALSE}
+span.comment-start{
+    background: #e0f3db;
+}
+span.comment-end{
+    background: #e0f3db;
+}
+span.comment-start::after{
+    content: " (" attr(author) ", " attr(date) ") [";
+}
+span.comment-end::before{
+    content: "]"
+}
+span.comment-text{
+    background: #fdbb84;
+}
+
+
+```
+
+```{r, echo=FALSE}
+commentN <- 0
+cmt <- function(txt, cm, author, date = "2021-01-01", comN = commentN){
+  cmt_str <- paste0('<span class="comment-text">[',cm,']{.comment-start id="', comN, '" author="', author, '" date="', date, '"}', txt, '[]{.comment-end id="',commentN,'"}</span>')
+  assign("commentN", commentN + 1, envir = .GlobalEnv)
+  return(cmt_str)
+}
+```
+
+
+# Primary figures
+
+```{r p_pathogen, fig.cap ="",  echo=F, warning=F, message=F, fig.width = 10, fig.height = 6}
+p_pathogen
+```
+
+__Figure 1.__ Forest plots of associations between specific enteropathogens in environmental samples and child infections with the same enteropathogens.  Samples of the same type from different locations (source vs. stored water, flies in kitchen vs. latrine, soil from courtyard vs. latrine) or different individuals (child vs. mother's hands) are plotted separately and denoted by different colors.  All estimates are adjusted for potential confounders.
+
+```{r p_diar_1_adj, echo=F, warning=F, message=F, fig.width = 10, fig.height = 5}
+p_diar_1_adj
+```
+
+__Figure 2.__ Forest plots of associations between child diarrheal disease and the prevalence of any enteropathogen or any MST markers in different types of environmental samples. Pooled estimates are presented when there are four or more study-specific estimates for a specific sample type and target combination and are denoted with diamond-shaped points. Grey crossed points denote data that were too sparse to estimate a prevalence ratio (i.e., <10 positive or negative observations). Samples of the same type from different locations (source vs. stored water, flies in kitchen vs. latrine, soil from courtyard vs. latrine) or different individuals (child vs. mother's hands) are plotted separately. Asterisks above estimates denote statistical significance (\*= P-value < 0.05, \*\*= P-value < 0.01, \*\*\*= P-value < 0.001). All estimates are adjusted for potential confounders.
+
+
+```{r p_haz_1_adj, fig.cap ="", echo=F, warning=F, message=F, fig.width = 10, fig.height = 5}
+p_haz_1_adj
+```
+
+__Figure 2.__ Forest plots of associations between child HAZ and the prevalence of any enteropathogen or any MST markers in different types of environmental samples. Pooled estimates are presented when there are four or more study-specific estimates for a specific sample type and target combination and are denoted with diamond-shaped points. Grey crossed points denote data that were too sparse to estimate a mean difference. Samples of the same type from different locations (source vs. stored water, flies in kitchen vs. latrine, soil from courtyard vs. latrine) or different individuals (child vs. mother's hands) are plotted separately.  All estimates are adjusted for potential confounders.
+
+
+# Supplimentary figures
+
+
+```{r, echo=F, warning=F, message=F, fig.width = 10, fig.height = 6.5 }
+hm_agg <- ggplot(hm_df_agg, aes(x = Y, y = X, fill = pval_cat )) + 
+  geom_tile(colour = "grey80", size = 0.25) + scale_x_discrete(expand = c(0, 0)) + 
+  scale_y_discrete(expand = c(0, 0)) + 
+  theme_minimal(base_size = 8) +
+  scale_fill_manual(values = colours, drop = FALSE) +
+  geom_text(aes(label = est), size=2.25) +
+  theme(legend.title = element_text(color = textcol,
+        size = 8), legend.margin = margin(grid::unit(0.1, "cm")), legend.text = element_text(colour = textcol,
+        size = 7, face = "bold"), legend.key.height = grid::unit(0.2,   "cm"), legend.key.width = grid::unit(1, "cm"),
+        legend.position = "bottom", axis.text.x = element_text(size = 8,  colour = textcol), 
+        axis.text.y = element_text(size = 8, vjust = 0.2, colour = textcol), axis.ticks = element_line(size = 0.4),
+        plot.title = element_text(colour = textcol, hjust = 0, size = 12, face = "bold"), strip.text.x = element_text(size = 10),
+        strip.text.y = element_text(angle = 0, size = 10),
+        plot.background = element_blank(), panel.border = element_blank(),
+        strip.background = element_blank(), panel.background = element_rect(fill = "grey80", colour = "grey80"), panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(), panel.spacing = unit(panel_spacing, "lines")) +
+        guides(fill = guide_legend("P-value strength", nrow = 2)) + labs(x = "", y = "", title = "") +
+    #facet_grid(target~., scales = "free", space="free") 
+    ggforce::facet_grid_paginate(target~., scales = "free", space="free", ncol=1, nrow = 5, page = 1)
+
+plot(hm_agg)
+
+
+```
+
+
+
+
+```{r hm_agg2, echo=F, warning=F, message=F, fig.width = 10, fig.height = 6.5}
+
+
+hm_df_agg <- hm_df_agg %>% arrange(target)
+
+hm_agg <- ggplot(hm_df_agg %>% filter(!(target %in% unique(hm_df_agg$target)[1:5])) %>% droplevels(), aes(x = Y, y = X, fill = pval_cat )) + 
+  geom_tile(colour = "grey80", size = 0.25) + scale_x_discrete(expand = c(0, 0)) + 
+  scale_y_discrete(expand = c(0, 0)) + 
+  theme_minimal(base_size = 8) +
+  scale_fill_manual(values = colours, drop = FALSE) +
+  geom_text(aes(label = est), size=2.25) +
+  theme(legend.title = element_text(color = textcol,
+        size = 8), legend.margin = margin(grid::unit(0.1, "cm")), legend.text = element_text(colour = textcol,
+        size = 7, face = "bold"), legend.key.height = grid::unit(0.2,   "cm"), legend.key.width = grid::unit(1, "cm"),
+        legend.position = "bottom", axis.text.x = element_text(size = 8,  colour = textcol), 
+        axis.text.y = element_text(size = 8, vjust = 0.2, colour = textcol), axis.ticks = element_line(size = 0.4),
+        plot.title = element_text(colour = textcol, hjust = 0, size = 12, face = "bold"), strip.text.x = element_text(size = 10),
+        strip.text.y = element_text(angle = 0, size = 10),
+        plot.background = element_blank(), panel.border = element_blank(),
+        strip.background = element_blank(), panel.background = element_rect(fill = "grey80", colour = "grey80"), panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(), panel.spacing = unit(panel_spacing, "lines")) +
+        guides(fill = guide_legend("P-value strength", nrow = 2)) + labs(x = "", y = "", title = "") +
+    facet_grid(target~., scales = "free", space="free") 
+    #ggforce::facet_grid_paginate(target~., scales = "free", space="free", ncol=1, nrow = 9, page = 1)
+
+plot(hm_agg)
+
+
+```
+
+__Figure S1.__ `r cmt("Heatmap", "I plan on figuring out how to use formatting of the Y-axis labels (bolding or underlining) to highlight the pooled rows and Any sample types", "Andrew")` of significance and direction of associations between aggregate measures of environmental contamination and child diarrhea and growth outcomes. Cells are colored by the strength of significance and direction of association, and the point estimate and confidence intervals are printed within cells, with relative risks printed for binary outcomes and mean differences for continuous outcomes. Each row is for a different sample type in a specific study or in a pooled estimate across studies.. Estimates aggregated across any sample type are only plotted if there are multiple sample types for a study. All estimates are adjusted for potential confounders.
+
+
+```{r, echo=F, warning=F, message=F, fig.width = 10, fig.height = 6.5}
+
+hm1 <- ggplot(hm_df_path, aes(x = Y, y = X, fill = pval_cat )) + 
+  geom_tile(colour = "grey80", size = 0.25) + scale_x_discrete(expand = c(0, 0)) + 
+  scale_y_discrete(expand = c(0, 0)) + 
+  theme_minimal(base_size = 8) +
+  scale_fill_manual(values = colours, drop = FALSE) +
+  geom_text(aes(label = est), size=2.25) +
+  theme(legend.title = element_text(color = textcol,
+        size = 8), legend.margin = margin(grid::unit(0.1, "cm")), legend.text = element_text(colour = textcol,
+        size = 7, face = "bold"), legend.key.height = grid::unit(0.2,   "cm"), legend.key.width = grid::unit(1, "cm"),
+        legend.position = "bottom", axis.text.x = element_text(size = 8,  colour = textcol), 
+        axis.text.y = element_text(size = 8, vjust = 0.2, colour = textcol), axis.ticks = element_line(size = 0.4),
+        plot.title = element_text(colour = textcol, hjust = 0, size = 12, face = "bold"), strip.text.x = element_text(size = 10),
+        strip.text.y = element_text(angle = 0, size = 10),
+        plot.background = element_blank(), panel.border = element_blank(),
+        strip.background = element_blank(), panel.background = element_rect(fill = "grey80", colour = "grey80"), panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(), panel.spacing = unit(panel_spacing, "lines")) +
+        guides(fill = guide_legend("P-value strength", nrow = 2)) + labs(x = "", y = "", title = "") +
+    #facet_grid(target~., scales = "free", space="free") 
+    ggforce::facet_grid_paginate(target~., scales = "free", space="free", ncol=1, nrow = 9, page = 1)
+
+plot(hm1)
+
+
+```
+
+
+```{r hm2, echo=F, warning=F, message=F, fig.width = 10, fig.height = 6.5}
+
+hm_df_path <- hm_df_path %>% arrange(target)
+
+hm2 <- ggplot(hm_df_path %>% filter(!(target %in% unique(hm_df_path$target)[1:9])) %>% droplevels(), 
+              aes(x = Y, y = X, fill = pval_cat )) + 
+  geom_tile(colour = "grey80", size = 0.25) + scale_x_discrete(expand = c(0, 0)) + 
+  scale_y_discrete(expand = c(0, 0)) + 
+  theme_minimal(base_size = 8) +
+  scale_fill_manual(values = colours, drop = FALSE) +
+  geom_text(aes(label = est), size=2.25) +
+  theme(legend.title = element_text(color = textcol,
+        size = 8), legend.margin = margin(grid::unit(0.1, "cm")), legend.text = element_text(colour = textcol,
+        size = 7, face = "bold"), legend.key.height = grid::unit(0.2,   "cm"), legend.key.width = grid::unit(1, "cm"),
+        legend.position = "bottom", axis.text.x = element_text(size = 8,  colour = textcol), 
+        axis.text.y = element_text(size = 8, vjust = 0.2, colour = textcol), axis.ticks = element_line(size = 0.4),
+        plot.title = element_text(colour = textcol, hjust = 0, size = 12, face = "bold"), strip.text.x = element_text(size = 10),
+        strip.text.y = element_text(angle = 0, size = 10),
+        plot.background = element_blank(), panel.border = element_blank(),
+        strip.background = element_blank(), panel.background = element_rect(fill = "grey80", colour = "grey80"), panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(), panel.spacing = unit(panel_spacing, "lines")) +
+        guides(fill = guide_legend("P-value strength", nrow = 2)) + labs(x = "", y = "", title = "") +
+    facet_grid(target~., scales = "free", space="free") 
+    #ggforce::facet_grid_paginate(target~., scales = "free", space="free", ncol=1,  nrow = 1, page = 2)
+    #ggforce::facet_wrap_paginate(target~., scales = "free", ncol=1,  nrow = 9, page = 2)
+
+plot(hm2)
+
+
+```
+
+
+__Figure S2.__ Heatmap of significance and direction of associations between specific pathogens in environmental samples and child diarrhea and growth outcomes. Cells are colored by the strength of significance and direction of association, and the point estimate and confidence intervals are printed within cells, with relative risks printed for binary outcomes and mean differences for continuous outcomes. Each row is for a different sample type in a specific study or in a pooled estimate across studies.. Estimates aggregated across any sample type are only plotted if there are multiple sample types for a study. All estimates are adjusted for potential confounders. 
+
+
+
+
+```{r hm1_abund, echo=F, warning=F, message=F, fig.width = 10, fig.height = 6.5}
+
+hm1_abund <- ggplot(hm_df_path_abund, aes(x = Y, y = X, fill = pval_cat )) + 
+  geom_tile(colour = "grey80", size = 0.25) + scale_x_discrete(expand = c(0, 0)) + 
+  scale_y_discrete(expand = c(0, 0)) + 
+  theme_minimal(base_size = 8) +
+  scale_fill_manual(values = colours, drop = FALSE) +
+  geom_text(aes(label = est), size=2.25) +
+  theme(legend.title = element_text(color = textcol,
+        size = 8), legend.margin = margin(grid::unit(0.1, "cm")), legend.text = element_text(colour = textcol,
+        size = 7, face = "bold"), legend.key.height = grid::unit(0.2,   "cm"), legend.key.width = grid::unit(1, "cm"),
+        legend.position = "bottom", axis.text.x = element_text(size = 8,  colour = textcol), 
+        axis.text.y = element_text(size = 8, vjust = 0.2, colour = textcol), axis.ticks = element_line(size = 0.4),
+        plot.title = element_text(colour = textcol, hjust = 0, size = 12, face = "bold"), strip.text.x = element_text(size = 10),
+        strip.text.y = element_text(angle = 0, size = 10),
+        plot.background = element_blank(), panel.border = element_blank(),
+        strip.background = element_blank(), panel.background = element_rect(fill = "grey80", colour = "grey80"), panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(), panel.spacing = unit(panel_spacing, "lines")) +
+        guides(fill = guide_legend("P-value strength", nrow = 2)) + labs(x = "", y = "", title = "") +
+    facet_grid(target~., scales = "free", space="free") 
+
+plot(hm1_abund)
+
+
+```
+
+
+
+__Figure S3.__ Heatmap of significance and direction of associations between the abundance of specific pathogens in environmental samples and child diarrhea and growth outcomes. Cells are colored by the strength of significance and direction of association, and the point estimate and confidence intervals are printed within cells, with relative risks printed for binary outcomes and mean differences for continuous outcomes. Each row is for a different sample type in a specific study or in a pooled estimate across studies.. Estimates aggregated across any sample type are only plotted if there are multiple sample types for a study. All estimates are adjusted for potential confounders. 
+
+
+```{r hm_mst, echo=F, warning=F, message=F, fig.width = 10, fig.height = 6.5}
+
+hm_mst <- ggplot(hm_df_mst, aes(x = Y, y = X, fill = pval_cat )) + 
+  geom_tile(colour = "grey80", size = 0.25) + scale_x_discrete(expand = c(0, 0)) + 
+  scale_y_discrete(expand = c(0, 0)) + 
+  theme_minimal(base_size = 8) +
+  scale_fill_manual(values = colours, drop = FALSE) +
+  geom_text(aes(label = est), size=2.25) +
+  theme(legend.title = element_text(color = textcol,
+                                    size = 8), legend.margin = margin(grid::unit(0.1, "cm")), legend.text = element_text(colour = textcol,
+                                                                                                                         size = 7, face = "bold"), legend.key.height = grid::unit(0.2,   "cm"), legend.key.width = grid::unit(1, "cm"),
+        legend.position = "bottom", axis.text.x = element_text(size = 8,  colour = textcol), 
+        axis.text.y = element_text(size = 8, vjust = 0.2, colour = textcol), axis.ticks = element_line(size = 0.4),
+        plot.title = element_text(colour = textcol, hjust = 0, size = 12, face = "bold"), strip.text.x = element_text(size = 10),
+        strip.text.y = element_text(angle = 0, size = 10),
+        plot.background = element_blank(), panel.border = element_blank(),
+        strip.background = element_blank(), panel.background = element_rect(fill = "grey80", colour = "grey80"), panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(), panel.spacing = unit(panel_spacing, "lines")) +
+  guides(fill = guide_legend("P-value strength", nrow = 2)) + labs(x = "", y = "", title = "") +
+  facet_grid(target~., scales = "free", space="free") 
+  #ggforce::facet_grid_paginate(target~., scales = "free", space="free", ncol=1,  nrow = 9, page = 1)
+
+plot(hm_mst)
+
+
+```
+
+
+__Figure S4.__ Heatmap of significance and direction of associations between specific microbial source tracking markers in environmental samples and child diarrhea and growth outcomes. Cells are colored by the strength of significance and direction of association, and the point estimate and confidence intervals are printed within cells, with relative risks printed for binary outcomes and mean differences for continuous outcomes. Each row is for a different sample type in a specific study or in a pooled estimate across studies.. Estimates aggregated across any sample type are only plotted if there are multiple sample types for a study. All estimates are adjusted for potential confounders. 
+
+
+
+
+
+
+```{r hm_mst_abund, echo=F, warning=F, message=F, fig.width = 10, fig.height = 6.5}
+
+hm_mst_abund <- ggplot(hm_df_mst_abund, aes(x = Y, y = X, fill = pval_cat )) + 
+  geom_tile(colour = "grey80", size = 0.25) + scale_x_discrete(expand = c(0, 0)) + 
+  scale_y_discrete(expand = c(0, 0)) + 
+  theme_minimal(base_size = 8) +
+  scale_fill_manual(values = colours, drop = FALSE) +
+  geom_text(aes(label = est), size=2.25) +
+  theme(legend.title = element_text(color = textcol,
+                                    size = 8), legend.margin = margin(grid::unit(0.1, "cm")), legend.text = element_text(colour = textcol,
+                                                                                                                         size = 7, face = "bold"), legend.key.height = grid::unit(0.2,   "cm"), legend.key.width = grid::unit(1, "cm"),
+        legend.position = "bottom", axis.text.x = element_text(size = 8,  colour = textcol), 
+        axis.text.y = element_text(size = 8, vjust = 0.2, colour = textcol), axis.ticks = element_line(size = 0.4),
+        plot.title = element_text(colour = textcol, hjust = 0, size = 12, face = "bold"), strip.text.x = element_text(size = 10),
+        strip.text.y = element_text(angle = 0, size = 10),
+        plot.background = element_blank(), panel.border = element_blank(),
+        strip.background = element_blank(), panel.background = element_rect(fill = "grey80", colour = "grey80"), panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(), panel.spacing = unit(panel_spacing, "lines")) +
+  guides(fill = guide_legend("P-value strength", nrow = 2)) + labs(x = "", y = "", title = "") +
+  facet_grid(target~., scales = "free", space="free") 
+  #ggforce::facet_grid_paginate(target~., scales = "free", space="free", ncol=1,  nrow = 9, page = 1)
+
+plot(hm_mst_abund)
+
+
+```
+
+__Figure S5.__ Heatmap of significance and direction of associations between the abundance of specific microbial source tracking markers in environmental samples and child diarrhea and growth outcomes. Cells are colored by the strength of significance and direction of association, and the point estimate and confidence intervals are printed within cells, with relative risks printed for binary outcomes and mean differences for continuous outcomes. Each row is for a different sample type in a specific study or in a pooled estimate across studies.. Estimates aggregated across any sample type are only plotted if there are multiple sample types for a study. All estimates are adjusted for potential confounders. 
+
+
+
+## Subgroup analysis
+
+```{r p_wet_diar_2, echo=F, warning=F, message=F, fig.width = 10, fig.height = 6.5}
+p_wet_diar_2
+```
+
+__Figure S6.__ Forest plots of relative risks between diarrhea disease and any enteropathogen, and any MST markers, in different types of environmental samples, stratified by whether the diarrheal disease occurred during the wet versus dry season (defined by the 6 months of highest average rainfall). Significant effect modification, as determined by the p-values on the regression model interaction term, is marked with asterisks (P < 0.05 = \*, P < 0.01 = \*\*, P < 0.001 = \*\*\*).
+
+
+
+
+```{r p_animals_haz_1, echo=F, warning=F, message=F, fig.width = 10, fig.height = 6.5}
+p_animals_haz_1
+```
+
+
+__Figure S7.__ Forest plots of associations between child HAZ and any enteropathogen, and any MST markers, in different types of environmental samples, stratified by whether any animals were present in the compound. Significant effect modification, as determined by the p-values on the regression model interaction term, is marked with asterisks (P < 0.05 = \*, P < 0.01 = \*\*, P < 0.001 = \*\*\*).
+
+
+```{r p_sex_diar_1, echo=F, warning=F, message=F, fig.width = 10, fig.height = 6.5}
+p_sex_diar_1
+```
+
+__Figure S8.__ Forest plots of associations between child diarrheal disease and any enteropathogen, and any MST markers, in different types of environmental samples, stratified by child sex. Significant effect modification, as determined by the p-values on the regression model interaction term, is marked with asterisks (P < 0.05 = \*, P < 0.01 = \*\*, P < 0.001 = \*\*\*).
+
+
+
+```{r p_sex_haz_1, echo=F, warning=F, message=F, fig.width = 10, fig.height = 6.5}
+p_sex_haz_1
+```
+
+__Figure S9.__ Forest plots of associations between child HAZ and any enteropathogen, and any MST markers, in different types of environmental samples, stratified by child sex. Significant effect modification, as determined by the p-values on the regression model interaction term, is marked with asterisks (P < 0.05 = \*, P < 0.01 = \*\*, P < 0.001 = \*\*\*).
+
+
+```{r p_age_diar_1, echo=F, warning=F, message=F, fig.width = 10, fig.height = 6.5}
+p_age_diar_1
+```
+
+__Figure S10.__ Forest plots of associations between child diarrheal disease and any enteropathogen, and any MST markers, in different types of environmental samples, stratified by child age.
+
+
+```{r p_age_haz_1, echo=F, warning=F, message=F, fig.width = 10, fig.height = 6.5}
+p_age_haz_1
+```
+
+__Figure S11.__ Forest plots of associations between child HAZ and any enteropathogen, and any MST markers, in different types of environmental samples, stratified by child age.
+
+
+
+
+# Tables
+
+
+```{r tab_Y, fig.cap = "Descriptive statistics of child health outcomes by study.", echo=FALSE, warning=F, message=F}
+FitFlextableToPage(flextable(tab_Y))
+```
+
+
+
+
+

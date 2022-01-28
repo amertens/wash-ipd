@@ -14,6 +14,9 @@ head(unadj_RR)
 table(unadj_RR$sample_cat)
 
 
+df <- adj_RR %>% filter(target=="Any STH", Y=="haz")
+df
+
 binary_Y =c("diar7d","stunt","wast","underwt")
 cont_Y =c("haz","waz","whz")
 

@@ -79,8 +79,8 @@ adj_diff <- adj_diff %>%
 
 head(adj_diff)
 d<-adj_diff %>% filter(!is.na(pval), !is.na(target)) %>%
-   filter(sparse=="no", target %in% any_pathogens, !c(target %in% c("Any STH","any pathogen-improved","any pathogen-unimproved"))) %>%
-  arrange(target_f, sample, study)
+   filter(sparse!="yes", target %in% any_pathogens, !c(target %in% c("Any STH","any pathogen-improved","any pathogen-unimproved"))) %>%
+  arrange(sample, study, target_f)
 dim(d)
 
 length(unique(d$target))
@@ -117,16 +117,18 @@ d$point.diff[d$Y %in% c("Diarrhea","Stunting","Wasting","Underweight")]
 d$sign <- ifelse(d$Y %in% c("Diarrhea","Stunting","Wasting","Underweight"),ifelse(d$point.diff > 1, -1, 1), sign(d$point.diff))
 table(d$sign)
 
-d$pval_cat <- cut(d$pval, breaks = c(-1, 0.01, 0.05, 0.2, 0.5, 2), 
-                  labels = c("<0.01", "<0.05", "0.05-0.2","0.2-0.5", "0.5-1"))
+
+d$pval_cat <- cut(d$pval, breaks = c(-1, 0.01, 0.05, 0.2, 2), 
+                  labels = c("<0.01", "<0.05", "0.05-0.2", "0.2-1"))
 d$pval_cat <- ifelse(d$sign == -1, paste0(d$pval_cat, " increase risk"), 
                      paste0(d$pval_cat, " decrease risk"))
-d$pval_cat[d$pval_cat %in% c("0.5-1 decrease risk", "0.5-1 increase risk")] <- "0.5-1"
+d$pval_cat[d$pval_cat %in% c("0.2-1 decrease risk", "0.2-1 increase risk")] <- "0.2-1"
 table(d$pval_cat)
 d$pval_cat <- factor(d$pval_cat, levels = c("<0.01 decrease risk", 
-                                            "<0.05 decrease risk", "0.05-0.2 decrease risk", "0.2-0.5 decrease risk", 
-                                            "0.5-1", "0.05-0.2 increase risk", "0.2-0.5 increase risk", 
+                                            "<0.05 decrease risk", "0.05-0.2 decrease risk", 
+                                            "0.2-1", "0.05-0.2 increase risk", 
                                             "<0.05 increase risk", "<0.01 increase risk"))
+
 d$pval_cat <- addNA(d$pval_cat)
 levels(d$pval_cat) = c(levels(d$pval_cat), "Sparse")
 d$pval_cat[is.na(d$pval_cat)] <- "Sparse"
@@ -145,10 +147,11 @@ d$est = gsub("NA \\(NA, NA\\)", "", d$est)
 textcol = "grey20"
 cols = (brewer.pal(n = 9, name = "Spectral"))
 colours <- c(`<0.01 increase risk` = cols[1], `<0.05 increase risk` = cols[2], 
-             `0.05-0.2 increase risk` = cols[3], `0.2-0.5 increase risk` = cols[4], 
-             `0.5-1` = cols[5], `0.2-0.5 decrease risk` = cols[6], 
+             `0.05-0.2 increase risk` = cols[3],
+             `0.2-1` = cols[5],  
              `0.05-0.2 decrease risk` = cols[7], `<0.05 decrease risk` = cols[8], 
              `<0.01 decrease risk` = cols[9], `Not estimated` = "gray80")
+
 
 
 d <- d %>% filter(!is.na(target)) %>% droplevels()
@@ -182,8 +185,8 @@ hm
 
 head(adj_diff)
 d<-adj_diff %>% filter(!is.na(pval), !is.na(target)) %>%
-  filter(sparse=="no", target %in% any_MST, !c(target %in% c("Any STH","any pathogen-improved","any pathogen-unimproved"))) %>%
-  arrange(target_f, sample, study)
+  filter(sparse!="yes", target %in% any_MST, !c(target %in% c("Any STH","any pathogen-improved","any pathogen-unimproved"))) %>%
+  arrange(sample, study, target_f)
 dim(d)
 
 length(unique(d$target))
@@ -193,7 +196,7 @@ length(unique(d$Y))
 
 d$X <- paste0(d$sample_cat,": ", d$study)
 d$X <- factor(d$X, levels=unique(d$X))
-d$Y <- factor(d$Y, levels=c("diar7d", "haz","waz","whz",  "underwt","stunt","wast"   ))
+d$Y <- factor(d$Y, levels=c("diar7d", "haz","waz","whz",  "stunt","underwt","wast"   ))
 d$Y <- recode_factor(d$Y, 
                      "diar7d"="Diarrhea", 
                      "haz"="HAZ",
@@ -216,15 +219,15 @@ d$point.diff <- ifelse(d$Y %in% c("Diarrhea","Stunting","Wasting","Underweight")
 d$sign <- ifelse(d$Y %in% c("Diarrhea","Stunting","Wasting","Underweight"),ifelse(d$point.diff > 1, -1, 1), sign(d$point.diff))
 table(d$sign)
 
-d$pval_cat <- cut(d$pval, breaks = c(-1, 0.01, 0.05, 0.2, 0.5, 2), 
-                  labels = c("<0.01", "<0.05", "0.05-0.2","0.2-0.5", "0.5-1"))
+d$pval_cat <- cut(d$pval, breaks = c(-1, 0.01, 0.05, 0.2, 2), 
+                  labels = c("<0.01", "<0.05", "0.05-0.2", "0.2-1"))
 d$pval_cat <- ifelse(d$sign == -1, paste0(d$pval_cat, " increase risk"), 
                      paste0(d$pval_cat, " decrease risk"))
-d$pval_cat[d$pval_cat %in% c("0.5-1 decrease risk", "0.5-1 increase risk")] <- "0.5-1"
+d$pval_cat[d$pval_cat %in% c("0.2-1 decrease risk", "0.2-1 increase risk")] <- "0.2-1"
 table(d$pval_cat)
 d$pval_cat <- factor(d$pval_cat, levels = c("<0.01 decrease risk", 
-                                            "<0.05 decrease risk", "0.05-0.2 decrease risk", "0.2-0.5 decrease risk", 
-                                            "0.5-1", "0.05-0.2 increase risk", "0.2-0.5 increase risk", 
+                                            "<0.05 decrease risk", "0.05-0.2 decrease risk", 
+                                            "0.2-1", "0.05-0.2 increase risk", 
                                             "<0.05 increase risk", "<0.01 increase risk"))
 d$pval_cat <- addNA(d$pval_cat)
 levels(d$pval_cat) = c(levels(d$pval_cat), "Sparse")

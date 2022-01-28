@@ -73,14 +73,14 @@ pathogen_plot <- function(mydf, legend_labels=sample_cats, drop_full_sparse=F){
     scale_color_manual(breaks = legend_labels,
       values = colours, drop = FALSE) +
     geom_text(aes(y=ci.ub, label=sig_cat), color="black", position = position_dodge(0.5), hjust = -0.5, size=4) +
-    scale_shape_manual(values=c(16, 13,18), guide=FALSE) + 
+    scale_shape_manual(values=c(16, 13,18), guide="none") + 
     geom_hline(yintercept = 1, linetype="dashed") +
-    facet_wrap(~target_f,  nrow=3) +
+    facet_wrap(~target_f,  nrow=2) +
     scale_y_continuous(
-      breaks=c(.25, .5,1, 2, 4, 8, 16, 32), 
+      breaks=c(.5,1, 2, 4, 8), 
       trans='log10', 
-      labels = c("1/4", "1/2","1", "2", "4", "8", "16", "32")
-    ) + coord_flip(ylim=c(0.225,33)) +
+      labels = c( "1/2","1", "2", "4", "8")
+    ) + coord_flip(ylim=c(0.74,15)) +
     labs(color="Sample type") + xlab("") + ylab("Prevalence ratio") + 
     theme_ki() + 
     theme(axis.ticks.x=element_blank(),
@@ -97,9 +97,13 @@ pathogen_plot <- function(mydf, legend_labels=sample_cats, drop_full_sparse=F){
 #---------------------------------------------------------------
   
 #Primary figure
+max(adj_RR$ci.ub)
+min(adj_RR$ci.lb)
+
 adj_RR
 p_pathogen <- adj_RR %>% 
   pathogen_plot(drop_full_sparse=T)
+p_pathogen
 
 ggsave(p_pathogen, file = paste0(here::here(),"/figures/pngs/aim2_p_pathogen.png"), width = 10, height = 6)
 
