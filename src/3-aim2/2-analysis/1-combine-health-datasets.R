@@ -16,6 +16,13 @@ table(mapsan$diar7d_full)
 table(gv$diar7d_full)
 table(odisha$diar7d_full)
 
+
+prop.table(table(wbb$diar7d))
+prop.table(table(wbk$diar7d))
+prop.table(table(mapsan$diar7d))
+prop.table(table(gv$diar7d))
+prop.table(table(odisha$diar7d))
+
 table(mapsan$animals)
 
 

@@ -104,19 +104,19 @@ res_stunt_adj <- d %>% group_by(study, sample, target) %>%
   mutate(abund=log10(abund)) %>%
   do(aim2_glm(., outcome="stunt", exposure="abund", study=.$study[1], sample=.$sample[1], target=.$target[1], Ws=Wvars, family="binomial")) 
 res_stunt_adj$sparse <- ifelse(is.na(res_stunt_adj$RR), "yes", "no")
-res_stunt_adj$RR[is.na(res_stunt$RR)] <- 1
+res_stunt_adj$RR[is.na(res_stunt_adj$RR)] <- 1
 
 res_wast_adj <- d %>% group_by(study, sample, target) %>%
   mutate(abund=log10(abund)) %>%
   do(aim2_glm(., outcome="wast", exposure="abund", study=.$study[1], sample=.$sample[1], target=.$target[1], Ws=Wvars, family="binomial")) 
 res_wast_adj$sparse <- ifelse(is.na(res_wast_adj$RR), "yes", "no")
-res_wast_adj$RR[is.na(res_wast$RR)] <- 1
+res_wast_adj$RR[is.na(res_wast_adj$RR)] <- 1
 
 res_underwt_adj <- d %>% group_by(study, sample, target) %>%
   mutate(abund=log10(abund)) %>%
   do(aim2_glm(., outcome="underwt", exposure="abund", study=.$study[1], sample=.$sample[1], target=.$target[1], Ws=Wvars, family="binomial")) 
 res_underwt_adj$sparse <- ifelse(is.na(res_underwt_adj$RR), "yes", "no")
-res_underwt_adj$RR[is.na(res_underwt$RR)] <- 1
+res_underwt_adj$RR[is.na(res_underwt_adj$RR)] <- 1
 
 
 res_haz_adj <- d %>% group_by(study, sample, target) %>%
@@ -148,7 +148,7 @@ res_diar_roq_adj <- d %>% group_by(study, sample, target) %>%
   mutate(abund=log10(abund)) %>%
   do(aim2_glm(., outcome="diar7d", exposure="abund", study=.$study[1], sample=.$sample[1], target=.$target[1], Ws=Wvars, family="binomial")) 
 res_diar_roq_adj$sparse <- ifelse(is.na(res_diar_roq_adj$RR), "yes", "no")
-res_diar_roq_adj$RR[is.na(res_diar$RR)] <- 1
+res_diar_roq_adj$RR[is.na(res_diar_roq_adj$RR)] <- 1
 
 
 res_haz_roq_adj <- d %>% group_by(study, sample, target) %>%
@@ -169,7 +169,7 @@ res_diar$RR[res_diar$RR >32 | 1/res_diar$RR > 32] <- 1
 
 res_diar_adj$sparse[res_diar$RR >32 | 1/res_diar_adj$RR > 32] <- "yes"
 res_diar_adj$coef[res_diar$RR >32 | 1/res_diar_adj$RR > 32] <- 0
-res_diar_adj$RR[res_diar$RR >32 | 1/res_diar_adj$RR > 32] <- 1
+res_diar_adj$RR[res_diar$RR >32 | 1/res_diar_adj$RR > 32] <- 1=
 
 res_diar_roq_adj$sparse[res_diar$RR >32 | 1/res_diar_roq_adj$RR > 32] <- "yes"
 res_diar_roq_adj$coef[res_diar$RR >32 | 1/res_diar_roq_adj$RR > 32] <- 0

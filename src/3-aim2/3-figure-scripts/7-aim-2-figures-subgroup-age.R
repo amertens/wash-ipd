@@ -14,38 +14,24 @@ adj_RR$agecat[is.na(adj_RR$agecat)] <- adj_RR$agecat_anthro [is.na(adj_RR$agecat
 adj_RR <- adj_RR %>% filter(!is.na(agecat)) %>%
   rename(Vlevel = agecat)
 
+table(adj_RR$Vlevel)
+
+levels <- levels(adj_RR$Vlevel)
+adj_RR$Vlevel <- as.character(adj_RR$Vlevel)
+adj_RR$Vlevel[adj_RR$RR==1 & adj_RR$Y=="diar7d"] <- 'sparse'
+adj_RR$Vlevel[adj_RR$coef==0 & adj_RR$Y=="haz"] <- 'sparse'
+adj_RR$Vlevel <- factor(adj_RR$Vlevel, levels =c(levels,"sparse"))
+sample_cats <- levels(adj_RR$Vlevel)
+
 #---------------------------------------------------------------
 # Clean results
 #---------------------------------------------------------------
-#adj_RR <- adj_RR %>% filter(!is.na(coef))
-# adj_RR$sparse <- ifelse(is.na(adj_RR$coef),"yes",adj_RR$coef)
-# adj_RR$RR[adj_RR$sparse=="yes"] <- 1
+
 adj_RR <- clean_res_subgroup(adj_RR)
-# adj_RR <- adj_RR %>% mutate(
-#   int.p =case_when(
-#     Vlevel==0 ~ NA_character_,
-#     int.p<0.001~"***",
-#     int.p<0.01~"**",
-#     int.p<0.05~"*",
-#     int.p>=0.05~""
-#   ),
-#   Vlevel = factor(case_when(
-#     sparse=="yes" ~ "Sparse data",
-#     V=="wet" & Vlevel==0 ~ "Dry season",
-#     V=="wet" & Vlevel==1 ~ "Wet season",
-#     V=="wet_CH" & Vlevel==0 ~ "Dry season",
-#     V=="wet_CH" & Vlevel==1 ~ "Wet season",
-#     V=="animals" & Vlevel==0 ~ "No animals",
-#     V=="animals" & Vlevel==1 ~ "Animals in\ncompound"
-#   ), levels = c("Dry season", "Wet season","No animals", "Animals in\ncompound","Sparse data"))
-# )
-
-
 
 #see if any levels are missing
-adj_RR$target[is.na(adj_RR$target_f)]
-sample_cats = levels(adj_RR$sample_cat)[levels(adj_RR$sample_cat)!="Any sample"]
-
+# adj_RR$target[is.na(adj_RR$target_f)]
+# sample_cats = levels(adj_RR$sample_cat)[levels(adj_RR$sample_cat)!="Any sample"]
 
 
 #---------------------------------------------------------------
@@ -88,7 +74,7 @@ base_plot <- function(mydf, legend_labels=sample_cats, drop_full_sparse=F, ylimi
                   width = 0.3, size = 1) +
     #Mark significant interactions
     #geom_text(aes(y=ci.ub, label=int.p), color="black", position = position_dodge(0.5), hjust = -0.5, size=4) +
-    scale_color_manual(#breaks = legend_labels,
+    scale_color_manual(breaks = legend_labels,
       values = c(cbbPalette[2:5],"grey50"), drop = FALSE) +
     scale_shape_manual(values=c(16, 16, 16,18), guide=FALSE)+  
     geom_hline(yintercept = 1, linetype="dashed") +
@@ -108,6 +94,10 @@ base_plot <- function(mydf, legend_labels=sample_cats, drop_full_sparse=F, ylimi
   
 }
 
+my_df <- adj_RR %>% 
+  filter(target %in% c("Any pathogen","Any MST"), Y=="haz") 
+  drop_full_sparse=T
+  ylimits=c(-4,4)
 
 
 base_plot_diff <- function(mydf, legend_labels=sample_cats, drop_full_sparse=F, ylimits=c(-1,1)){
@@ -139,7 +129,7 @@ base_plot_diff <- function(mydf, legend_labels=sample_cats, drop_full_sparse=F, 
                   width = 0.3, size = 1) +
     #Mark significant interactions
     #geom_text(aes(y=ci.ub, label=int.p), color="black", position = position_dodge(0.5), hjust = -0.5, size=4) +
-    scale_color_manual(#breaks = legend_labels,
+    scale_color_manual(breaks = legend_labels,
       values = c(cbbPalette[2:5],"grey50"), drop = FALSE) +
     scale_shape_manual(values=c(16, 16, 16,18), guide=FALSE)+  
     geom_hline(yintercept = 0, linetype="dashed") +
@@ -167,6 +157,8 @@ table(adj_RR$Y)
 p_age_diar_1 <- adj_RR %>% 
   filter(target %in% c("Any pathogen","Any MST"), Y=="diar7d") %>%
   base_plot(drop_full_sparse=T, ylimits=c(0.125,8))
+p_age_diar_1
+
 ggsave(p_age_diar_1, file = paste0(here::here(),"/figures/pngs/subgroup_aim2_p_age_diar.png"), width = 10, height = 6)
 
 p_age_haz_1 <- adj_RR %>% 

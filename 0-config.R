@@ -15,6 +15,7 @@ library(metafor)
 library(washb)
 library(gtools)
 library(tmle)
+library(ggtext)
 
 #set data directories
 
@@ -55,7 +56,7 @@ zoonotic_pathogens = c("Zoonotic E. coli","Campylobacter", "Salmonella", "Crypto
 
 
 #MST's:
-general_MST = c("General (GenBac3)","General (BacUni)")
+#general_MST = c("General (GenBac3)","General (BacUni)")
 
 animal_MST = c( "Animal (BacCow)",   
                 "Ruminant (BacR)",              "Avian (GFD)",
@@ -64,12 +65,15 @@ animal_MST = c( "Animal (BacCow)",
 human_MST = c("Human (HumM2)",  "Human (BacHum)",  "Human (HF183)", "Human (M. smithii)")
 
 
-any_MST = c(general_MST, animal_MST, human_MST)
+any_MST = c(#general_MST, 
+            animal_MST, human_MST)
 
 
 
 target_levels = unique(c(
-  "Any pathogen", "Any MST", "Any general MST",       "Any human MST",        "Any animal MST",  
+  "Any pathogen", "Any MST", 
+  #"Any general MST",       
+  "Any human MST",        "Any animal MST",  
   "Any bacteria",                       
   "Any virus",     "Any protozoa",  "Any STH", 
   any_MST, any_pathogens))

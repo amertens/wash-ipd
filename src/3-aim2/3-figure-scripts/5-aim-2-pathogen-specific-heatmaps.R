@@ -47,6 +47,7 @@ unadj_RR <- unadj_RR %>% mutate(
 )
 
 adj_RR$pooled <- ifelse(grepl("Pooled",(adj_RR$study)),1,0)
+adj_RR$study <- gsub("Pooled","POOLED",adj_RR$study)
 
 
 #---------------------------------------------------------------
@@ -56,9 +57,15 @@ adj_RR$pooled <- ifelse(grepl("Pooled",(adj_RR$study)),1,0)
 #unadj_RR<-unadj_RR %>% filter(!is.na(se))
 sample_cats = levels(unadj_RR$sample_cat)[levels(unadj_RR$sample_cat)!="Any sample"]
 
-
+levels(adj_RR$sample_cat)
+unique(adj_RR$study)
+adj_RR <- adj_RR %>% mutate(study = factor(study, levels = c("POOLED","Boehm 2016","Capone 2021","Capone 2021 in prep", "Fuhrmeister 2020",
+                                                             "Holcomb 2020","Kwong 2021","Odagiri 2016","Reese 2017","Steinbaum 2019"  )))
+adj_RR <- adj_RR %>% arrange(sample_cat, study)
 adj_RR$X <- paste0(adj_RR$sample_cat,": ", adj_RR$study)
-adj_RR$X <- factor(adj_RR$X, levels=unique(adj_RR$X))
+adj_RR$X <- factor(adj_RR$X, levels=rev(unique(adj_RR$X)))
+levels(adj_RR$X)
+
 adj_RR$Y <- factor(adj_RR$Y, levels=c("diar7d", "haz","waz","whz",  "underwt","stunt","wast"))
 adj_RR$Y <- recode_factor(adj_RR$Y, 
                      "diar7d"="Diarrhea", 
@@ -103,14 +110,13 @@ adj_RR <- adj_RR %>%
                                         "SW","W","any sample type"))) 
 
 panel_spacing = 0.75
-
 textcol = "grey20"
 cols = (brewer.pal(n = 9, name = "Spectral"))
 colours <- c(`<0.01 increase risk` = cols[1], `<0.05 increase risk` = cols[2], 
              `0.05-0.2 increase risk` = cols[3],
              `0.2-1` = cols[5],  
              `0.05-0.2 decrease risk` = cols[7], `<0.05 decrease risk` = cols[8], 
-             `<0.01 decrease risk` = cols[9], `Not estimated` = "gray80")
+             `<0.01 decrease risk` = cols[9], `Not estimated` = "grey80")
 
 
 
@@ -130,10 +136,23 @@ d<-adj_RR %>% filter(!is.na(pval), !is.na(target)) %>%
 dim(d)
 
 
-dfull <- expand_grid(unique(d$Y), unique(d$X))
-colnames(dfull) <- c("Y", "X")
-d <- left_join(dfull, d, by = c("Y", "X"))
-d <- distinct(d)
+
+# dfull <- expand_grid(unique(d$Y), unique(d$X))
+# colnames(dfull) <- c("Y", "X")
+# d <- left_join(dfull, d, by = c("Y", "X"))
+# #d <- distinct(d)
+dim(d)
+dfull <- expand_grid(unique(d$Y), unique(d$X), unique(d$target))
+dim(dfull)
+#dfull <- expand_grid(unique(dfull$target), unique(dfull$X))
+colnames(dfull) <- c("Y", "X","target")
+d <- left_join(dfull, d, by = c("target", "X","Y"))
+table(d$X)
+d <- d %>% filter(!is.na(est) | X=="Any sample: POOLED", !is.na(Y))
+d$pval_cat <- addNA(d$pval_cat)
+levels(d$pval_cat) = c(levels(d$pval_cat), "Not estimated")
+d$pval_cat[is.na(d$pval_cat)] <- "Not estimated"
+
 
 head(d)
 d <- d %>% group_by(study, Y, target) %>%
@@ -148,12 +167,16 @@ d <- d %>% filter(!is.na(target)) %>% droplevels()
 hm_df_agg <- d
 
 
-lab_f = parse(text= ifelse(grepl("Pooled",levels(hm_df_agg$X)),
-                           paste0("bold(\"", levels(hm_df_agg$X), "\")"),
-                           paste0("\"", levels(hm_df_agg$X), "\"")))
-
+unique(d$target)
+hm_df_agg <- hm_df_agg %>% mutate(target = factor(target,  
+                  levels = c(
+                    "Any pathogen","Any bacteria","Any virus","Any protozoa",
+                    "Any STH","Any MST", "Any human MST","Any animal MST")))
 
 hm_agg <- heatmap_plot(hm_df_agg, colours=colours)
+hm_agg
+
+
 ggsave(hm_agg, file = paste0(here::here(),"/figures/pngs/p_aggregate_heatmap.png"), width = 10, height = 26)
 
 
@@ -169,11 +192,14 @@ d<-adj_RR %>% filter(!is.na(pval), !is.na(target)) %>%
 dim(d)
 
 
-dfull <- expand_grid(unique(d$Y), unique(d$X))
-colnames(dfull) <- c("Y", "X")
-d <- left_join(dfull, d, by = c("Y", "X"))
-d <- distinct(d)
-
+dfull <- expand_grid(unique(d$Y), unique(d$X), unique(d$target))
+colnames(dfull) <- c("Y", "X","target")
+d <- left_join(dfull, d, by = c("target", "X","Y"))
+table(d$X)
+d <- d %>% filter(!is.na(est) | X=="Any sample: POOLED", !is.na(Y))
+d$pval_cat <- addNA(d$pval_cat)
+levels(d$pval_cat) = c(levels(d$pval_cat), "Not estimated")
+d$pval_cat[is.na(d$pval_cat)] <- "Not estimated"
 
 
 
@@ -203,10 +229,15 @@ d<-adj_RR %>% filter(!is.na(pval), !is.na(target)) %>%
 dim(d)
 
 
-dfull <- expand_grid(unique(d$Y), unique(d$X))
-colnames(dfull) <- c("Y", "X")
-d <- left_join(dfull, d, by = c("Y", "X"))
-d <- distinct(d)
+
+dfull <- expand_grid(unique(d$Y), unique(d$X), unique(d$target))
+colnames(dfull) <- c("Y", "X","target")
+d <- left_join(dfull, d, by = c("target", "X","Y"))
+table(d$X)
+d <- d %>% filter(!is.na(est) | X=="Any sample: POOLED", !is.na(Y))
+d$pval_cat <- addNA(d$pval_cat)
+levels(d$pval_cat) = c(levels(d$pval_cat), "Not estimated")
+d$pval_cat[is.na(d$pval_cat)] <- "Not estimated"
 
 
 
@@ -219,6 +250,11 @@ d$est = gsub("NA \\(NA, NA\\)", "", d$est)
 
 d <- d %>% filter(!is.na(target)) %>% droplevels()
 hm_df_mst <- d
+
+
+
+
+
 
 hm_mst <- heatmap_plot(hm_df_mst, colours=colours)
 

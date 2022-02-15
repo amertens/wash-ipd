@@ -107,8 +107,8 @@ d <- d %>% mutate(
     target %in% any_helminth ~ "Helminth",  
     target %in% any_protozoa ~ "Protozoa",  
     target %in% animal_MST ~ "Animal",  
-    target %in% human_MST ~ "Human",  
-    target %in% general_MST ~ "General" 
+    target %in% human_MST ~ "Human"#,  
+    #target %in% general_MST ~ "General" 
   ),
   target_type = case_when(
     target %in% any_pathogens ~ "P",  
@@ -250,7 +250,7 @@ any_virus_tab <- tab_function(any_virus)
 any_bacteria_tab <- tab_function(any_bacteria)
 any_helminth_tab <- tab_function(any_helminth)
 any_protozoa_tab <- tab_function(any_protozoa)
-general_MST_tab <- tab_function(general_MST)
+#general_MST_tab <- tab_function(general_MST)
 animal_MST_tab <- tab_function(animal_MST)
 human_MST_tab <- tab_function(human_MST)
 
@@ -269,7 +269,7 @@ any_virus_tab2 <- tab_function2(df=df2, any_virus)
 any_bacteria_tab2 <- tab_function2(df=df2, any_bacteria)
 any_helminth_tab2 <- tab_function2(df=df2, any_helminth)
 any_protozoa_tab2 <- tab_function2(df=df2, any_protozoa)
-general_MST_tab2 <- tab_function2(df=df2, general_MST)
+#general_MST_tab2 <- tab_function2(df=df2, general_MST)
 animal_MST_tab2 <- tab_function2(df=df2, animal_MST)
 human_MST_tab2 <- tab_function2(df=df2, human_MST)
 
@@ -284,9 +284,11 @@ df <- d %>% filter(tr=="Control", study=="WBB") %>%
 save(target_presence_P, target_presence_MST, tab1, tab2,
      target_presence_long_P, target_presence_long_MST,
      any_pathogens_tab, any_virus_tab, any_bacteria_tab, any_helminth_tab, any_protozoa_tab,
-     general_MST_tab, animal_MST_tab, human_MST_tab,
+     #general_MST_tab, 
+     animal_MST_tab, human_MST_tab,
      any_pathogens_tab2, any_virus_tab2, any_bacteria_tab2, any_helminth_tab2, any_protozoa_tab2,
-     general_MST_tab2, animal_MST_tab2, human_MST_tab2,
+     #general_MST_tab2, 
+     animal_MST_tab2, human_MST_tab2,
      file=here("figures/all_tables.Rdata"))
 
 

@@ -119,7 +119,7 @@ base_plot <- function(mydf, legend_labels=sample_cats, drop_full_sparse=F,
 #need to seperate diarrhea and HAZ
 
 p_adj_s1 <- adj_diff %>% 
-  filter(Y="diar7d", !c(target %in% c("Any STH","any pathogen-improved","any pathogen-unimproved"))) %>%
+  filter(Y=="diar7d", !c(target %in% c("Any STH","any pathogen-improved","any pathogen-unimproved"))) %>%
   base_plot(drop_full_sparse=T,
             #Y_range=c(0.125,8)
             )
@@ -228,7 +228,7 @@ save(any_pathogens,
      any_virus,  
      any_bacteria, 
      any_protozoa, 
-     general_MST, 
+     #general_MST, 
      animal_MST, 
      human_MST, 
      any_MST , file=here("figures/outcome_groups.Rdata"))

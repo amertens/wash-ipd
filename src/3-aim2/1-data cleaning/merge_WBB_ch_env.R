@@ -189,6 +189,7 @@ diar_fuhr <- wbb %>% filter(round %in% c(4,5),  !is.na(diar7d)) %>%
          merge_round, child_date, agedays, sex,             
          childid, diar7d, diar7d_full, momage, hfiacat)
 
+prop.table(table(diar_fuhr$diar7d))*100
 
 # #get full diarrhea disease
 # diar_fuhr_full <- wbb %>% filter(!is.na(diar7d)) %>% 
@@ -344,6 +345,7 @@ unique(env$dataid[!(env$dataid %in% diar_boehm_full$pid)])
 
 
 table(is.na(diar_merge_boehm$diar7d))
+prop.table(table((diar_merge_boehm$diar7d)))*100
 prop.table(table(is.na(diar_merge_boehm$diar7d)))*100
 
 table((diar_merge_boehm$diar7d))
@@ -435,6 +437,7 @@ WBB_main_diar <- WBB_main_health %>%
   subset(., select=c(block, clusterid, dataid, hhid, childid , child_date, agedays,sex, diar7d)) %>%
   mutate(diar7d_full=diar7d)
 
+prop.table(table(WBB_main_diar$diar7d))
 
 WBB_main_anthro <- WBB_main_health %>% filter(!is.na(laz)|!is.na(whz)|!is.na(waz)) %>%
   subset(., select=c(block, clusterid, dataid, hhid, childid , child_date_anthro, agedays,sex, laz, whz, waz)) %>%

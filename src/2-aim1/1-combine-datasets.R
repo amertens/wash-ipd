@@ -155,6 +155,12 @@ d <- d %>% mutate(
   )
 )
 
+
+#Drop general MST targets based on Ali Boehm's feedback
+table(d$target)
+d <- d %>% filter(target != "General (BacUni)" & target != "General (GenBac3)")
+
+
 unique(d$target)[!(unique(d$target) %in% c(any_pathogens,any_MST))]
 unique(d$target[d$target_raw==d$target])
 
@@ -355,7 +361,7 @@ d_any_STH <- agg_function(c("Ascaris","Trichuris"), "Any STH")
 
 unique(d$target)
 d_any_MST <- agg_function(any_MST, "Any MST")
-d_any_general_MST <- agg_function(general_MST, "Any general MST")
+#d_any_general_MST <- agg_function(general_MST, "Any general MST") #Note: dropping in update
 d_any_human_MST <- agg_function(human_MST, "Any human MST")
 d_any_animal_MST <- agg_function(animal_MST, "Any animal MST")
 
@@ -377,7 +383,9 @@ d <- d %>% filter(!(target %in% c("EC_not_zoo","EC_zoo")))
 as.data.frame(d_any_protozoa$tab)
 
 d_agg <- bind_rows(d_any_pathogen$df, d_any_virus$df, d_any_protozoa$df, d_any_bacteria$df, d_any_STH$df,
-                   d_any_MST$df, d_any_general_MST$df, d_any_human_MST$df, d_any_animal_MST$df,
+                   d_any_MST$df, 
+                   #d_any_general_MST$df, 
+                   d_any_human_MST$df, d_any_animal_MST$df,
                    d_any_zoonotic$df, d_any_not_zoonotic$df)
 table(d_agg$pos)
 table(d_agg$target,d_agg$pos)
@@ -385,7 +393,8 @@ table(d_agg$study, d_agg$target)
 
 #Save tables
 save(d_any_pathogen, d_any_virus, d_any_protozoa, d_any_bacteria,
-                   d_any_general_MST, d_any_human_MST, d_any_animal_MST,
+                   #d_any_general_MST, 
+     d_any_human_MST, d_any_animal_MST,
      file=here("figures/agg_tables.Rdata"))
 
 
