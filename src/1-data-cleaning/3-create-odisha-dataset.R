@@ -53,7 +53,7 @@ env$target[env$target=="av"] <- "Adenovirus"
  
 env <- env %>% mutate(tr=ifelse(tr==1,"Intervention","Control"),
        tr = factor(tr, levels = c("Control", "Intervention")),
-       sample="W",
+       sample="SW",
        study="Odisha",
        dataid=clusterid,
        round=factor(round))

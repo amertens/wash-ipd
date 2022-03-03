@@ -61,6 +61,7 @@ d_wet <- d %>% filter(!is.na(wet))%>% droplevels()
 d_wet_ch <- d %>% filter(!is.na(wet_CH), study!="Holcomb 2020")%>% droplevels() 
 d_animals <- d %>% filter(!is.na(animals)) %>% droplevels()
 d_sex <- d %>% filter(!is.na(sex))%>% droplevels() 
+d_tr <- d %>% filter(!is.na(tr))%>% droplevels() 
 
 
 
@@ -189,3 +190,14 @@ res_adj <- bind_rows(res_bin_adj, res_cont_adj)
 saveRDS(res_adj, file=here("results/adjusted_aim2_emm.Rds"))
 
 
+#Treatment subgroups
+table(d_tr$tr, d_tr$diar7d, d_tr$study)
+
+res_diar_tr_adj <- d_tr %>% group_by(study, sample, target) %>%
+  do(aim2_subgroup(., Ws = Wvars[!(Wvars=="tr")], Vvar="tr", forcedW=c("age", "hhwealth"),outcome="diar7d", exposure="pos", study=.$study[1], sample=.$sample[1], target=.$target[1], family="binomial")) 
+res_haz_tr_adj <- d_tr %>% group_by(study, sample, target) %>%
+  do(aim2_subgroup(., Ws = Wvars_anthro[!(Wvars_anthro=="tr")], Vvar="tr", forcedW=c("age", "hhwealth"), outcome="haz", exposure="pos", study=.$study[1], sample=.$sample[1], target=.$target[1], family="gaussian")) 
+
+res_diar_tr_adj<- res_diar_tr_adj %>% filter(!is.na(coef)) 
+res_haz_tr_adj<- res_haz_tr_adj %>% filter(!is.na(coef)) 
+res_haz_tr_adj_sig <- res_haz_tr_adj  %>% filter(int.p<0.05)

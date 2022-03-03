@@ -16,6 +16,8 @@ library(washb)
 library(gtools)
 library(tmle)
 library(ggtext)
+library(ck37r)
+
 
 #set data directories
 
@@ -128,8 +130,8 @@ clean_res <- function(d, target_lev=target_levels){
       sample == "any sample type" ~ "Any sample",
       sample == "SW" ~ "Source water",
       sample == "W" ~ "Stored water",
-      sample == "CH" ~ "Child hands",
-      sample == "MH" ~ "Mother's hands",
+      sample == "CH" ~ "Child hand rinse",
+      sample == "MH" ~ "Mother hand rinse",
       # sample == "FlyKitch" ~ "Flies in kitchen",
       # sample == "FlyLat" ~ "Flies in latrine",
       sample == "Fly" ~ "Flies",
@@ -141,8 +143,8 @@ clean_res <- function(d, target_lev=target_levels){
       sample == "any sample type" & sparse != "yes" ~ "Any sample",
       sample == "SW"  & sparse != "yes"~ "Source water",
       sample == "W"  & sparse != "yes"~ "Stored water",
-      sample == "CH"  & sparse != "yes"~ "Child hands",
-      sample == "MH"  & sparse != "yes"~ "Mother's hands",
+      sample == "CH"  & sparse != "yes"~ "Child hand rinse",
+      sample == "MH"  & sparse != "yes"~ "Mother hand rinse",
       # sample == "FlyKitch"  & sparse != "yes"~ "Flies in kitchen",
       # sample == "FlyLat"  & sparse != "yes"~ "Flies in latrine",
       sample == "Fly" ~ "Flies",
@@ -151,7 +153,7 @@ clean_res <- function(d, target_lev=target_levels){
     ), 
     sample_cat = factor(sample_cat, 
                         levels=c("Any sample","Source water","Stored water",
-                                 "Child hands", "Mother's hands", "Latrine soil",
+                                 "Child hand rinse", "Mother hand rinse", "Latrine soil",
                                  "House soil", "Flies",
                                  #"Flies in kitchen",  "Flies in latrine", 
                                  "Sparse data"))
@@ -205,8 +207,8 @@ clean_res_subgroup <- function(d, target_lev=target_levels){
       sample == "any sample type" ~ "Any sample",
       sample == "SW" ~ "Source water",
       sample == "W" ~ "Stored water",
-      sample == "CH" ~ "Child hands",
-      sample == "MH" ~ "Mother's hands",
+      sample == "CH" ~ "Child hand rinse",
+      sample == "MH" ~ "Mother's hand rinse",
       # sample == "FlyKitch" ~ "Flies in kitchen",
       # sample == "FlyLat" ~ "Flies in latrine",
       sample == "Fly" ~ "Flies",
@@ -217,8 +219,8 @@ clean_res_subgroup <- function(d, target_lev=target_levels){
       sample == "any sample type" ~ "Any sample",
       sample == "SW" ~ "Source water",
       sample == "W" ~ "Stored water",
-      sample == "CH" ~ "Child hands",
-      sample == "MH" ~ "Mother's hands",
+      sample == "CH" ~ "Child hand rinse",
+      sample == "MH" ~ "Mother's hand rinse",
       # sample == "FlyKitch" ~ "Flies in kitchen",
       # sample == "FlyLat" ~ "Flies in latrine",
       sample == "Fly" ~ "Flies",
@@ -227,9 +229,10 @@ clean_res_subgroup <- function(d, target_lev=target_levels){
     ), 
     sample_cat = factor(sample_cat, 
                         levels=c("Any sample","Source water","Stored water",
-                                 "Child hands", "Mother's hands", "Latrine soil",
+                                 "Child hand rinse", "Mother's hand rinse", "Latrine soil",
                                  "House soil", "Flies", "Flies in kitchen",  "Flies in latrine"))
   )
+  
   
   #get raw OR and cell count labels
   if(!is.null(d$a)){

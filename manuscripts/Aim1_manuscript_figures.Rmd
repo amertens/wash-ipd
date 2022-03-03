@@ -1,0 +1,449 @@
+---
+title: "Effect of water, sanitation, and hygiene interventions on enteropathogen detection in the environment: an individual-data meta-analysis"
+author: "Figures and tables"
+#output: redoc::redoc
+output: 
+  officedown::rdocx_document:
+      reference_docx: "manuscript_format.docx"
+header-includes:
+  - \setlength{\parindent}{4em}
+  - \setlength{\parskip}{0em}
+indent: true
+bibliography: WASH-IPD.bib
+bib-humanities: FALSE
+csl: nature.csl
+
+---
+
+```{r, include=F}
+
+#Note: Check out this package for integrating any edits from Ayse:
+#https://github.com/noamross/redoc
+
+#CSL styles by journal
+#https://github.com/citation-style-language/styles
+
+
+knitr::opts_chunk$set(echo = FALSE, dpi=300,fig.width=7)
+
+options(warn = -1) 
+library(officedown)
+#library(janitor)
+library(knitr)
+library(here)
+# library(table1)
+# library(rvest)
+library(officer)
+library(flextable)
+library(bibtex)
+library(citr)
+library(redoc)
+source(here("0-config.R"))
+#citr:::insert_citation(bib_file ="WASH-IPD.bib", use_betterbiblatex =F)
+# 
+# tidy_bib_file(
+#   rmd_file = "Aim1_manuscript.Rmd"
+#   , messy_bibliography = "WASH-IPD.bib"
+#   , file = "tidy_references.bib"
+# )
+
+
+
+op = function(x, d=2) sprintf(paste0("%1.",d,"f"), x) 
+
+Print <- function(x){
+  prettyNum(round(x,2), big.mark = ",", scientific = FALSE)
+}
+
+ library(pander)
+panderOptions('digits', 2)
+panderOptions('round', 2)
+panderOptions('keep.trailing.zeros', TRUE)
+panderOptions('graph.fontsize', 8)
+
+panderOptions('table.alignment.default', function(df)
+    ifelse(sapply(df, is.numeric), 'right', 'left'))
+panderOptions('table.split.table', Inf)
+panderOptions('big.mark', ",")
+
+set_flextable_defaults(big.mark = ",", 
+  font.size = 8, theme_fun = theme_vanilla,
+  padding.bottom = 5, 
+  padding.top = 5,
+  padding.left = 5,
+  padding.right = 5)
+
+#load clean data
+d <- readRDS(paste0(dropboxDir,"Data/cleaned_ipd_env_data.rds"))
+
+#sample-positive specific dataset
+pos <- d %>% filter(!grepl("Any",sample),!grepl("any",sample),!grepl("Any",target), !is.na(pos))
+#aggregate samples
+pos.agg <- d %>% filter(grepl("Any",sample),grepl("any",sample),grepl("Any",target), !is.na(pos))
+#abundance dataset
+abund <- d %>% filter(!grepl("Any",sample),!grepl("any",sample),!grepl("Any",target), !is.na(abund))
+
+#number of samples by study
+num_samples_by_study <- d %>% filter(!grepl("Any",sample),!grepl("any",sample),!grepl("Any",target), !is.na(pos)) %>% 
+  group_by(study, sample, clusterid, dataid, round, sampleid) %>% slice(1) %>%
+  group_by(study) %>%
+  summarize(N=n()) %>% mutate(study=gsub(" et al.","",as.character(study))) %>% arrange(N)
+
+#number of food prep samples 
+FP <- d %>% filter(sample=="FP") %>% group_by(target)
+
+#zoonotic prev by animals
+d_animals <- d %>% filter(!is.na(animals), target %in% c("Any zoonotic","Any non-zoonotic")) %>%
+  mutate(tr=animals) %>% droplevels()
+dzoo <- d_animals %>% filter(target=="Any zoonotic")
+animal_zoonotic_tab <- round(prop.table(table(dzoo$animals, dzoo$pos ),1)*100,1)
+
+
+#Load figures and tables
+load(here("figures/all_tables.Rdata"))
+
+# load(here("figures/agg_tables.Rdata"))
+load(here("figures/abundance_tables.Rdata"))
+
+
+load(here("figures/all_figures.Rdata"))
+load(here("figures/subgroup_figures.Rdata"))
+load(here("figures/abund_dist_figures.Rdata"))
+
+#load(here("figures/density_figures.Rdata"))
+load(here("figures/outcome_groups.Rdata"))
+tab1 <- read.csv(here("data/tab1_template.csv")) %>% filter(!is.na(Number.of.samples))
+colnames(tab1) <- c("Parent study",	"Study design", "Intervention", "Time between intervention and environmental sampling",	"Location",	"Author/ year", 	"Sample types",	"Targets",	"Analytic method",	"Number of samples")
+
+adj_RR <- readRDS(file=here("results/adjusted_aim1_RR_pooled.Rds")) 
+unadj_RR <- readRDS(file=here("results/unadjusted_aim1_RR_pooled.Rds")) 
+
+zoo_RR <- adj_RR %>% filter(grepl("zoo",target))
+adj_RR <- adj_RR %>% filter(!grepl("zoo",target))
+pooled_adj_RR <- adj_RR %>% filter(study=="Pooled")
+adj_RR <- adj_RR %>% filter(study!="Pooled")
+
+adj_diff <- readRDS(file=here("results/adjusted_aim1_diff.Rds")) 
+sig_diff <- adj_diff %>% ungroup() %>% filter(pval < 0.05, perc_ROQ >=50) %>% select(study, sample, target, coef, ci.lb, ci.ub, pval, perc_ROQ)
+
+adj_emm <- readRDS(here("results/adjusted_aim1_emm.Rds"))
+sig_emm <- adj_emm %>% filter(int.p<0.05, target %in% c("Any pathogen","Any MST"))
+
+zoonotic_animals_RR <- readRDS(here("results/adjusted_zoonotic_animals.Rds"))
+subgroup_RR <- readRDS(here("results/subgroup_aim1_RR_pooled.Rds"))
+#get any pathogen P-values
+trial_p <- subgroup_RR$trial_comp %>% filter(target=="Any pathogen", sample=="any sample type") 
+urban_p <- subgroup_RR$urban_comp  %>% filter(target=="Any pathogen", sample=="any sample type") 
+trial_p <- round(trial_p$pval,2)
+urban_p <- round(urban_p$pval,2)
+  
+#Study-specific estimates
+protective <- adj_RR %>% ungroup() %>% filter(!is.na(coef),RR<=1) %>% select(sample, target, RR, ci.lb, ci.ub, study)
+n_protective <- paste0(round(nrow(protective)/nrow(adj_RR %>% filter(!is.na(coef))) * 100, 1),"% (",nrow(protective),"/",nrow(adj_RR %>% filter(!is.na(coef))),")")
+
+sig <- adj_RR %>% ungroup() %>% filter(ci.lb<1 & ci.ub<1 | ci.lb>1 & ci.ub>1) %>% select(sample, target, RR, ci.lb, ci.ub, study)
+n_per_sig <- paste0(round(nrow(sig)/nrow(adj_RR %>% filter(!is.na(coef))) * 100, 1),"% (",nrow(sig),"/",nrow(adj_RR %>% filter(!is.na(coef))),")")
+
+sig_protective <- protective %>% ungroup() %>% filter(ci.lb<1 & ci.ub<1 | ci.lb>1 & ci.ub>1) %>% select(sample, target, RR, ci.lb, ci.ub, study)
+n_per_sig_protective <- paste0(round(nrow(sig_protective)/nrow(adj_RR %>% filter(!is.na(coef))) * 100, 1),"% (",nrow(sig_protective),"/",nrow(adj_RR %>% filter(!is.na(coef))),")")
+
+perc_no_pos = round(prop.table(table((adj_RR$minN==0)))*100,1)[2]
+num_no_pos = paste0(as.character(sum(adj_RR$minN==0, na.rm=T)),"/",as.character(nrow(adj_RR)))
+num_sparse_pos = paste0(as.character(sum(is.na(adj_RR$coef) & adj_RR$minN>0, na.rm=T)),"/",as.character(nrow(adj_RR)))
+adj_sparse <- adj_RR %>% filter(minN!=0, is.na(coef), !grepl("zoo",target)) %>% mutate(inv_n = N-n)
+too_neg=round(mean(adj_sparse$n <= 10 | ((adj_sparse$a < 2 | adj_sparse$c < 2) & adj_sparse$b > 1 & adj_sparse$d > 1)) * 100, 1)
+too_pos=round(mean(adj_sparse$inv_n <= 10 | ((adj_sparse$b< 2 | adj_sparse$d < 2) & adj_sparse$a > 1 & adj_sparse$c > 1)) * 100, 1)
+
+#N estimates
+n_estimated <- paste0(sum(!is.na(adj_RR$coef)),"/",nrow(adj_RR))
+
+#order prevalences and seperate by MST vs. pathogens
+sample_target_prevs <- adj_RR %>% filter(!is.na(coef), !grepl("Any ",target), !grepl("any ",sample)) %>%
+                      mutate(prev=round(((a+c)/N)*100,1)) %>% arrange(prev) %>%
+                      select(study, sample, target, prev)
+pathogen_sample_target_prevs <- sample_target_prevs %>% filter(!grepl("\\(",target))
+MST_sample_target_prevs <- sample_target_prevs %>% filter(grepl("\\(",target))
+
+adj_MST_RR  <- adj_RR %>% filter(grepl("MST", target))
+round(prop.table(table(adj_MST_RR$RR<1))[2]*100,1)
+#Pvalue adjustment
+#min(p.adjust(adj_RR$pval, method="BH"), na.rm=T)
+
+#difference between adjusted and unadjusted
+
+d_unadj_comp<- left_join(adj_RR, unadj_RR, by=c("Y","sample","target","study"))
+d_unadj_comp <- d_unadj_comp %>% mutate(log.diff= coef.x-coef.y, log.abs.diff=abs(coef.x-coef.y), diff= RR.x-RR.y, abs.diff=abs(RR.x-RR.y))
+med_unadj_diff<-median(d_unadj_comp$log.abs.diff, na.rm=T)
+
+
+#Clean results function
+clean_est <- function(res, outcome="binomial"){
+  if(outcome=="binomial"){
+    
+    est = format(round(res$RR, 2), nsmall = 2)
+    ci.lb = format(round(res$ci.lb, 2), nsmall = 2) 
+    ci.ub = format(round(res$ci.ub, 2), nsmall = 2)
+    est.ci = paste0(est," (95% CI: ",ci.lb,", ",ci.ub,")")
+  }else{
+    est = format(round(res$coef, 2), nsmall = 2)
+    ci.lb = format(round(res$ci.lb, 2), nsmall = 2) 
+    ci.ub = format(round(res$ci.ub, 2), nsmall = 2)
+    est.ci = paste0(est," (95% CI: ",ci.lb,", ",ci.ub,")")
+  }
+  return(est.ci)
+}
+
+clean_res  <- function(res, outcome="binomial"){
+  if(outcome=="binomial"){
+    res$est.ci = paste0("RR=",round(as.numeric(res$RR),1)," (95% CI: ",round(res$ci.lb,1),", ",round(res$ci.ub,1),")")
+    res <- res %>% ungroup() %>%
+      select(study, sample_type, target_f, est.ci, pval, a, b, c, d, N) 
+    res$est.ci <- gsub("RR\\=1 \\(95\\% CI\\: NA, NA\\)","Not estimated",res$est.ci)
+    
+    res$pval <- as.character(round(res$pval,3))
+    res$pval[is.na(res$pval)] <- ""
+    res <- res %>% 
+      rename(Study=study,
+             Sample=sample_type,
+             Target=target_f,
+             Estimate=est.ci,
+             `p-value`=pval, 
+             `Positive,\nIntervention`=a,
+             `Negative,\nIntervention`=b,
+             `Positive,\nControl`=c,
+             `Negative,\nControl`=d,
+             `Total\nobservations`=N)
+  }else{
+    res$est.ci = paste0(round(as.numeric(res$coef),1),"Difference= (95% CI: ",round(res$ci.lb,1),", ",round(res$ci.ub,1),")")
+    res <- res %>% ungroup() %>%
+      select(sample_type, target_f, est.ci, pval, a, b, c, d, N) 
+    res$est.ci <- gsub("Difference\\=0 \\(95\\% CI\\: NA, NA\\)","Not estimated",res$est.ci)
+    res$pval <- as.character(round(res$pval,3))
+    res$pval[is.na(res$pval)] <- ""
+    res <- res %>% 
+      rename(Study=study,
+             Sample=sample_type,
+             Target=target_f,
+             Estimate=est.ci,
+             `p-value`=pval, 
+             `Positive,\nIntervention`=a,
+             `Negative,\nIntervention`=b,
+             `Positive,\nControl`=c,
+             `Negative,\nControl`=d,
+             `Total\nobservations`=N)
+  }
+  
+  return(res)
+}
+
+clean_res_tab <- function(unadj_RR, adj_RR){
+  unadj<-clean_res(unadj_RR) %>% select(Study,Sample,Target,Estimate, `p-value`) %>% 
+    rename(`Unadjusted\nEstimate`=Estimate, `Unadjusted\np-value`=`p-value`) 
+  adj<-clean_res(adj_RR)%>% rename(`Adjusted\nEstimate`=Estimate, `Adjusted\np-value`=`p-value`)
+  
+  res <- left_join(unadj, adj, by=c("Study", "Sample", "Target"))
+  res <- res %>% arrange(Study,  Sample,  Target) %>% filter(Study!="Pooled")
+  res$`Adjusted\nEstimate`[res$Study=="Odagiri 2016"] <- ""
+  res$`Adjusted\np-value`[res$Study=="Odagiri 2016"] <- ""
+  return(res)
+}
+
+FitFlextableToPage <- function(ft, pgwidth = 6){
+
+  ft_out <- ft %>% autofit()
+
+  ft_out <- width(ft_out, width = dim(ft_out)$widths*pgwidth /(flextable_dim(ft_out)$widths))
+  return(ft_out)
+}
+
+
+add_footnote_with_rlang <- function(df, col, pattern, symbol){
+  form_ <- sprintf("~ %s == '%s'", col, pattern)
+  colname <- enquo(col)
+  flextable::compose(
+    x = df, j = col, i = as.formula(form_), 
+    value = as_paragraph(
+      as_chunk(!!colname), 
+      as_chunk(symbol, props = fp_text(vertical.align = 'superscript')))
+  ) 
+}
+
+add_footnote <- function(df, col, pattern, symbol){
+  form_ <- sprintf("~ %s == '%s'", col, pattern)
+  flextable::compose(
+    x = df, j = col, i = as.formula(form_), 
+    value = as_paragraph(pattern,
+      as_chunk(symbol, props = fp_text(vertical.align = 'superscript')))
+    ) 
+}
+#adj_RR %>% filter(target=="Any virus", sample!="any sample type") %>% select(sample, target, RR, ci.lb, ci.ub, study, a,b,c,d) %>% arrange(sample) %>% as.data.frame()
+
+
+```
+
+```{css, echo=FALSE}
+span.comment-start{
+    background: #e0f3db;
+}
+span.comment-end{
+    background: #e0f3db;
+}
+span.comment-start::after{
+    content: " (" attr(author) ", " attr(date) ") [";
+}
+span.comment-end::before{
+    content: "]"
+}
+span.comment-text{
+    background: #fdbb84;
+}
+
+
+```
+
+```{r, echo=FALSE}
+commentN <- 0
+cmt <- function(txt, cm, author, date = "2021-01-01", comN = commentN){
+  cmt_str <- paste0('<span class="comment-text">[',cm,']{.comment-start id="', comN, '" author="', author, '" date="', date, '"}', txt, '[]{.comment-end id="',commentN,'"}</span>')
+  assign("commentN", commentN + 1, envir = .GlobalEnv)
+  return(cmt_str)
+}
+```
+
+
+
+
+
+## Figures
+
+`r cmt("X","Note I will work on adding readable printed point estimates and confidence intervals to the plots per co-author comments while you review the manin text updates","Andrew")``
+
+```{r, echo=F, warning=F, message=F, fig.width = 6.5, fig.height = 7, fig.align = 'left'}
+
+p_adj_1
+
+```
+
+__Figure 1.__ Forest plots of intervention effects on the prevalence of any enteropathogen or type of enteropathogen (any bacteria, any virus, any protozoa and any STH) in different types of environmental samples. Pooled estimates are presented when there are four or more study-specific estimates for a specific sample type and target combination and are denoted with diamond-shaped points. Grey crossed points denote data that were too sparse to estimate a prevalence ratio (i.e., <10 positive or negative observations). Samples of the same type from different locations (source vs. stored water, flies in kitchen vs. latrine, soil from courtyard vs. latrine) or different individuals (child vs. mother's hands) are plotted separately. All estimates are adjusted for potential confounders.
+
+
+```{r, echo=F, warning=F, message=F, fig.width = 6.5, fig.height = 5}
+
+p_adj_2
+
+```
+
+__Figure 2.__ Forest plots of intervention effects on the prevalence of any MST marker or type of MST marker (human or animal MST markers) in different types of environmental samples. Pooled estimates are presented when there are four or more study-specific estimates for a specific sample type and target combination and are denoted with diamond-shaped points. Grey crossed points denote data that were too sparse to estimate a prevalence ratio (i.e., <10 positive or negative observations). Samples of the same type from different locations (source vs. stored water, flies in kitchen vs. latrine, soil from courtyard vs. latrine) or different individuals (child vs. mother's hands) are plotted separately. All estimates are adjusted for potential confounders.
+
+
+## Tables
+
+
+### Table 1. Characteristics of included publication`r cmt("s", "We will format, switch to landscape, and add references to the specific studies within the table", "Andrew", "Date")` 
+
+```{r, echo=F, warning=F, message=F,  results = 'asis'}
+FitFlextableToPage(flextable(tab1), pgwidth = 7)
+```
+
+### Table 2. Mean (SD) abundances by study arm and adjusted abundance differences between intervention and control arms. Means are log10 transformed concentrations for MST markers, and are mean egg counts for soil transmitted helminths (*Ascaris* and *Trichuris*). 
+
+```{r, echo=F, results = 'asis'}
+tab_adj_diff2 <- tab_adj_diff %>% 
+  subset(., select=c("Study","Sample","Target", "N","% in ROQ","Control mean, median (SD)","Intervention mean, median (SD)", "Difference or ratio (95% CI)","P value","Wilcoxon P value"))
+
+colnames(tab_adj_diff2)[8] <- "temp"
+neg.binom_ests <- tab_adj_diff2$temp[grepl("\\*",tab_adj_diff2$temp)]
+neg.binom_ests <- gsub("\\*","",neg.binom_ests)
+tab_adj_diff2$temp <- gsub("\\*","",tab_adj_diff2$temp)
+#colnames(tab_adj_diff2)[8] <- "Difference (95% CI)"
+
+abund_tab <- FitFlextableToPage(flextable(tab_adj_diff2), pgwidth = 7)
+
+for(i in 1:length(neg.binom_ests)){
+  abund_tab <- add_footnote(abund_tab, col = 'temp', pattern = neg.binom_ests[i], symbol = 'a')
+}
+
+abund_tab <- set_header_labels(abund_tab, temp = "Difference (95% CI)")
+
+abund_tab
+
+```
+ROQ: Range of quantification; SD: Standard deviation; CI: Confidence interval; Wilcoxon P-value: Non-parametric Wilcoxon rank sum test P-value.
+
+^a^ Marks ratio estimates from negative binomial models.
+
+
+## Supplementary Figures
+
+```{r, echo=F, warning=F, message=F, fig.width = 6.5, fig.height = 9}
+
+p_adj_s1
+
+```
+
+__Figure S1.__ Forest plots of intervention effects on the prevalence of specific pathogens.
+
+
+```{r, echo=F, warning=F, message=F, fig.width = 6.5, fig.height = 9}
+
+p_adj_s2
+
+```
+
+__Figure S2.__ Forest plots of intervention effects on the prevalence of specific MST markers.
+
+
+
+```{r, echo=F, warning=F, message=F, fig.width = 6.5, fig.height = 5}
+
+p_wet_1
+
+```
+
+__Figure S3.__ Forest plots of intervention effects on any enteropathogen, and any MST markers in different types of environmental samples, stratified by whether the sample was collected during the wet versus dry season (defined by the 6 months of highest average rainfall). Significant effect modification, as determined by the p-values on the regression model interaction term, is marked with asterisks (P < 0.05 = "\*", P < 0.01 = "\*\*", P < 0.001 = "\*\*\*").
+
+```{r, echo=F, warning=F, message=F, fig.width = 6.5, fig.height = 5}
+
+p_animals_1
+
+```
+
+__Figure S4.__ Forest plots of intervention effects on any enteropathogen, and any MST markers in different types of environmental samples, stratified by whether any animals were present in the compound. Significant effect modification, as determined by the p-values on the regression model interaction term, is marked with asterisks (P < 0.05 = "\*", P < 0.01 = "\*\*", P < 0.001 = "\*\*\*"). 
+
+```{r, echo=F, warning=F, message=F, fig.width = 6.5, fig.height = 5}
+
+p_zoo
+
+```
+
+__Figure S5.__ Forest plots of intervention effects on any enteropathogen in any type of environmental samples , stratified by whether the pathogen is zoonotically transmitted.
+
+```{r, echo=F, warning=F, message=F, fig.width = 6.5, fig.height = 4.5}
+
+p_unadj_1
+
+```
+
+__Figure S6.__ Forest plots of unadjusted intervention effects on the prevalence of any enteropathogen or type of enteropathogen (any bacteria, any virus, any protozoa and any STH) in different types of environmental samples. 
+
+
+```{r, echo=F, warning=F, message=F, fig.width = 6.5, fig.height = 5}
+
+p_unadj_2
+
+```
+
+__Figure S7.__ Forest plots of unadjusted intervention effects on the prevalence of any MST marker or type of MST marker (human or animal MST markers) in different types of environmental samples. 
+
+
+```{r, echo=F, warning=F, message=F, fig.width = 6.5, fig.height = 3}
+
+
+p_abund_dist_capone           
+p_abund_dist_holcomb           
+p_abund_dist_fuhrmeister       
+p_abund_dist_kwong            
+p_abund_dist_steinbaum       
+```
+
+__Figure S8.__ Distributions of log-10 transformed abundance outcomes. Black vertical lines mark the means, and dashed lines mark the medians.

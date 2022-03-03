@@ -51,6 +51,8 @@ forcedW=c("age", "hhwealth")
 Ws=Wvars
 
 
+
+
 fullres <- NULL
 res_diar <- d %>% group_by(study, sample, target) %>%
    do(aim2_glm(., outcome="diar7d", exposure="pos", study=.$study[1], sample=.$sample[1], target=.$target[1], family="binomial")) 

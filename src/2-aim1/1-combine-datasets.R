@@ -303,6 +303,8 @@ d <- d %>% subset(., select=c(study,            trial,            sampleid,     
 #create aggregate outcomes
 #-----------------------------------------------
 
+
+
 agg_function <- function(targets, name){
   df <- d %>% group_by(study,  dataid, tr, clusterid, sample, round,  sampleid) %>%
     filter(target %in% !!(targets)) %>%
@@ -311,14 +313,13 @@ agg_function <- function(targets, name){
     # mutate(perc_pos = mean(pos, na.rm=T), N_neg=sum(pos==0,na.rm=T)) %>%
     # ungroup()
   
-  #Drop too-positive strata
-  df <- df %>% filter(!(study=="Odagiri 2016" & sample=="W" & target=="Animal (BacCow)"), 
-                      !(study=="Boehm 2016" & sample=="CH" & target=="General (GenBac3)"),
-                      !(study=="Boehm 2016" & sample=="S" & target=="General (GenBac3)"),
-                      !(study=="Fuhrmeister 2020" & sample=="CH" & target=="Animal (BacCow)"),
-                      #!(study=="Holcomb 2020" & sample=="Fly" & target=="Human (BacHum)"))
-                      !(study=="Capone 2021 in prep" & sample=="Fly" & target=="Human (BacHum)"))
-  
+  # #Drop too-positive strata
+  # df <- df %>% filter(!(study=="Odagiri 2016" & sample=="W" & target=="Animal (BacCow)"), 
+  #                     # !(study=="Boehm 2016" & sample=="CH" & target=="General (GenBac3)"),
+  #                     # !(study=="Boehm 2016" & sample=="S" & target=="General (GenBac3)"),
+  #                     !(study=="Fuhrmeister 2020" & sample=="CH" & target=="Animal (BacCow)"),
+  #                     !(study=="Capone 2021 in prep" & sample=="Fly" & target=="Human (BacHum)"))
+
   
   
   # if(any(df$perc_pos>0.85)){
@@ -341,6 +342,8 @@ agg_function <- function(targets, name){
   table(d_agg$any_pos)
   
   d_agg <- d_agg %>% rename(pos=any_pos) %>% select(study,  tr, dataid,clusterid, sample,round, sampleid, pos) %>% mutate(target=!!(name))
+  
+  
 
   tab <- bind_rows(df, d_agg) %>%
     group_by(study, target) %>%
@@ -361,6 +364,7 @@ d_any_STH <- agg_function(c("Ascaris","Trichuris"), "Any STH")
 
 unique(d$target)
 d_any_MST <- agg_function(any_MST, "Any MST")
+
 #d_any_general_MST <- agg_function(general_MST, "Any general MST") #Note: dropping in update
 d_any_human_MST <- agg_function(human_MST, "Any human MST")
 d_any_animal_MST <- agg_function(animal_MST, "Any animal MST")
@@ -454,13 +458,15 @@ levels(d$sample)
 
 
 df <- d %>% 
-  group_by(study, clusterid, dataid, hhid, tr, target, round) %>%
+  group_by(study, clusterid, dataid, 
+           hhid, 
+           tr, target, round) %>%
   filter(!is.na(pos)) %>%
   #Drop too-positive strata
-  filter(!(study=="Odagiri 2016" & sample=="W" & target=="Animal (BacCow)"),
-                      !(study=="Boehm 2016" & sample=="CH" & target=="General (GenBac3)"),
-                      !(study=="Fuhrmeister 2020" & sample=="CH" & target=="Animal (BacCow)"),
-                      !(study=="Holcomb 2020" & sample=="Fly" & target=="Human (BacHum)")) %>%
+  # filter(!(study=="Odagiri 2016" & sample=="W" & target=="Animal (BacCow)"),
+  #                     !(study=="Boehm 2016" & sample=="CH" & target=="General (GenBac3)"),
+  #                     !(study=="Fuhrmeister 2020" & sample=="CH" & target=="Animal (BacCow)"),
+  #                     !(study=="Holcomb 2020" & sample=="Fly" & target=="Human (BacHum)")) %>%
   arrange(sample) %>%
   mutate(pos=max(pos, na.rm = TRUE), sample="any sample type", animals=max(animals, na.rm=T)) %>% 
   slice(1)
@@ -508,36 +514,11 @@ table(d$sample, d$animals)
 table(d$target, d$animals)
 
 
+
+
+
 saveRDS(d, file=paste0(dropboxDir,"Data/cleaned_ipd_env_data.rds"))
 
-df <- d %>% filter(study=="Holcomb 2020", target=="Any MST",sample=="S", !is.na(pos))
-
-res_pos <- glm(pos ~ hhwealth, data=df, family="binomial")
-summary(res_pos)
 
 
-table(is.na(d$clusterid))
-table((d$pos))
-
-d[is.infinite(d$pos),]
-WBB[is.infinite(WBB$pos),]
-
-# #Check covariates
-# table(d$trial, (d$hhwealth))
-# table(d$trial, (d$Nhh))
-# 
-# table(d$trial, (d$nrooms))
-# table(d$trial, (d$walls))
-# table(d$trial, (d$floor))
-# table(d$trial, (d$elec))
-table(d$trial, (d$dadagri))
-table(d$trial, !is.na(d$dadagri))
-table(d$trial, (d$landown))
-table(d$trial, !is.na(d$landown))
-table(d$trial, !is.na(d$landacre))
-table(d$trial, (d$momedu))
-
-
-table(d$study, (d$hhwealth))
-unique(d$target)
 

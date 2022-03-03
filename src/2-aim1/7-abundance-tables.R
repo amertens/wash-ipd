@@ -35,31 +35,32 @@ clean_tab = function(df){
       ci.lb=round(ci.lb,2),
       ci.ub=round(ci.ub,2),
       pval=round(pval,2),
+      wilcox.p=round(wilcox.p,2),
       model=ifelse(model=="neg. binomial","*",""),
       est=ifelse(model=="",
                  paste0(coef, " (",ci.lb," ",ci.ub,")"),
                  paste0(RR, " (",ci.lb," ",ci.ub,")",model)),
-      mean_control=paste0(round(mean_control,1), " (",round(sd_control,1),")"), 
-      mean_int=paste0(round(mean_int,1), " (",round(sd_int,1),")"), 
+      mean_control=paste0(round(mean_control,1),", ",round(med.cont,1), " (",round(sd_control,1),")"), 
+      mean_int=paste0(round(mean_int,1),", ",round(med.int,1), " (",round(sd_int,1),")"), 
       sample =case_when(
         sample == "SW" ~ "Source water",
         sample == "W" ~ "Stored water",
-        sample == "CH" ~ "Child hands",
-        sample == "MH" ~ "Mother's hands",
+        sample == "CH" ~ "Child hand rinse",
+        sample == "MH" ~ "Mother's hand rinse",
         sample == "FlyKitch" ~ "Flies in kitchen",
         sample == "FlyLat" ~ "Flies in latrine",
         sample == "LS" ~ "Latrine soil",
         sample == "S" ~ "House soil"),
       sample = factor(sample, 
                           levels=c("Any sample","Source water","Stored water",
-                                   "Child hands", "Mother's hands", "Latrine soil",
+                                   "Child hand rinse", "Mother's hand rinse", "Latrine soil",
                                    "House soil", "Flies in kitchen",  "Flies in latrine", "Sparse data"))) %>%
     subset(., select = c(study, sample,target, N, mean_control, mean_int, 
-                           est, pval, perc_ROQ)) %>% arrange(study, sample, target) %>%
+                           est, pval, wilcox.p, perc_ROQ)) %>% arrange(study, sample, target) %>%
     group_by(study, sample) %>% mutate(sample = ifelse(row_number() == 1, as.character(sample), "-")) %>%
     group_by(study) %>% mutate(study = ifelse(row_number() == 1, as.character(study), "-"))
   
-  colnames(df)  <- c("Study",   "Sample", "Target", "N", "Control mean (SD)", "Intervention  mean (SD)", "Difference (95% CI)", "P value", "ROQ %")
+  colnames(df)  <- c("Study",   "Sample", "Target", "N", "Control mean, median (SD)", "Intervention mean, median (SD)", "Difference or ratio (95% CI)", "P value","Wilcoxon P value", "% in ROQ")
   return(df)
 }
 
@@ -121,10 +122,110 @@ norm_fun <- function(d){
 }
 
 
-abund_ROQ <- d %>% filter(!is.na(abund)) %>% droplevels()%>%
+abund_ROQ <- d %>% filter(!is.na(abund)) %>% droplevels() %>%
   group_by(study, sample, target) %>% do(norm_fun(.))
 
 abund_ROQ
 save(abund_ROQ, file=here("figures/abundance_table_ROQ.Rdata"))
 
 write.csv(abund_ROQ, file=here("figures/abundance_table_ROQ.csv"))
+
+
+#Density figures
+df <- d %>% filter(!is.na(abund)) %>%
+  filter(sample!="any sample type") %>%
+  group_by(study, sample, target) %>%
+  mutate(perc_roq=mean(qual=="ROQ"),
+         mn=mean(abund),
+         md=median(abund)) %>% 
+  filter(perc_roq>0.5) %>%
+  droplevels() 
+head(df)  
+
+table(df$perc_roq)
+
+# p_abund_dist <- ggplot(df, aes(x=abund, fill=study, color=study)) + 
+#   geom_density() + 
+#   scale_x_continuous(trans = "log10") +
+#   geom_vline(aes(xintercept = mn)) +
+#   geom_vline(aes(xintercept = md), linetype="dashed") +
+#   facet_wrap(study~target, scales = "free", ncol=4) + 
+#   xlab("Log-10 transformed abundance") + ylab("Density")
+# 
+# 
+# p_abund_dist
+# 
+# save(p_abund_dist, file=here("figures/abund_dist_figures.Rdata"))
+
+
+table(df$study)
+p_abund_dist_holcomb <- ggplot( df %>% filter(study=="Holcomb 2020"), 
+                                aes(x=abund, fill=study, color=study)) + 
+  geom_density(alpha=0.5) + 
+  scale_x_continuous(trans = "log10") +
+  scale_fill_manual(values=tableau11[1]) +
+  scale_color_manual(values=tableau11[1]) +
+  geom_vline(aes(xintercept = mn)) +
+  geom_vline(aes(xintercept = md), linetype="dashed") +
+  facet_wrap(sample~target, scales = "free", ncol=4) + 
+  xlab("Log-10 transformed abundance") + ylab("Density") +
+  ggtitle("Holcomb et al. 2020")
+
+p_abund_dist_fuhrmeister <- ggplot( df %>% filter(study=="Fuhrmeister 2020"), 
+                                aes(x=abund, fill=study, color=study)) + 
+  geom_density(alpha=0.5) + 
+  scale_x_continuous(trans = "log10") +
+  scale_fill_manual(values=tableau11[1]) +
+  scale_color_manual(values=tableau11[1]) +
+  geom_vline(aes(xintercept = mn)) +
+  geom_vline(aes(xintercept = md), linetype="dashed") +
+  facet_wrap(sample~target, scales = "free", ncol=4) + 
+  xlab("Log-10 transformed abundance") + ylab("Density") +
+  ggtitle("Fuhrmeister et al. 2020")
+
+p_abund_dist_capone <- ggplot( df %>% filter(study=="Capone 2021 in prep"), 
+                                aes(x=abund, fill=study, color=study)) + 
+  geom_density(alpha=0.5) + 
+  scale_x_continuous(trans = "log10") +
+  scale_fill_manual(values=tableau11[1]) +
+  scale_color_manual(values=tableau11[1]) +
+  geom_vline(aes(xintercept = mn)) +
+  geom_vline(aes(xintercept = md), linetype="dashed") +
+  facet_wrap(sample~target, scales = "free", ncol=4) + 
+  xlab("Log-10 transformed abundance") + ylab("Density") +
+  ggtitle("Capone et al. in prep 2022")
+
+
+            
+             
+
+p_abund_dist_steinbaum<- ggplot( df %>% filter(study=="Steinbaum 2019"), 
+                                aes(x=abund, fill=study, color=study)) + 
+  geom_density(alpha=0.5) + 
+  scale_x_continuous(trans = "log10") +
+  scale_fill_manual(values=tableau11[1]) +
+  scale_color_manual(values=tableau11[1]) +
+  geom_vline(aes(xintercept = mn)) +
+  geom_vline(aes(xintercept = md), linetype="dashed") +
+  facet_wrap(sample~target, scales = "free", ncol=4) + 
+  xlab("Log-10 transformed STH egg count") + ylab("Density") +
+  ggtitle("Steinbaum et al. 2019")
+
+p_abund_dist_kwong <- ggplot( df %>% filter(study=="Kwong 2021"), 
+                                 aes(x=abund, fill=study, color=study)) + 
+  geom_density(alpha=0.5) + 
+  scale_x_continuous(trans = "log10") +
+  scale_fill_manual(values=tableau11[1]) +
+  scale_color_manual(values=tableau11[1]) +
+  geom_vline(aes(xintercept = mn)) +
+  geom_vline(aes(xintercept = md), linetype="dashed") +
+  facet_wrap(sample~target, scales = "free", ncol=4) + 
+  xlab("Log-10 transformed STH egg count") + ylab("Density") +
+  ggtitle("Kwong et al. 2021")
+
+
+
+save(list=ls(pattern="p_"), file=here("figures/abund_dist_figures.Rdata"))
+
+
+

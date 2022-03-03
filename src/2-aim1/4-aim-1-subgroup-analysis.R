@@ -12,7 +12,11 @@ table(d$study, d$wet)
 #drop baseline observations and food because only in one study and no estimates, and odigari as it has no variation
 table(is.na(d$round))
 d <- d %>% filter(round!="bl", sample!="FP", trial!="Odisha") %>% droplevels()
-Wvars = c("hhwealth", "Nhh","nrooms","walls", "floor","roof","elec","dadagri","landown","landacre", "momedu", "momage")         
+Wvars = c("hhwealth", "Nhh","nrooms","walls", "floor","roof","elec","dadagri","landown","landacre", "momedu", "momage")    
+
+#clean covariates
+d <- aim1_clean_covariates(d)
+
 
 d_wet <- d %>% filter(!is.na(wet))%>% droplevels() 
 d_animals <- d %>% filter(!is.na(animals)) %>% droplevels()

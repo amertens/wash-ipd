@@ -15,8 +15,15 @@ Wvars = c("hhwealth", "Nhh","nrooms","walls", "floor","roof","elec","dadagri","l
 #drop aggregate groups
 d <- d %>% filter(sample!="any sample type", !grepl("Any ",target))
 
+
+
+#clean covariates
+d <- aim1_clean_covariates(d)
+
+
 df <- d %>% filter(study=="Holcomb 2020", sample=="FlyLat", target== "Trichuris")
 table(df$abund)
+
 
 #-----------------------------------------------
 # Drop abundances without variation
@@ -53,18 +60,18 @@ table(d$study,is.na(d$qual))
 
 
 
-table(d$sample, d$target)
-
-#
-outcome="abund"
+# table(d$sample, d$target)
+# 
+# #
+# outcome="abund"
 # study=d$study[1]
 # sample=d$sample[1]
 # target=d$target[1]
-study="Boehm 2016"
-sample="W"
-target="Avian (GFD)"
-Ws=NULL
-family="gaussian"
+# study="Boehm 2016"
+# sample="W"
+# target="Avian (GFD)"
+# Ws=NULL
+# family="gaussian"
 
 
 #-----------------------------------

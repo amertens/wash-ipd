@@ -55,11 +55,10 @@ table(adj_RR$Vlevel)
 adj_RR$target[is.na(adj_RR$target_f)]
 sample_cats = levels(adj_RR$sample_cat)[levels(adj_RR$sample_cat)!="Any sample"]
 
-#Clean zoonotic results
+#Clean results
 adj_zoo <- clean_res(adj_zoo)
 
-#Add blank level for un-estimated levels
-#XXXXXXXXXXXXXX
+
 
 #---------------------------------------------------------------
 #plot function
@@ -78,8 +77,8 @@ base_plot <- function(mydf, legend_labels=sample_cats, drop_full_sparse=F, ylimi
   colours <- c("Any sample" = my_colors[1],
                "Source water" = my_colors[3],
                "Stored water"  = my_colors[4],
-               "Child hands"  = my_colors[7],
-               "Mother's hands" = my_colors[8],
+               "Child hand rinse"  = my_colors[7],
+               "Mother hand rinse" = my_colors[8],
                "Latrine soil" = my_colors[5],
                "House soil" = my_colors[6],
                "Flies in kitchen" = my_colors[9],
@@ -103,10 +102,10 @@ base_plot <- function(mydf, legend_labels=sample_cats, drop_full_sparse=F, ylimi
     geom_errorbar(aes(ymin=ci.lb, ymax=ci.ub), position = position_dodge(0.5),
                   width = 0.3, size = 1) +
     #Mark significant interactions
-    geom_text(aes(label=int.p), color="black") + 
+    geom_text(aes(label=int.p), color="black", position = position_dodge(0.5), hjust = -0.5, vjust = -0.15, size=4) + 
     scale_color_manual(#breaks = legend_labels,
       values = c(cbbPalette[2:3],"grey50"), drop = FALSE) +
-    scale_shape_manual(values=c(16, 16,18), guide=FALSE)+  
+    scale_shape_manual(values=c(16, 16,16), guide=FALSE)+  
     geom_hline(yintercept = 1, linetype="dashed") +
     facet_grid(target_f~sample_cat,  scales="free_y", space = "free_x", labeller = label_wrap_gen(width = 10, multi_line = TRUE)) +
     scale_y_continuous(#breaks=scales::breaks_pretty(c(0.25, 0.5,1, 2, 4, 8)),

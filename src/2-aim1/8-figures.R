@@ -69,8 +69,8 @@ base_plot <- function(mydf, legend_labels=sample_cats, drop_full_sparse=F,
   colours <- c("Any sample" = my_colors[1],
                "Source water" = my_colors[3],
                "Stored water"  = my_colors[4],
-               "Child hands"  = my_colors[7],
-               "Mother's hands" = my_colors[8],
+               "Child hand rinse"  = my_colors[7],
+               "Mother hand rinse" = my_colors[8],
                "Latrine soil" = my_colors[5],
                "House soil" = my_colors[6],
                "Flies" = my_colors[9],
@@ -139,20 +139,16 @@ p_adj_s1
 
 #Primary figure
 p_adj_1 <- adj_RR %>% 
-  filter(target %in% c("Any pathogen","Any MST")) %>%
+  filter(target %in% c("Any pathogen","Any bacteria", "Any protozoa", "Any STH", "Any virus")) %>%
   base_plot(drop_full_sparse=T, Y_range=c(0.25,4))
 p_adj_1
 
 p_adj_2 <- adj_RR %>% 
-  filter(target %in% c("Any human MST","Any animal MST","Any general MST")) %>%
+  filter(target %in% c("Any MST", "Any human MST","Any animal MST")) %>%
   base_plot
 p_adj_2
 
 
-p_adj_3 <- adj_RR %>% 
-  filter(target %in% c("Any bacteria", "Any protozoa", "Any STH", "Any virus")) %>%
-  base_plot
-p_adj_3
 
 
 #-	Fig S2. Prevalence of pathogen with human hosts, and pathogen with human/animal hosts 
@@ -175,21 +171,15 @@ p_adj_s2
 
 
 #Primary figure
-p_unadj_1 <- unadj_RR %>% 
-  filter(target %in% c("Any pathogen","Any MST")) %>%
-  base_plot(drop_full_sparse=T)
+p_unadj_1 <- adj_RR %>% 
+  filter(target %in% c("Any pathogen","Any bacteria", "Any protozoa", "Any STH", "Any virus")) %>%
+  base_plot(drop_full_sparse=T, Y_range=c(0.25,4))
 p_unadj_1
 
-p_unadj_2 <- unadj_RR %>% 
-  filter(target %in% c("Any human MST","Any animal MST","Any general MST")) %>%
+p_unadj_2 <- adj_RR %>% 
+  filter(target %in% c("Any MST", "Any human MST","Any animal MST")) %>%
   base_plot
 p_unadj_2
-
-p_unadj_3 <- unadj_RR %>% 
-  filter(target %in% c("Any bacteria", "Any protozoa", "Any STH", "Any virus")) %>%
-  base_plot
-p_unadj_3
-
 
 #-	Fig S2. Prevalence of pathogen with human hosts, and pathogen with human/animal hosts 
 #(same as fig 3)

@@ -47,8 +47,8 @@ heatmap_plot <- function(d, colours, textcol= "grey20"){
       sample_cat=="Any sample" ~ paste0("<span style='color:",my_colors[1],"'>", X, "</span>"),
       sample_cat=="Source water" ~ paste0("<span style='color:",my_colors[3],"'>", X, "</span>"),
       sample_cat=="Stored water" ~ paste0("<span style='color:",my_colors[4],"'>", X, "</span>"),
-      sample_cat=="Child hands" ~ paste0("<span style='color:",my_colors[7],"'>", X, "</span>"),
-      sample_cat=="Mother's hands" ~ paste0("<span style='color:",my_colors[8],"'>", X, "</span>"),
+      sample_cat=="Child hand rinse" ~ paste0("<span style='color:",my_colors[7],"'>", X, "</span>"),
+      sample_cat=="Mother hand rinse" ~ paste0("<span style='color:",my_colors[8],"'>", X, "</span>"),
       sample_cat=="Latrine soil" ~ paste0("<span style='color:",my_colors[5],"'>", X, "</span>"),
       sample_cat=="House soil" ~ paste0("<span style='color:",my_colors[6],"'>", X, "</span>"),
       sample_cat=="Flies" ~ paste0("<span style='color:",my_colors[9],"'>", X, "</span>")

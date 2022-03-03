@@ -13,16 +13,27 @@ table(d$target)
 table(is.na(d$round))
 d <- d %>% filter(round!="bl", sample!="FP") %>% droplevels()
 
+#clean covariates
+d <- aim1_clean_covariates(d)
+
+
 table(d$study)
 table(d$target)
 table(is.na(d$tr))
 table(is.na(d$sample))
+table(d$study, is.na(d$sample))
 table(is.na(d$target))
 table(d$study,d$sample)
 table(d$study, d$round)
 table(d$study, d$target)
 table(d$study, d$sample)
 table(d$sample, d$target, d$study)
+
+df <- d %>% filter(!is.na(pos)) %>% distinct(study, sampleid)
+dim(df)
+table(df$study)
+
+df2 <- df %>% filter(study=="Fuhrmeister 2020")
 
 
 # 1.	Child birth order/parity -aim2 only
@@ -40,21 +51,44 @@ colnames(d)
 Wvars = c("hhwealth", "Nhh","nrooms","walls", "floor","roof","elec","dadagri","landown","landacre", "momedu", "momage")         
 
 
+table(d$study, is.na(d$hhwealth))
+table(d$study, is.na(d$hhwealth_cont))
 
 
-# d %>% distinct(study, sample, target) %>% as.data.frame()
+table(d$study, is.na(d$landacre))
+table(d$study, is.na(d$elec))
+table(d$study, is.na(d$floor))
+table(d$study, is.na(d$momedu))
+table(d$study, is.na(d$dadagri))
+table(d$study, is.na(d$momage))
+
+
+# df <- d %>% filter(target=="Animal (BacCow)", sample=="CH", study=="Fuhrmeister 2020")
 # 
-table(d$study)
-outcome="pos"
-study="Holcomb 2020"
-sample="any sample type"
-target="Human (HF183)"
-Ws=Wvars
-family="binomial"
+# res1 <- aim1_glm(df, outcome="pos", study=df$study[1], sample=df$sample[1], target=df$target[1], Ws=Wvars, family="binomial")
+# 
+# table(df$pos)
+# df$pos <- (1-df$pos)
+# table(df$pos)
+# 
+# res2 <- aim1_glm(df, outcome="pos", study=df$study[1], sample=df$sample[1], target=df$target[1], Ws=Wvars, family="binomial")
+# 
+# res1
 
-temp <- d %>% filter(study==!!(study), target==!!(target))
-table(temp$sample, temp$pos)
 
+
+# Wvars2 = c("hhwealth_cont", "Nhh","nrooms","walls", "floor","roof","elec","dadagri","landown","landacre", "momedu", "momage")         
+# res2 <- aim1_glm(df, outcome="pos", study=df$study[1], sample=df$sample[1], target=df$target[1], Ws=Wvars2, family="binomial")
+
+
+# d=df
+# outcome="pos"
+# study=df$study[1]
+# sample=df$sample[1]
+# target=df$target[1]
+# Ws=Wvars
+# family="binomial"
+# 
 
 
 

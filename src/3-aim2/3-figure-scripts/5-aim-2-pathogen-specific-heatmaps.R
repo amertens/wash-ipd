@@ -176,6 +176,10 @@ hm_df_agg <- hm_df_agg %>% mutate(target = factor(target,
 hm_agg <- heatmap_plot(hm_df_agg, colours=colours)
 hm_agg
 
+# temp <- hm_df_agg %>% filter(X=="Any sample: POOLED", Y=='HAZ')
+# 
+# hm_agg <- heatmap_plot(temp, colours=colours)
+# hm_agg
 
 ggsave(hm_agg, file = paste0(here::here(),"/figures/pngs/p_aggregate_heatmap.png"), width = 10, height = 26)
 

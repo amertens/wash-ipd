@@ -9,7 +9,8 @@ adj_emm <- readRDS(here("results/adjusted_aim2_emm.Rds"))
 
 unadj_RR <- clean_res(unadj_RR) #%>% distinct()
 adj_RR <- clean_res(adj_RR) #%>% distinct()
-adj_emm <- clean_res(adj_emm) #%>% distinct()
+#adj_emm <- clean_res(adj_emm) #%>% distinct()
+adj_emm <- clean_res_subgroup(adj_emm) #%>% distinct()
 head(unadj_RR)
 table(unadj_RR$sample_cat)
 

@@ -3,7 +3,6 @@
 
 rm(list=ls())
 source(here::here("0-config.R"))
-library(ck37r)
 
 d <- readRDS(paste0(dropboxDir,"Data/merged_env_CH_data.rds"))
 
@@ -59,6 +58,9 @@ d <- d %>% group_by(trial) %>%
          elec=factor(elec),
          elec=fct_explicit_na(elec, na_level = "Missing")
   )
+
+table(d$study, d$floor)
+
 
 # 1.	Child birth order/parity -aim 2 only
 

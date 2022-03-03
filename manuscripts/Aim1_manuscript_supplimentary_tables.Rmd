@@ -94,8 +94,8 @@ colnames(S_tab2) <- ""
 # load(here("figures/agg_tables.Rdata"))
 load(here("figures/abundance_tables.Rdata"))
 #Drop low ROQ
-tab_unadj_diff <- tab_unadj_diff %>% filter(`ROQ %` >= 50)
-tab_adj_diff <- tab_adj_diff %>% filter(`ROQ %` >= 50)
+tab_unadj_diff <- tab_unadj_diff %>% filter(`% in ROQ` >= 50)
+tab_adj_diff <- tab_adj_diff %>% filter(`% in ROQ` >= 50)
 
 load(here("figures/all_figures.Rdata"))
 load(here("figures/subgroup_figures.Rdata"))

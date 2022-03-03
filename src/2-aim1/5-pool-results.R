@@ -81,6 +81,10 @@ adj_pool$study <- factor(adj_pool$study, levels = levels(unadj_pool$study))
 emm_pool <- bind_rows(emm_RR, res_emm)
 emm_pool$study <- factor(emm_pool$study, levels = levels(unadj_pool$study))
 
+table(unadj_pool$QEp<0.05)
+table(adj_pool$QEp<0.05)
+table(emm_pool$QEp<0.05)
+
 saveRDS(unadj_pool, file=here("results/unadjusted_aim1_RR_pooled.Rds"))
 saveRDS(adj_pool, file=here("results/adjusted_aim1_RR_pooled.Rds"))
 saveRDS(emm_pool, file=here("results/adjusted_aim1_emm_pooled.Rds"))

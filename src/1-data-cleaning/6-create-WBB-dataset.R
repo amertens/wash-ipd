@@ -20,6 +20,9 @@ soilSTH <- read_dta(paste0(dropboxDir,"Data/WBB/WASHB-soil-sth.dta"))
 qPCR <- read.csv(paste0(dropboxDir,"Data/WBB/Erica Fuhrmeister - washb_qPCR_10_23_18_adjusted_var_day.csv")) 
 PEC <- read.csv(paste0(dropboxDir,"Data/WBB/Erica Fuhrmeister - washb_PEC_10_23_18_adjusted_var_day.csv")) 
 
+temp <- PEC %>% distinct(Unique.Numerical.ID)
+dim(temp)
+
 #Add date to PEC and QPCR
 PEC <- PEC %>% mutate(env_date=dmy(paste0(intday,"-",Month.Collected,"-",2015)))
 qPCR <- qPCR %>% mutate(env_date=dmy(paste0(intday,"-",Month.Collected,"-",2015)))

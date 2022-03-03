@@ -1,5 +1,59 @@
 
 
+
+aim1_clean_covariates <- function(d){
+  
+
+  Wvars = c("hhwealth", "Nhh","nrooms","walls", "floor","roof","elec","dadagri","landown","landacre", "momedu", "momage")         
+  
+  
+  d <- d %>% group_by(trial) %>% 
+    mutate(
+      hhwealth=fct_explicit_na(hhwealth, na_level = "Missing"),
+      Nhh=fct_explicit_na(Nhh, na_level = "Missing"),
+      nrooms=fct_explicit_na(nrooms, na_level = "Missing"),
+      landown=fct_explicit_na(landown, na_level = "Missing"),
+      dadagri=factor(dadagri),
+      dadagri=fct_explicit_na(dadagri, na_level = "Missing"),
+      momedu=factor(momedu),
+      momedu=fct_explicit_na(momedu, na_level = "Missing"),
+      walls=factor(walls),
+      walls=fct_explicit_na(walls, na_level = "Missing"),
+      roof=factor(roof),
+      roof=fct_explicit_na(roof, na_level = "Missing"),
+      floor=factor(floor),
+      floor=fct_explicit_na(floor, na_level = "Missing"),
+      elec=factor(elec),
+      elec=fct_explicit_na(elec, na_level = "Missing")
+    )
+
+  d$Nhh <- factor(d$Nhh, levels=c("<5","5-8",">8", "Missing"))
+  d$momedu <- factor(d$momedu, levels=c("No education", "Incomplete Primary", "Primary",  "Secondary", "More than secondary", "Missing"))
+
+
+
+  d$merge_id <- 1:nrow(d)
+  
+  dW <- d %>% subset(., select = c("study","merge_id",Wvars))
+  df <- d[ , !colnames(d) %in% c(Wvars)]
+  
+  df2 <- dW %>% group_by(study) %>%
+    do(res=impute_missing_values(.))
+  
+  df3 <- NULL
+  for(i in 1:length(df2$res)){
+    df3 <- bind_rows(df3, df2$res[[i]]$data)
+  }
+  
+  d <- full_join(df, df3, by=c("study","merge_id"))
+  d <- d %>% subset(., select = -c(merge_id))
+  return(d)
+  
+}
+
+
+
+
 makeVlist <- function(dta) { 
   labels <- sapply(dta, function(x) attr(x, "label"))
   tibble(name = names(labels),
@@ -49,11 +103,15 @@ aim1_glm <- function(d, Ws=NULL, outcome="pos", study="mapsan", sample="ds", tar
     c <- sd(df$Y[df$tr=="Control"], na.rm=T)
     d <- sd(df$Y[df$tr=="Intervention"], na.rm=T)
     
+    med.cont <- median(df$Y[df$tr=="Control"], na.rm=T)
+    med.int <- median(df$Y[df$tr=="Intervention"], na.rm=T)
+    
     perc_ROQ <- round(mean(df$qual=="ROQ", na.rm=T)*100,1)
   }
   
 
-  if((minN>=5 & min(table(df$Y, df$tr))>1) | length(unique(df$Y)) > 2){
+  #if((minN>=5 & min(table(df$Y, df$tr))>1) | length(unique(df$Y)) > 2){
+  if(minN>=5  | length(unique(df$Y)) > 2){
     
     if(!is.null(Ws)){
       Wdf <- df %>% ungroup() %>% select(any_of(Ws)) %>% select_if(~sum(!is.na(.)) > 0)
@@ -170,6 +228,11 @@ aim1_glm <- function(d, Ws=NULL, outcome="pos", study="mapsan", sample="ds", tar
     res$sd_control <- c
     res$sd_int <- d
     res$perc_ROQ <- perc_ROQ
+    
+    res$med.cont <-med.cont 
+    res$med.int <-med.int 
+    
+    res$wilcox.p <- wilcox.test(df$Y[df$tr=="Intervention"], df$Y[df$tr=="Control"], alternative = "two.sided")$p.value
   }
   
 

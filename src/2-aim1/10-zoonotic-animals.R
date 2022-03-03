@@ -14,6 +14,10 @@ table(is.na(d$round))
 d <- d %>% filter(round!="bl", sample!="FP", trial!="Odisha") %>% droplevels()
 Wvars = c("hhwealth", "Nhh","nrooms","walls", "floor","roof", "elec","dadagri","landown", "momedu", "momage")         
 
+#clean covariates
+d <- aim1_clean_covariates(d)
+
+
 table(d$target)
 d_animals <- d %>% filter(!is.na(animals), target %in% c("Any zoonotic","Any non-zoonotic")) %>%
   mutate(tr=animals) %>% droplevels()
