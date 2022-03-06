@@ -545,9 +545,8 @@ p_cov_all %+% ggforce::facet_wrap_paginate(~study, scales = "free",  ncol=3, nro
 
 
 
-hm1 <- hm1 
 
-__Figure S12.__ Study-specific associations between adjustment covariates and the presence of different enteropathogen and MST markers in aggregated environmental samples. The columns are different pre-screened confounders, and the rows are specific enteropathogens and MST markers. Cells of the heatmaps are colored by P-values of bivariate likelihood ratio tests, and heatmaps are stratified by study`r cmt(",","Will tweak Y-axis spacing for readability","Andrew")`
+__Figure S12.__ Study-specific associations between adjustment covariates and the presence of different enteropathogen and MST markers in aggregated environmental samples. The columns are different pre-screened confounders, and the rows are specific enteropathogens and MST markers. Cells of the heatmaps are colored by P-values of bivariate likelihood ratio tests, and heatmaps are stratified by study.
 
 
 
