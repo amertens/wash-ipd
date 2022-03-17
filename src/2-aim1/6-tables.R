@@ -192,15 +192,36 @@ df <- d %>% subset(., select = c("study", Wvars)) %>% filter(study!="Odagiri 201
 #harmonize covariates
 
 
+#Clean/harmonize covariates 
+summary(df$walls)
+summary(df$floor)
+summary(df$elec)
+
+table(df$study, df$elec)
+
+df$walls2 <- ifelse(as.numeric(as.character(df$walls)) >= 0.5, "1","0")
+df$floor2 <- ifelse(as.numeric(as.character(df$floor)) >= 0.5, "1","0")
+df$elec2 <- ifelse(as.numeric(as.character(df$elec)) >= 0.5, "1","0")
+df$walls2[is.na(df$walls2)] <- "Missing"
+df$elec2[is.na(df$elec2)] <- "Missing"
+df$floor2[is.na(df$floor2)] <- "Missing"
+
+
+table(df$walls2)
+table(df$elec2)
+table(df$floor2)
+
 #rename covariates
-df <- df %>% rename(
+df <- df %>% 
+  subset(., select = -c(walls, floor, elec)) %>%
+  rename(
   `Household\nwealth`=hhwealth, 
   `Number of people\nin the household`=Nhh,
   `Number of rooms\nin the household`=nrooms,
-  `Improved wall`=walls, 
-  `Improved floor`=floor,
+  `Improved wall`=walls2, 
+  `Improved floor`=floor2,
   `Improved roof`=roof,
-  `Electricity`=elec,
+  `Electricity`=elec2,
   `Father in\nagriculture`=dadagri,
   `Land owned`=landown, 
   `Acres of\nland owned`=landacre, 
@@ -214,6 +235,7 @@ tab2 <- tab2[,!grepl("Overall",colnames(tab2))]
 tab2 <- tab2[-c(1:8),]
 colnames(tab2) <- paste0(str_split(colnames(tab2),"\\.", simplify = T)[,1]," ", str_split(colnames(tab2),"\\.", simplify = T)[,2])
 colnames(tab2)[1] <- "."
+colnames(tab2)[8] <- "Capone 2022 in prep."      
 
 #Prevalence and abundance of outcomes by sample sample
 df <- d %>% group_by(study, target, sample) %>% filter(!is.na(pos)) %>%
@@ -241,7 +263,7 @@ tab_function <- function(targets){
   tabdf[is.na(tabdf)] <- ""
   tabdf[tabdf=="NaN"] <- ""
   tabdf[tabdf=="NA% (NA)"] <- ""
-  
+
   return(tabdf)
 }
 
@@ -260,7 +282,7 @@ tab_function2 <- function(df, targets){
   tabdf <- tabdf %>% pivot_wider(id_cols=c(study,target, round),names_from = c(sample), values_from = c(prev, abund), names_sort=T) %>% mutate_all(as.character)
   tabdf[is.na(tabdf)] <- ""
   tabdf[tabdf=="NaN"] <- ""
-  
+
   return(tabdf)
 }
 
@@ -284,10 +306,8 @@ df <- d %>% filter(tr=="Control", study=="WBB") %>%
 save(target_presence_P, target_presence_MST, tab1, tab2,
      target_presence_long_P, target_presence_long_MST,
      any_pathogens_tab, any_virus_tab, any_bacteria_tab, any_helminth_tab, any_protozoa_tab,
-     #general_MST_tab, 
      animal_MST_tab, human_MST_tab,
      any_pathogens_tab2, any_virus_tab2, any_bacteria_tab2, any_helminth_tab2, any_protozoa_tab2,
-     #general_MST_tab2, 
      animal_MST_tab2, human_MST_tab2,
      file=here("figures/all_tables.Rdata"))
 

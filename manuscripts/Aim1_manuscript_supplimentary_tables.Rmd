@@ -101,6 +101,10 @@ load(here("figures/all_figures.Rdata"))
 load(here("figures/subgroup_figures.Rdata"))
 #load(here("figures/density_figures.Rdata"))
 load(here("figures/outcome_groups.Rdata"))
+load(here("figures/all_tables.Rdata"))
+
+
+
 adj_RR <- readRDS(file=here("results/adjusted_aim1_RR_pooled.Rds")) 
 unadj_RR <- readRDS(file=here("results/unadjusted_aim1_RR_pooled.Rds")) 
 adj_RR_agg <- adj_RR %>% filter(grepl("Any",sample)|grepl("Any",target))
@@ -220,6 +224,9 @@ FitFlextableToPage_landscape <- function(ft, pgwidth = 10){
   ft_out <- width(ft_out, width = dim(ft_out)$widths*pgwidth /(flextable_dim(ft_out)$widths))
   return(ft_out)
 }
+
+
+
 
 
 #adj_RR %>% filter(target=="Any virus", sample!="any sample type") %>% select(sample, target, RR, ci.lb, ci.ub, study, a,b,c,d) %>% arrange(sample) %>% as.data.frame()

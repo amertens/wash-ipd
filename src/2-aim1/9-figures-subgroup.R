@@ -102,7 +102,7 @@ base_plot <- function(mydf, legend_labels=sample_cats, drop_full_sparse=F, ylimi
     geom_errorbar(aes(ymin=ci.lb, ymax=ci.ub), position = position_dodge(0.5),
                   width = 0.3, size = 1) +
     #Mark significant interactions
-    geom_text(aes(label=int.p), color="black", position = position_dodge(0.5), hjust = -0.5, vjust = -0.15, size=4) + 
+    geom_text(aes(label=int.p), color="black", position = position_dodge(0.5), hjust = -0.01, vjust = -0.05, size=4) + 
     scale_color_manual(#breaks = legend_labels,
       values = c(cbbPalette[2:3],"grey50"), drop = FALSE) +
     scale_shape_manual(values=c(16, 16,16), guide=FALSE)+  

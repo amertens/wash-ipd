@@ -24,6 +24,11 @@ adj_RR$study <- factor(adj_RR$study, levels = rev(c(
   "Capone 2021 in prep", "Reese 2017","Odagiri 2016",
   "Pooled")))
 
+
+class(adj_RR$sample_cat)
+adj_RR <- clean_res_subgroup(adj_RR)
+
+
 #---------------------------------------------------------------
 #plot function
 #---------------------------------------------------------------
@@ -41,7 +46,7 @@ base_plot <- function(mydf, legend_labels=sample_cats, drop_full_sparse=F){
                "Source water" = my_colors[3],
                "Stored water"  = my_colors[4],
                "Child hand rinse"  = my_colors[7],
-               "Mother hand rinse" = my_colors[8],
+               "Mother's hand rinse" = my_colors[8],
                "Latrine soil" = my_colors[5],
                "House soil" = my_colors[6],
                "Flies" = my_colors[9],
@@ -62,7 +67,7 @@ base_plot <- function(mydf, legend_labels=sample_cats, drop_full_sparse=F){
       values = colours, drop = FALSE, guide=FALSE) +
     scale_shape_manual(values=c(16, 13,18)) + 
     geom_hline(yintercept = 1, linetype="dashed") +
-    facet_grid(target_f~sample_cat_f,  scales="free_y", space = "free_x") +
+    facet_grid(target_f~sample_cat,  scales="free_y", space = "free_x", labeller = label_wrap_gen(width = 10, multi_line = TRUE)) +
     scale_y_continuous(
       breaks=c(0.0625, 0.125,.25, .5,1, 2, 4, 8, 16), 
       trans='log10', 
@@ -87,7 +92,7 @@ base_plot_diff <- function(mydf, legend_labels=sample_cats, drop_full_sparse=F){
                "Source water" = my_colors[3],
                "Stored water"  = my_colors[4],
                "Child hand rinse"  = my_colors[7],
-               "Mother hand rinse" = my_colors[8],
+               "Mother's hand rinse" = my_colors[8],
                "Latrine soil" = my_colors[5],
                "House soil" = my_colors[6],
                # "Flies in kitchen" = my_colors[9],
@@ -109,7 +114,7 @@ base_plot_diff <- function(mydf, legend_labels=sample_cats, drop_full_sparse=F){
                        values = colours, drop = FALSE, guide=FALSE) +
     scale_shape_manual(values=c(16, 13,18)) + 
     geom_hline(yintercept = 0, linetype="dashed") +
-    facet_grid(target_f~sample_cat_f,  scales="free_y", space = "free_x") +
+    facet_grid(target_f~sample_cat,  scales="free_y", space = "free_x", labeller = label_wrap_gen(width = 10, multi_line = TRUE)) +
     coord_flip()+
     labs(color="Sample type") + xlab("") + ylab("Mean difference") + 
     theme_ki() + 

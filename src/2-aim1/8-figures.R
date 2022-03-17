@@ -49,6 +49,26 @@ unadj_RR$target[is.na(unadj_RR$target_f)]
 sample_cats = levels(unadj_RR$sample_cat)[levels(unadj_RR$sample_cat)!="Any sample"]
 
 
+adj_RR$est <- paste0(sprintf("%.2f",adj_RR$RR)," (",
+       sprintf("%.2f",adj_RR$ci.lb),", ",
+       sprintf("%.2f",adj_RR$ci.ub),")")
+adj_RR$est[adj_RR$study!="Pooled"] <- ""
+
+adj_diff$est <- paste0(sprintf("%.2f",adj_diff$coef)," (",
+                     sprintf("%.2f",adj_diff$ci.lb),", ",
+                     sprintf("%.2f",adj_diff$ci.ub),")")
+adj_diff$est[adj_diff$study!="Pooled"] <- ""
+
+unadj_RR$est <- paste0(sprintf("%.2f",unadj_RR$RR)," (",
+                     sprintf("%.2f",unadj_RR$ci.lb),", ",
+                     sprintf("%.2f",unadj_RR$ci.ub),")")
+unadj_RR$est[unadj_RR$study!="Pooled"] <- ""
+
+unadj_diff$est <- paste0(sprintf("%.2f",unadj_diff$coef)," (",
+                       sprintf("%.2f",unadj_diff$ci.lb),", ",
+                       sprintf("%.2f",unadj_diff$ci.ub),")")
+unadj_diff$est[adj_diff$study!="Pooled"] <- ""
+
 #---------------------------------------------------------------
 #plot function
 #---------------------------------------------------------------
@@ -59,7 +79,10 @@ drop_full_sparse=T
 legend_labels=sample_cats
 
 
+
+
 base_plot <- function(mydf, legend_labels=sample_cats, drop_full_sparse=F,
+                      lab_width=10,
                       # Y_breaks=c(.25, .5,1, 2, 4, 8),
                       # Y_labs=c("1/4", "1/2","1", "2", "4", "8")){
                       Y_range=c(.25, 4)){
@@ -92,12 +115,14 @@ base_plot <- function(mydf, legend_labels=sample_cats, drop_full_sparse=F,
   ggplot(data = mydf, (aes(x=study, y=RR, group=sample_cat, color=sample_cat, shape=factor(sparse, levels=c("no","yes","pooled"))))) + 
   geom_point(size=2, position = position_dodge(0.5)) +
     geom_errorbar(aes(ymin=ci.lb, ymax=ci.ub), position = position_dodge(0.5),
-                  width = 0.3, size = 0.75) +
+                  width = 0.2, size = 0.75) +
     scale_color_manual(breaks = legend_labels,
       values = colours, drop = FALSE) +
     scale_shape_manual(values=c(16, 13,18), guide=FALSE) + 
+    #geom_text(aes(y=RR, label=est), color="black", vjust = -1, hjust = -0.1, size=1.3) +
+    geom_text(aes(y=RR, label=est), color="black", vjust = -0.8, hjust = -0.1, size=1.5) +
     geom_hline(yintercept = 1, linetype="dashed") +
-    facet_grid(target_f~sample_type,  scales="free_y", space = "free_x", labeller = label_wrap_gen(width = 10, multi_line = TRUE)) +
+    facet_grid(target_f~sample_type,  scales="free_y", space = "free_x", labeller = label_wrap_gen(width = lab_width, multi_line = TRUE)) +
     scale_y_continuous(#breaks=scales::breaks_pretty(c(0.25, 0.5,1, 2, 4, 8)),
       breaks=c(0.0625, 0.125,.25, .5,1, 2, 4, 8, 16), 
                        trans='log10', 
@@ -118,20 +143,20 @@ base_plot <- function(mydf, legend_labels=sample_cats, drop_full_sparse=F,
 
 #need to seperate diarrhea and HAZ
 
-p_adj_s1 <- adj_diff %>% 
-  filter(Y=="diar7d", !c(target %in% c("Any STH","any pathogen-improved","any pathogen-unimproved"))) %>%
-  base_plot(drop_full_sparse=T,
-            #Y_range=c(0.125,8)
-            )
-p_adj_s1
-
-
-p_adj_s1 <- adj_diff %>% 
-  filter(target %in% any_pathogens, !c(target %in% c("Any STH","any pathogen-improved","any pathogen-unimproved"))) %>%
-  base_plot(drop_full_sparse=T,
-            Y_range=c(0.125,8))
-p_adj_s1
-
+# p_adj_s1 <- adj_diff %>% 
+#   filter(Y=="diar7d", !c(target %in% c("Any STH","any pathogen-improved","any pathogen-unimproved"))) %>%
+#   base_plot(drop_full_sparse=T,
+#             #Y_range=c(0.125,8)
+#             )
+# p_adj_s1
+# 
+# 
+# p_adj_s1 <- adj_diff %>% 
+#   filter(target %in% any_pathogens, !c(target %in% c("Any STH","any pathogen-improved","any pathogen-unimproved"))) %>%
+#   base_plot(drop_full_sparse=T,
+#             Y_range=c(0.125,8))
+# p_adj_s1
+# 
 
 #---------------------------------------------------------------
 # Primary figure
@@ -143,9 +168,10 @@ p_adj_1 <- adj_RR %>%
   base_plot(drop_full_sparse=T, Y_range=c(0.25,4))
 p_adj_1
 
+
 p_adj_2 <- adj_RR %>% 
   filter(target %in% c("Any MST", "Any human MST","Any animal MST")) %>%
-  base_plot
+  base_plot(lab_width=20)
 p_adj_2
 
 
@@ -158,7 +184,7 @@ unique(adj_RR$target_f)
 p_adj_s1 <- adj_RR %>% 
   filter(target %in% any_pathogens, !c(target %in% c("Any STH","any pathogen-improved","any pathogen-unimproved"))) %>%
   base_plot(drop_full_sparse=T,
-            Y_range=c(0.125,8))
+            Y_range=c(0.125,8))  + theme(strip.text.y = element_text(size = 8))
 p_adj_s1
 
 
@@ -178,7 +204,7 @@ p_unadj_1
 
 p_unadj_2 <- adj_RR %>% 
   filter(target %in% c("Any MST", "Any human MST","Any animal MST")) %>%
-  base_plot
+  base_plot(lab_width=20)
 p_unadj_2
 
 #-	Fig S2. Prevalence of pathogen with human hosts, and pathogen with human/animal hosts 

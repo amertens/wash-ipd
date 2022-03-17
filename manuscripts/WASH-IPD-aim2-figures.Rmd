@@ -4,7 +4,7 @@ author: "Associations between detection of enteropathogens and microbial source 
 #output: redoc::redoc
 output: 
   word_document:
-    reference_docx:  "tables_format.docx"
+    reference_docx: "tables_format.docx"
 header-includes:
   - \setlength{\parindent}{4em}
   - \setlength{\parskip}{0em}
@@ -592,7 +592,7 @@ __Figure S17.__ Comparison between associations estimated in the primary diarrhe
 # Tables
 
 
-__Table 1.__ Descriptive statistics of child health outcomes by study `r cmt(".","Note the very different prevalences of diarrhea in the different WASH Benefits studies. I double checked the numbers, and the difference is a combo of the time of measurement and the big R01 to main study diarrhea prev. difference. Do you think this needs be included in the discussion?","Andrew")`
+__Table 1.__ Descriptive statistics of child health outcomes by study.
 
 ```{r tab_Y, fig.cap = "Descriptive statistics of child health outcomes by study.", echo=FALSE, warning=F, message=F}
 FitFlextableToPage(flextable(tab_Y))

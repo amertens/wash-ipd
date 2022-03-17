@@ -147,8 +147,8 @@ facet_lab_size=10
   colours <- c("Any sample" = my_colors[1],
                "Source water" = my_colors[3],
                "Stored water"  = my_colors[4],
-               "Child hands"  = my_colors[7],
-               "Mother's hands" = my_colors[8],
+               "Child hand rinse"  = my_colors[7],
+               "Mother hand rinse" = my_colors[8],
                "Latrine soil" = my_colors[5],
                "House soil" = my_colors[6],
                "Flies" = my_colors[9],
@@ -178,7 +178,7 @@ p_diar_time <- ggplot(data = mydf, (aes(x=study, y=RR, group=time, color=sample_
                      values = colours, drop = FALSE, guide="none") +
   scale_shape_manual(values=c(13,16, 18)) + 
   geom_hline(yintercept = 1, linetype="dashed") +
-  facet_grid(target_f~sample_cat_f ,  scales="free_y", space = "free_x") +
+  facet_grid(target_f~sample_cat ,  scales="free_y", space = "free_x", labeller = label_wrap_gen(width = 10, multi_line = TRUE)) +
   scale_y_continuous(
     breaks=axisbreaks, 
     trans='log10', 
