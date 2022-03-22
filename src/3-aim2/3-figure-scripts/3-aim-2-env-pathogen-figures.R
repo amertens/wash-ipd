@@ -89,7 +89,7 @@ table(diar_adj_path_df$N, diar_adj_path_df$sample)
 
 table(d$study)
 table(d$target)
-temp <- diar_adj_path_df %>% filter(study=="Capone 2021 in prep", target=="Pathogenic E. coli")
+temp <- diar_adj_path_df %>% filter(study=="Capone 2022 in prep", target=="Pathogenic E. coli")
 head(temp)
 
 legend_labels=sample_cats
@@ -185,7 +185,7 @@ table(diar_adj_MST_df$N, diar_adj_MST_df$sample)
 
 table(d$study)
 table(d$target)
-temp <- diar_adj_MST_df %>% filter(study=="Capone 2021 in prep", target=="Pathogenic E. coli")
+temp <- diar_adj_MST_df %>% filter(study=="Capone 2022 in prep", target=="Pathogenic E. coli")
 head(temp)
 
 legend_labels=sample_cats

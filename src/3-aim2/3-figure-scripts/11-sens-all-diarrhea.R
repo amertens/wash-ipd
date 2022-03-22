@@ -25,7 +25,7 @@ env_boehm <- dfull %>% filter(study=="Boehm 2016")
 env_kwong <- dfull %>% filter(study=="Kwong 2021")
 env_stein <- dfull %>% filter(study=="Steinbaum 2019")
 env_cap <- dfull %>% filter(study=="Capone 2021")
-env_cap2 <- dfull %>% filter(study=="Capone 2021 in prep")
+env_cap2 <- dfull %>% filter(study=="Capone 2022 in prep")
 env_hol <- dfull %>% filter(study=="Holcomb 2020")
 env_gv <- dfull %>% filter(study=="Reese 2017")
 
@@ -42,7 +42,7 @@ fuhr <- wbb %>% mutate(study="Fuhrmeister 2020")
 boehm <- wbb %>% mutate(study="Boehm 2016")
 kwong <- wbb %>% mutate(study="Kwong 2021")
 cap <- mapsan %>% mutate(study="Capone 2021")
-cap2 <- mapsan %>% mutate(study="Capone 2021 in prep")
+cap2 <- mapsan %>% mutate(study="Capone 2022 in prep")
 hol <- mapsan %>% mutate(study="Holcomb 2020")
 
 

@@ -1,5 +1,5 @@
 ---
-title: "Effect of water, sanitation, and hygiene interventions on enteropathogen detection in the environment: an individual-data meta-analysis"
+title: "Effect of water, sanitation, and hygiene interventions on detection of enteropathogens and host-specific fecal markers in the environment: an individual-participant data meta-analysis"
 author: "Figures and tables"
 #output: redoc::redoc
 output: 

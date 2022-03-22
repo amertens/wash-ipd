@@ -29,7 +29,7 @@ table(d$target, d$diar7d, d$sample, d$study)
 table(d$qual)
 summary(d$abund)
 
-df <- d %>% filter(study=="Capone 2021 in prep", sample=="Fly", target=="Adenovirus")
+df <- d %>% filter(study=="Capone 2022 in prep", sample=="Fly", target=="Adenovirus")
 summary(df$abund)
 summary(log10(df$abund))
 length(unique(df$abund))

@@ -1,6 +1,6 @@
 ---
-title: "Effect of water, sanitation and hygiene interventions on pathogens in the environment: Individual participant data meta-analysis"
-author: "Andrew Mertens, Jack Colford, Oliver Cumming, Joe Brown, Jill Stewart, David Holcomb, Jackie Knee, Tom Clasen, Heather Reese, Amy Pickering, Clair Null, Steve Luby, Jessica Grembi, Ben Arnold, Audrie Lin, Jade Benjamin-Chung, Laura Kwong, Lauren Steinbaum, Ali Boehm, Kara Nelson, Erica Fuhrmeister, Mahbubur Rahman, Sammy Njenga, Rassul Nala, Ayse Ercumen (middle order not finalized)"
+title: "Effect of water, sanitation, and hygiene interventions on detection of enteropathogens and host-specific fecal markers in the environment: an individual-participant data meta-analysis"
+author: "Andrew Mertens, Benjamin F. Arnold, Jade Benjamin-Chung, Alexandria Boehm, Joe Brown, Drew Capone, Thomas Clasen, Erica Fuhrmeister, Jessica Grembi, David Holcomb, Jackie Knee, Laura Kwong, Audrie Lin, Stephen P. Luby, Rassul Nala, Kara Nelson, Sammy Njenga, Clair Null, Amy J. Pickering, Mahbubur Rahman, Heather Reese, Lauren Steinbaum, Jill Stewart, Ruwan Thilakaratne, Oliver Cumming, John M. Colford, Ayse Ercumen"
 output: 
   word_document:
     reference_docx:  "tables_format.docx"

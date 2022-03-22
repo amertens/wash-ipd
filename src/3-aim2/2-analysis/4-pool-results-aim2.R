@@ -89,7 +89,7 @@ saveRDS(emm_pool, file=here("results/subgroup_aim2_pooled.Rds"))
 
 #pool by urban/rural
 unique(adj_RR$study)
-adj_RR$urban <- ifelse(adj_RR$study%in% c("Holcomb 2020","Capone et al. 2021", " Capone 2021 in prep." ), "Urban", "Rural")
+adj_RR$urban <- ifelse(adj_RR$study%in% c("Holcomb 2020","Capone et al. 2021", " Capone 2022 in prep." ), "Urban", "Rural")
 res_urban <- adj_RR %>% group_by(Y, sample, target) %>% 
   filter(!is.na(se)) %>% mutate(N=n()) %>%
   filter(N>=4)%>% group_by(Y, sample, target, urban) %>%

@@ -32,17 +32,16 @@ d <- d %>% mutate(
               sample == "any sample type" ~ "Any sample",
               sample == "SW" ~ "Source water",
               sample == "W" ~ "Stored water",
-              sample == "CH" ~ "Child hands",
-              sample == "MH" ~ "Mother's hands",
-              sample == "FlyKitch" ~ "Flies in kitchen",
-              sample == "FlyLat" ~ "Flies in latrine",
+              sample == "CH" ~ "Child hand rinse",
+              sample == "MH" ~ "Mother's hand rinse",
+              sample == "Fly" ~ "Flies",
               sample == "LS" ~ "Latrine soil",
               sample == "S" ~ "House soil"
             ), 
               sample = factor(sample, 
                                 levels=c("Any sample","Source water","Stored water",
-                                         "Child hands", "Mother's hands", "Latrine soil",
-                                         "House soil", "Flies in kitchen",  "Flies in latrine", "Sparse data"))) %>%
+                                         "Child hand rinse", "Mother's hand rinse", "Latrine soil",
+                                         "House soil", "Flies", "Sparse data"))) %>%
             droplevels()
 
 adj_RR <- adj_RR %>% mutate(
@@ -79,6 +78,14 @@ d <- d %>% filter(round != "bl") %>% droplevels(.)
 table(d$study, d$round)
 table(d$sample, d$target, d$study)
 unique(d$target)
+
+#Get N samples
+head(d)
+
+ d %>% distinct(study, sampleid, dataid, hhid) %>% 
+  #filter(sample!="Any sample type") %>%
+  group_by(study) %>%
+  summarize(N=n())
 
 
 # any_pathogens = c("Any pathogens","E. coli virulence gene",  "Pathogenic E. coli", "Giardia",  "C. difficile",
@@ -144,6 +151,7 @@ adj_PR <- adj_PR %>% subset(., select = c("study","sample","target","est.ci"))
 
 target_presence_long <- left_join(target_presence_long_prep, adj_PR, by = c("study","sample","target"))
 target_presence_long$est.ci <- ifelse(is.na(target_presence_long$est.ci),"-",target_presence_long$est.ci)
+
 
 
 target_presence_long <- target_presence_long%>%

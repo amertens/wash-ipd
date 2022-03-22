@@ -168,7 +168,7 @@ p_abund_dist_holcomb <- ggplot( df %>% filter(study=="Holcomb 2020"),
   geom_vline(aes(xintercept = mn)) +
   geom_vline(aes(xintercept = md), linetype="dashed") +
   facet_wrap(sample~target, scales = "free", ncol=4) + 
-  xlab("Log-10 transformed abundance") + ylab("Density") +
+  xlab("Abundance") + ylab("Density") +
   ggtitle("Holcomb et al. 2020")
 
 p_abund_dist_fuhrmeister <- ggplot( df %>% filter(study=="Fuhrmeister 2020"), 
@@ -180,10 +180,10 @@ p_abund_dist_fuhrmeister <- ggplot( df %>% filter(study=="Fuhrmeister 2020"),
   geom_vline(aes(xintercept = mn)) +
   geom_vline(aes(xintercept = md), linetype="dashed") +
   facet_wrap(sample~target, scales = "free", ncol=4) + 
-  xlab("Log-10 transformed abundance") + ylab("Density") +
+  xlab("Abundance") + ylab("Density") +
   ggtitle("Fuhrmeister et al. 2020")
 
-p_abund_dist_capone <- ggplot( df %>% filter(study=="Capone 2021 in prep"), 
+p_abund_dist_capone <- ggplot( df %>% filter(study=="Capone 2022 in prep"), 
                                 aes(x=abund, fill=study, color=study)) + 
   geom_density(alpha=0.5) + 
   scale_x_continuous(trans = "log10") +
@@ -192,7 +192,7 @@ p_abund_dist_capone <- ggplot( df %>% filter(study=="Capone 2021 in prep"),
   geom_vline(aes(xintercept = mn)) +
   geom_vline(aes(xintercept = md), linetype="dashed") +
   facet_wrap(sample~target, scales = "free", ncol=4) + 
-  xlab("Log-10 transformed abundance") + ylab("Density") +
+  xlab("Abundance") + ylab("Density") +
   ggtitle("Capone et al. in prep 2022")
 
 
@@ -208,7 +208,7 @@ p_abund_dist_steinbaum<- ggplot( df %>% filter(study=="Steinbaum 2019"),
   geom_vline(aes(xintercept = mn)) +
   geom_vline(aes(xintercept = md), linetype="dashed") +
   facet_wrap(sample~target, scales = "free", ncol=4) + 
-  xlab("Log-10 transformed STH egg count") + ylab("Density") +
+  xlab("STH egg count") + ylab("Density") +
   ggtitle("Steinbaum et al. 2019")
 
 p_abund_dist_kwong <- ggplot( df %>% filter(study=="Kwong 2021"), 
@@ -220,7 +220,7 @@ p_abund_dist_kwong <- ggplot( df %>% filter(study=="Kwong 2021"),
   geom_vline(aes(xintercept = mn)) +
   geom_vline(aes(xintercept = md), linetype="dashed") +
   facet_wrap(sample~target, scales = "free", ncol=4) + 
-  xlab("Log-10 transformed STH egg count") + ylab("Density") +
+  xlab("STH egg count") + ylab("Density") +
   ggtitle("Kwong et al. 2021")
 
 

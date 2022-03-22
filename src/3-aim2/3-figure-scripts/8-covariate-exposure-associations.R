@@ -87,7 +87,7 @@ p_kwong <- plot_heatmap_all(res, study="Kwong 2021")
 p_stein <- plot_heatmap_all(res, study="Steinbaum 2019")
 p_holc <- plot_heatmap_all(res, study="Holcomb 2020")
 p_cap1 <- plot_heatmap_all(res, study="Capone 2021")
-p_cap2 <- plot_heatmap_all(res, study="Capone 2021 in prep")
+p_cap2 <- plot_heatmap_all(res, study="Capone 2022 in prep")
 p_reese <- plot_heatmap_all(res, study="Reese 2017")
 p_odag <- plot_heatmap_all(res, study="Odagiri 2016")
 

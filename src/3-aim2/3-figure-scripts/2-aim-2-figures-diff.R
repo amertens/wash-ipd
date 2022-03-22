@@ -267,7 +267,7 @@ ls(pattern="p_")
 d <- readRDS(paste0(dropboxDir,"Data/merged_env_CH_data_clean.rds"))
 unique(d$study)
 unique(d$target)
-df <- d %>% filter(study=="Capone 2021 in prep") %>% filter(!is.na(abund)) %>% droplevels()
+df <- d %>% filter(study=="Capone 2022 in prep") %>% filter(!is.na(abund)) %>% droplevels()
 head(df)
 
 p_spline <- ggplot(df, aes(x=abund, y=haz)) +

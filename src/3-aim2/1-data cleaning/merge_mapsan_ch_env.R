@@ -11,7 +11,7 @@ env <- readRDS(paste0(dropboxDir,"Data/cleaned_ipd_env_data.rds"))
 env <- env %>% mutate(
   trial = case_when(study %in% c("Fuhrmeister 2020", "Kwong 2021", "Boehm 2016") ~ "WBB",
                     study=="Steinbaum 2019" ~ "WBK",
-                    study %in% c("Holcomb 2020","Capone 2021","Capone 2021 in prep") ~ "MapSan",
+                    study %in% c("Holcomb 2020","Capone 2021","Capone 2022 in prep") ~ "MapSan",
                     study=="Reese 2017" ~ "Gram Vikas",
                     study=="Odagiri 2016" ~ "Odisha")) 
 
@@ -88,15 +88,15 @@ hol_res <- data.frame(
 
 cp_res <- data.frame(
   study = "capone",
-  env_samples_before_merge = nrow(env %>% filter(study %in% c("Capone 2021","Capone 2021 in prep") ) %>% do(drop_agg(.)) %>% distinct(sampleid, dataid,  hhid, clusterid,sample, round)),
-  env_HH_before_merge = nrow(env %>% filter(study %in% c("Capone 2021","Capone 2021 in prep") )%>% do(drop_agg(.)) %>% distinct(dataid,  hhid, clusterid)),
+  env_samples_before_merge = nrow(env %>% filter(study %in% c("Capone 2021","Capone 2022 in prep") ) %>% do(drop_agg(.)) %>% distinct(sampleid, dataid,  hhid, clusterid,sample, round)),
+  env_HH_before_merge = nrow(env %>% filter(study %in% c("Capone 2021","Capone 2022 in prep") )%>% do(drop_agg(.)) %>% distinct(dataid,  hhid, clusterid)),
   diar_samples_before_merge = nrow(ch %>% filter(!is.na(diar7d)) %>% ungroup() %>% distinct(dataid, hhid, child_date, age,    sex, childid, diar7d)),
   haz_samples_before_merge = nrow(ch %>% filter(!is.na(haz)) %>% ungroup() %>% distinct(dataid, hhid, child_date, age,    sex, childid, haz))
 )
 
 table(env$study, env$round)
 
-env_samples_before_merge = env %>% filter(study %in% c("Capone 2021","Capone 2021 in prep") ) %>% do(drop_agg(.)) %>% distinct(sampleid, dataid,  hhid, clusterid,sample, round)
+env_samples_before_merge = env %>% filter(study %in% c("Capone 2021","Capone 2022 in prep") ) %>% do(drop_agg(.)) %>% distinct(sampleid, dataid,  hhid, clusterid,sample, round)
 table(env_samples_before_merge$round)
 
 #Merge diarrhea and growth separately. Growth 1-year later
@@ -106,9 +106,9 @@ table(env_samples_before_merge$round)
 ch_bl <- ch %>% filter(round=="bl")
 ch_ml <- ch %>% filter(round=="ml")
 ch_el <- ch %>% filter(round=="el")
-cp_bl <- env %>% filter(study %in% c("Capone 2021","Capone 2021 in prep") , round=="bl") 
-cp_ml <- env %>% filter(study %in% c("Capone 2021","Capone 2021 in prep") , round=="ml") 
-cp_el <- env %>% filter(study %in% c("Capone 2021","Capone 2021 in prep") , round=="el") 
+cp_bl <- env %>% filter(study %in% c("Capone 2021","Capone 2022 in prep") , round=="bl") 
+cp_ml <- env %>% filter(study %in% c("Capone 2021","Capone 2022 in prep") , round=="ml") 
+cp_el <- env %>% filter(study %in% c("Capone 2021","Capone 2022 in prep") , round=="el") 
 hol_bl <- env %>% filter(study=="Holcomb 2020", round=="bl") 
 hol_ml <- env %>% filter(study=="Holcomb 2020", round=="ml") 
 
@@ -241,8 +241,8 @@ d <- d %>%
     elec=fct_explicit_na(elec, na_level = "Missing")
   )
 
-cp_res$diar_samples_date_dropped <- cp_res$samples_with_diar_after_merge - nrow(d %>% filter(study %in% c("Capone 2021","Capone 2021 in prep") ) %>% do(drop_agg(.)) %>% filter(!is.na(diar7d)) %>% distinct(sampleid, dataid, clusterid,sample, round))
-cp_res$haz_samples_date_dropped <- cp_res$samples_with_haz_after_merge - nrow(d %>% filter(study %in% c("Capone 2021","Capone 2021 in prep") ) %>% do(drop_agg(.)) %>% filter(!is.na(haz)) %>% distinct(sampleid, dataid, clusterid,sample, round))
+cp_res$diar_samples_date_dropped <- cp_res$samples_with_diar_after_merge - nrow(d %>% filter(study %in% c("Capone 2021","Capone 2022 in prep") ) %>% do(drop_agg(.)) %>% filter(!is.na(diar7d)) %>% distinct(sampleid, dataid, clusterid,sample, round))
+cp_res$haz_samples_date_dropped <- cp_res$samples_with_haz_after_merge - nrow(d %>% filter(study %in% c("Capone 2021","Capone 2022 in prep") ) %>% do(drop_agg(.)) %>% filter(!is.na(haz)) %>% distinct(sampleid, dataid, clusterid,sample, round))
 
 # hol_res$diar_samples_date_dropped <- hol_res$samples_with_diar_after_merge - nrow(d %>% filter(study=="Holcomb 2020") %>% do(drop_agg(.)) %>% filter(!is.na(diar7d)) %>% distinct(sampleid, dataid, hhid, age,    sex, diar7d))
 # hol_res$haz_samples_date_dropped <- hol_res$samples_with_haz_after_merge - nrow(d %>% filter(study=="Holcomb 2020") %>% do(drop_agg(.)) %>% filter(!is.na(haz)) %>% distinct(sampleid, dataid, hhid, age,    sex, haz))

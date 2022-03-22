@@ -29,8 +29,8 @@ d <- d %>%
       sex_factor=="male" ~1,
       sex_factor=="Female" ~0,
       sex_factor=="Male" ~1,
-      sex_factor=="1" & study %in% c("Holcomb 2020","Capone 2021 in prep","Capone 2021") ~0,
-      sex_factor=="0" & study %in% c("Holcomb 2020","Capone 2021 in prep","Capone 2021") ~1,
+      sex_factor=="1" & study %in% c("Holcomb 2020","Capone 2022 in prep","Capone 2021") ~0,
+      sex_factor=="0" & study %in% c("Holcomb 2020","Capone 2022 in prep","Capone 2021") ~1,
       sex_factor=="1" & study %in% c("Reese 2017","Odagiri 2016") ~1,
       sex_factor=="2" & study %in% c("Reese 2017","Odagiri 2016") ~0)
   )

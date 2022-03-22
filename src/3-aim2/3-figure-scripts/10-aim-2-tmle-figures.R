@@ -21,7 +21,7 @@ unique(adj_RR$study)
 adj_RR$study <- factor(adj_RR$study, levels = rev(c(
   "Fuhrmeister 2020", "Boehm 2016","Kwong 2021" ,       
   "Steinbaum 2019","Holcomb 2020","Capone 2021",
-  "Capone 2021 in prep", "Reese 2017","Odagiri 2016",
+  "Capone 2022 in prep", "Reese 2017","Odagiri 2016",
   "Pooled")))
 
 

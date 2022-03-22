@@ -217,7 +217,7 @@ table(fly$target, fly$pos)
 
 #drop mitochondrial DNA
 fly <- fly %>% filter(target!="human_mtDNA") %>%
-  mutate(study="Capone 2021 in prep")
+  mutate(study="Capone 2022 in prep")
 
 #bind into main data
 env <- bind_rows(env, fly)
@@ -564,6 +564,9 @@ table(env_clean$target, env_clean$pos, env_clean$sample)
 
 #Save environmental data
 saveRDS(env_clean, file=paste0(dropboxDir,"Data/MapSan/mapsan_env_cleaned.rds"))
+
+env_clean %>% distinct(study, target) %>% group_by(study) %>%
+  summarize(n())
 
 
   
