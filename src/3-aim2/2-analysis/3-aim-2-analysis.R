@@ -43,7 +43,7 @@ Wvars_anthro = c("sex","age_anthro","hfiacat","momage","hhwealth", "Nhh","nrooms
 
 outcome="diar7d"
 exposure="pos"
-study="Holcomb 2020"
+study="Holcomb 2021"
 sample="any sample type"
 target= "Any MST"
 family="binomial"

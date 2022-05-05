@@ -56,7 +56,7 @@ env <- env %>% mutate(
       type=="wp" ~ "SW"
     )      
   )%>%
-  mutate(study="Holcomb 2020")
+  mutate(study="Holcomb 2021")
 
 
 

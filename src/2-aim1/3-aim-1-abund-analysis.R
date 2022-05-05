@@ -21,7 +21,7 @@ d <- d %>% filter(sample!="any sample type", !grepl("Any ",target))
 d <- aim1_clean_covariates(d)
 
 
-df <- d %>% filter(study=="Holcomb 2020", sample=="FlyLat", target== "Trichuris")
+df <- d %>% filter(study=="Holcomb 2021", sample=="FlyLat", target== "Trichuris")
 table(df$abund)
 
 

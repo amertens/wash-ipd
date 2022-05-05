@@ -196,8 +196,15 @@ tab1 <- table1(~target+sample |study, format_number = TRUE, data=d)
 #covariate table
 Wvars = c("hhwealth", "Nhh","nrooms","walls", "floor","roof","elec","dadagri","landown","landacre", "momedu", "momage")         
 Wvars[!(Wvars %in% colnames(d))]
-df <- d %>% subset(., select = c("study", Wvars)) %>% filter(study!="Odagiri 2016")
-#harmonize covariates
+
+
+#subset to HH level obs and covariates
+head(d)
+df <- d %>% 
+  filter(!grepl("Any ",target), sample!="Any sample") %>%
+  group_by(study, dataid, hhid) %>%
+  slice(1) %>% ungroup() %>%
+  subset(., select = c("study", Wvars)) %>% filter(study!="Odagiri 2016")
 
 
 #Clean/harmonize covariates 
@@ -219,8 +226,10 @@ table(df$walls2)
 table(df$elec2)
 table(df$floor2)
 
+
+
 #rename covariates
-df <- df %>% 
+df2 <- df %>% 
   subset(., select = -c(walls, floor, elec)) %>%
   rename(
   `Household\nwealth`=hhwealth, 

@@ -18,7 +18,7 @@ table(d$qual)
 table(is.na(d$qual))
 table(d$study[is.na(d$qual)])
 table(d$target[is.na(d$qual) & d$study=="Fuhrmeister 2020"])
-table(d$sample[is.na(d$qual) & d$study=="Holcomb 2020"])
+table(d$sample[is.na(d$qual) & d$study=="Holcomb 2021"])
 
 colnames(unadj_diff)
 head(unadj_diff)
@@ -159,7 +159,7 @@ table(df$perc_roq)
 
 
 table(df$study)
-p_abund_dist_holcomb <- ggplot( df %>% filter(study=="Holcomb 2020"), 
+p_abund_dist_holcomb <- ggplot( df %>% filter(study=="Holcomb 2021"), 
                                 aes(x=abund, fill=study, color=study)) + 
   geom_density(alpha=0.5) + 
   scale_x_continuous(trans = "log10") +

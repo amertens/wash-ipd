@@ -21,7 +21,7 @@ d <- d %>% filter(sample!="FP") %>% droplevels()
 d %>% group_by(study) %>% summarise(mean(age), mean(age_anthro))
 d$age[d$study=="Odagiri 2016"] <- d$age[d$study=="Odagiri 2016"] *364
 d$age_anthro[d$study=="Odagiri 2016"] <- d$age_anthro[d$study=="Odagiri 2016"] *364
-d$age[d$study %in% c("Reese 2017","Capone 2021","Capone 2022 in prep","Holcomb 2020")] <- d$age[d$study %in% c("Capone 2021","Capone 2022 in prep","Holcomb 2020")] *30.4167
+d$age[d$study %in% c("Reese 2017","Capone 2021","Capone 2022 in prep","Holcomb 2021")] <- d$age[d$study %in% c("Capone 2021","Capone 2022 in prep","Holcomb 2021")] *30.4167
 d$age_anthro[d$study=="Reese 2017"] <- d$age_anthro[d$study=="Reese 2017"] *30.4167
 d %>% group_by(study) %>% summarise(mean(age), mean(age_anthro))
 
@@ -64,7 +64,7 @@ Wvars_anthro = c("sex","hfiacat","momage","hhwealth", "Nhh","nrooms","walls", "r
 
 outcome="diar7d"
 exposure="pos"
-study="Holcomb 2020"
+study="Holcomb 2021"
 sample="any sample type"
 target= "Any MST"
 family="binomial"

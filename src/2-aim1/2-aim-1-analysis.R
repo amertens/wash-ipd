@@ -97,7 +97,7 @@ table(d$study, is.na(d$momage))
 #-----------------------------------
 
 # d <- d %>% 
-#   filter(target %in% c("Any pathogen","Any MST")) %>% filter(study=="Holcomb 2020")
+#   filter(target %in% c("Any pathogen","Any MST")) %>% filter(study=="Holcomb 2021")
 
 
 res <- d %>% group_by(study, sample, target, aggregate_Y) %>%

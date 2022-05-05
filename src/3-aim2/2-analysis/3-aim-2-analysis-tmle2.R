@@ -44,7 +44,7 @@ forcedW=c("age", "hhwealth")
 Ws=Wvars
 overwrite=F
 
-#d <- d %>% filter(study=="Holcomb 2020", sample=="any sample type", target=="Any MST")
+#d <- d %>% filter(study=="Holcomb 2021", sample=="any sample type", target=="Any MST")
 
 
 

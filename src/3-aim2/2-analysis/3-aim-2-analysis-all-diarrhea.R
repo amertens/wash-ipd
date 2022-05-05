@@ -54,7 +54,7 @@ table(d$study, d$diar7d)
 
 outcome="diar7d"
 exposure="pos"
-study="Holcomb 2020"
+study="Holcomb 2021"
 sample="any sample type"
 target= "Any MST"
 family="binomial"

@@ -72,7 +72,7 @@ odisha$sampleid<-as.character(odisha$sampleid)
 
 d <- bind_rows(WBB, WBK, mapsan, gv, odisha) %>%
   mutate(study=factor(study, 
-            levels=c("Odagiri 2016", "Boehm 2016", "Reese 2017", "Steinbaum 2019", "Fuhrmeister 2020", "Holcomb 2020", "Capone 2021", "Capone 2022 in prep","Kwong 2021")))
+            levels=c("Odagiri 2016", "Boehm 2016", "Reese 2017", "Steinbaum 2019", "Fuhrmeister 2020", "Holcomb 2021", "Capone 2021", "Capone 2022 in prep","Kwong 2021")))
 table(d$study, d$target)
 
 
@@ -183,7 +183,7 @@ table(d$tr)
 
 table(d$study)
 summary(d$hhwealth)
-summary(d$hhwealth[d$study=="Holcomb 2020"])
+summary(d$hhwealth[d$study=="Holcomb 2021"])
 summary(d$hhwealth[d$study=="Capone 2021"])
 
 
@@ -381,7 +381,7 @@ table(d_any_pathogen$df$pos)
 #drop EC split by zoonotic origin
 d <- d %>% filter(!(target %in% c("EC_not_zoo","EC_zoo")))
 
-#Specifically, BacCow MST markers from Odagiri 2016, GenBac3 in Boehm 2016, and human Bacteroides in Holcomb 2020 had close to 100% prevalence, also leading to high positivity in aggregate targets. 
+#Specifically, BacCow MST markers from Odagiri 2016, GenBac3 in Boehm 2016, and human Bacteroides in Holcomb 2021 had close to 100% prevalence, also leading to high positivity in aggregate targets. 
 
 
 as.data.frame(d_any_protozoa$tab)
@@ -466,7 +466,7 @@ df <- d %>%
   # filter(!(study=="Odagiri 2016" & sample=="W" & target=="Animal (BacCow)"),
   #                     !(study=="Boehm 2016" & sample=="CH" & target=="General (GenBac3)"),
   #                     !(study=="Fuhrmeister 2020" & sample=="CH" & target=="Animal (BacCow)"),
-  #                     !(study=="Holcomb 2020" & sample=="Fly" & target=="Human (BacHum)")) %>%
+  #                     !(study=="Holcomb 2021" & sample=="Fly" & target=="Human (BacHum)")) %>%
   arrange(sample) %>%
   mutate(pos=max(pos, na.rm = TRUE), sample="any sample type", animals=max(animals, na.rm=T)) %>% 
   slice(1)

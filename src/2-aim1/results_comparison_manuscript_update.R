@@ -12,18 +12,18 @@ d1 <- readRDS(file=here("results/adjusted_aim1_RR.Rds"))
 d2 <- readRDS(file=here("results/adjusted_aim1_RR_old.Rds")) 
 
 d1 %>% filter(target=="Any STH", sample=="any sample type", study=="Capone 2021")
-d2 %>% filter(target=="Any STH", sample=="any sample type", study=="Holcomb 2020")
+d2 %>% filter(target=="Any STH", sample=="any sample type", study=="Holcomb 2021")
 
 
 d1 %>% filter(target=="Any STH", sample=="LS", study=="Capone 2021")
-d2 %>% filter(target=="Any STH", sample=="S", study=="Holcomb 2020")
+d2 %>% filter(target=="Any STH", sample=="S", study=="Holcomb 2021")
 
 
 d3 <- readRDS(file=here("results/unadjusted_aim1_RR.Rds")) 
 d4 <- readRDS(file=here("results/unadjusted_aim1_RR_old.Rds")) 
 
 d3 %>% filter(target=="Any STH", sample=="LS", study=="Capone 2021")
-d4 %>% filter(target=="Any STH", sample=="S", study=="Holcomb 2020")
+d4 %>% filter(target=="Any STH", sample=="S", study=="Holcomb 2021")
 
 
 #NOTE! Adjusted estimates have changes due to updated covariates, unadjusted have not
@@ -49,10 +49,10 @@ temp <- adj_RR %>% filter(a<10 | c < 10)
 temp
 
 
-temp<-adj_RR %>% filter(study=="Holcomb 2020")
+temp<-adj_RR %>% filter(study=="Holcomb 2021")
 
-adj_RR %>% filter(target=="Human (HF183)",  study=="Holcomb 2020")
-unadj_RR %>% filter(target=="Human (HF183)",  study=="Holcomb 2020")
+adj_RR %>% filter(target=="Human (HF183)",  study=="Holcomb 2021")
+unadj_RR %>% filter(target=="Human (HF183)",  study=="Holcomb 2021")
 
-temp <- adj_RR %>% filter(target=="Human (HF183)",  study=="Holcomb 2020", sample=="any sample type")
+temp <- adj_RR %>% filter(target=="Human (HF183)",  study=="Holcomb 2021", sample=="any sample type")
 temp$W

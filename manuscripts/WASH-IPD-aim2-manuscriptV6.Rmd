@@ -1,6 +1,6 @@
 ---
 title: "Associations between detection of enteropathogens and microbial source tracking markers in the environment and child enteric infections and growth: an individual participant data meta-analysis"
-author: "Andrew Mertens, Ben Arnold, Jade Benjamin-Chung, Ali Boehm, Joe Brown, Drew Capone, Tom Clasen, Erica Fuhrmeister, Jessica Grembi, David Holcomb, Jackie Knee, Laura Kwong, Audrie Lin, Steve Luby, Rassul Nala, Kara Nelson, Sammy Njenga, Clair Null, Amy Pickering, Mahbubur Rahman, Heather Reese, Lauren Steinbaum, Jill Stewart,  Ruwan Thilakaratne, Oliver Cumming, Jack Colford, Ayse Ercumen"
+author: "Andrew Mertens, Benjamin F. Arnold, Jade Benjamin-Chung, Alexandria Boehm, Joe Brown, Drew Capone, Thomas Clasen, Erica Fuhrmeister, Jessica Grembi, David Holcomb, Jackie Knee, Laura Kwong, Audrie Lin, Stephen P. Luby, Rassul Nala, Kara Nelson, Sammy Njenga, Clair Null, Amy J. Pickering, Mahbubur Rahman, Heather Reese, Lauren Steinbaum, Jill Stewart, Ruwan Thilakaratne, Oliver Cumming, John M. Colford Jr., Ayse Ercumen"
 #output: redoc::redoc
 output: 
   word_document:

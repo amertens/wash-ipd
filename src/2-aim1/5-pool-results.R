@@ -91,7 +91,7 @@ saveRDS(emm_pool, file=here("results/adjusted_aim1_emm_pooled.Rds"))
 
 
 #pool by urban/rural
-adj_RR$urban <- ifelse(adj_RR$study%in% c("Holcomb 2020","Capone et al. 2021", " Capone 2022 in prep." ), "Urban", "Rural")
+adj_RR$urban <- ifelse(adj_RR$study%in% c("Holcomb 2021","Capone et al. 2021", " Capone 2022 in prep." ), "Urban", "Rural")
 res_urban <- adj_RR %>% group_by(sample, target) %>% 
   filter(!is.na(se)) %>% mutate(N=n()) %>%
   filter(N>=4)%>% group_by(sample, target, urban) %>%
@@ -99,7 +99,7 @@ res_urban <- adj_RR %>% group_by(sample, target) %>%
 res_urban
 
 #pool by study design
-adj_RR$trial <- ifelse(adj_RR$study%in% c("Holcomb 2020","Capone et al. 2021", " Capone 2022 in prep." )| adj_RR$study=="Reese 2017", "Matched Cohort", "Trial")
+adj_RR$trial <- ifelse(adj_RR$study%in% c("Holcomb 2021","Capone et al. 2021", " Capone 2022 in prep." )| adj_RR$study=="Reese 2017", "Matched Cohort", "Trial")
 res_trial <- adj_RR %>% group_by(sample, target) %>% 
   filter(!is.na(se)) %>% mutate(N=n()) %>%
   filter(N>=4)%>% group_by(sample, target, trial) %>%
@@ -120,7 +120,7 @@ res_uptake <- adj_RR %>% group_by(sample, target) %>%
 res_uptake
 
 #Check if unadjusted are different
-unadj_RR$trial <- ifelse(unadj_RR$study%in% c("Holcomb 2020","Capone et al. 2021", " Capone 2022 in prep." )| unadj_RR$study=="Reese 2017", "Matched Cohort", "Trial")
+unadj_RR$trial <- ifelse(unadj_RR$study%in% c("Holcomb 2021","Capone et al. 2021", " Capone 2022 in prep." )| unadj_RR$study=="Reese 2017", "Matched Cohort", "Trial")
 res_trial_unadj <- unadj_RR %>% group_by(sample, target) %>% 
   filter(!is.na(se)) %>% mutate(N=n()) %>%
   filter(N>=4)%>% group_by(sample, target, trial) %>%

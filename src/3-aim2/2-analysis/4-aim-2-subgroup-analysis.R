@@ -29,8 +29,8 @@ d <- d %>%
       sex_factor=="male" ~1,
       sex_factor=="Female" ~0,
       sex_factor=="Male" ~1,
-      sex_factor=="1" & study %in% c("Holcomb 2020","Capone 2022 in prep","Capone 2021") ~0,
-      sex_factor=="0" & study %in% c("Holcomb 2020","Capone 2022 in prep","Capone 2021") ~1,
+      sex_factor=="1" & study %in% c("Holcomb 2021","Capone 2022 in prep","Capone 2021") ~0,
+      sex_factor=="0" & study %in% c("Holcomb 2021","Capone 2022 in prep","Capone 2021") ~1,
       sex_factor=="1" & study %in% c("Reese 2017","Odagiri 2016") ~1,
       sex_factor=="2" & study %in% c("Reese 2017","Odagiri 2016") ~0)
   )
@@ -58,7 +58,7 @@ d <- d %>%
 
 
 d_wet <- d %>% filter(!is.na(wet))%>% droplevels() 
-d_wet_ch <- d %>% filter(!is.na(wet_CH), study!="Holcomb 2020")%>% droplevels() 
+d_wet_ch <- d %>% filter(!is.na(wet_CH), study!="Holcomb 2021")%>% droplevels() 
 d_animals <- d %>% filter(!is.na(animals)) %>% droplevels()
 d_sex <- d %>% filter(!is.na(sex))%>% droplevels() 
 d_tr <- d %>% filter(!is.na(tr))%>% droplevels() 
