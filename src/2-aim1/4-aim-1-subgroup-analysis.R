@@ -93,3 +93,15 @@ saveRDS(res_adj, file=here("results/adjusted_aim1_emm.Rds"))
 
 
 
+#-----------------------------------
+# Adjusted RD
+#-----------------------------------
+res_wet_adj_RD <- d_wet %>% group_by(study, sample, target, aggregate_Y) %>%
+  do(aim1_subgroup(., Vvar="wet", outcome="pos", study=.$study[1], sample=.$sample[1], target=.$target[1], Ws=Wvars, family="gaussian"))
+res_animals_adj_RD <- d_animals %>% group_by(study, sample, target, aggregate_Y) %>%
+  do(aim1_subgroup(., Vvar="animals", outcome="pos", study=.$study[1], sample=.$sample[1], target=.$target[1],  Ws=Wvars, family="gaussian"))
+res_adj_RD <- bind_rows(res_wet_adj_RD, res_animals_adj_RD)
+# res$sparse <- ifelse(is.na(res$RR), "yes", "no")
+# res$RR[is.na(res$RR)] <- 1
+saveRDS(res_adj_RD, file=here("results/adjusted_aim1_emm_RD.Rds"))
+

@@ -6,6 +6,10 @@ output:
     reference_docx:  "tables_format.docx"
 ---
 
+# XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+# Add new Supplimentary table of study quality
+# XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
 
 ```{r, include=F}
 

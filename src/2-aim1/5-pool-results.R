@@ -4,6 +4,7 @@ source(here::here("0-config.R"))
 unadj_RR <- readRDS(here("results/unadjusted_aim1_RR.Rds"))
 adj_RR <- readRDS(here("results/adjusted_aim1_RR.Rds"))
 emm_RR <- readRDS(file=here("results/adjusted_aim1_emm.Rds")) 
+emm_RD <- readRDS(file=here("results/adjusted_aim1_emm_RD.Rds")) 
 
 
 #clean results
@@ -23,6 +24,16 @@ zoo_RR <- adj_RR %>%
 unadj_RR <- unadj_RR %>% filter(!(target %in% c("Any zoonotic","Any non-zoonotic")))
 adj_RR <- adj_RR %>% filter(!(target %in% c("Any zoonotic","Any non-zoonotic")))
 adj_RR <- bind_rows(adj_RR, zoo_RR)
+
+
+# d <- unadj_RR %>% filter(sample=="any sample type", target=="Any animal MST")
+# method="REML"
+# d <- d %>% rename(untransformed_estimate=coef, untransformed_se=se)  
+# fit1<-rma(yi=untransformed_estimate, sei=untransformed_se, data=d, method=method, measure="RR")
+# fit2<-rma(yi=untransformed_estimate, sei=untransformed_se, data=d, method="fe", measure="RR")
+# 
+# summary(fit1)
+# summary(fit2)
 
 #pooling function
 poolRR<-function(d, method="REML"){
@@ -66,11 +77,16 @@ res_emm <- emm_RR %>% group_by(sample, target, V, Vlevel) %>%
   filter(!is.na(se)) %>% mutate(N=n()) %>%
   filter(N>=4)%>% group_by(sample, target, V, Vlevel) %>%
   do(poolRR(.)) %>% mutate(coef=log(RR)) 
+res_emm_RD <- emm_RD %>% group_by(sample, target, V, Vlevel) %>% 
+  filter(!is.na(se)) %>% mutate(N=n()) %>%
+  filter(N>=4)%>% group_by(sample, target, V, Vlevel) %>%
+  do(pool.cont(.)) 
 
 #add blank rows for subgroups without paired pooled estimates
 res_emm_blank <- res_emm %>% group_by(sample,target,V) %>% mutate(N=n()) %>% filter(N==1) %>%
   mutate(Vlevel = -1*(Vlevel-1), coef=NA, logRR.psi=NA,  logSE=NA,I2=NA,QEp=NA,RR=NA, ci.lb=NA, ci.ub=NA, sparse="pooled") %>% subset(., select=-c(N))
 res_emm <- bind_rows(res_emm, res_emm_blank)
+res_emm_RD <- bind_rows(res_emm_RD, res_emm_blank)
 
 unadj_pool <- bind_rows(unadj_RR, res_unadj)
 unadj_pool$study <- factor(unadj_pool$study, levels = rev(c(levels(unadj_RR$study),"Pooled")))
@@ -81,6 +97,9 @@ adj_pool$study <- factor(adj_pool$study, levels = levels(unadj_pool$study))
 emm_pool <- bind_rows(emm_RR, res_emm)
 emm_pool$study <- factor(emm_pool$study, levels = levels(unadj_pool$study))
 
+emm_pool_RD <- bind_rows(emm_RD, res_emm_RD)
+emm_pool_RD$study <- factor(emm_pool_RD$study, levels = levels(unadj_pool$study))
+
 table(unadj_pool$QEp<0.05)
 table(adj_pool$QEp<0.05)
 table(emm_pool$QEp<0.05)
@@ -88,6 +107,7 @@ table(emm_pool$QEp<0.05)
 saveRDS(unadj_pool, file=here("results/unadjusted_aim1_RR_pooled.Rds"))
 saveRDS(adj_pool, file=here("results/adjusted_aim1_RR_pooled.Rds"))
 saveRDS(emm_pool, file=here("results/adjusted_aim1_emm_pooled.Rds"))
+saveRDS(emm_pool_RD, file=here("results/adjusted_aim1_emm_pooled_RD.Rds"))
 
 
 #pool by urban/rural

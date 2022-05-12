@@ -128,7 +128,7 @@ base_plot <- function(mydf, legend_labels=sample_cats, drop_full_sparse=F,
                        trans='log10', 
                        labels = c("1/16","1/8","1/4", "1/2","1", "2", "4", "8", "16")
                        ) + coord_flip(ylim=axis_range)+
-    labs(color="Sample type") + xlab("") + ylab("Prevalence ratio") + 
+    labs(color="Sample type") + xlab("") + ylab("Prevalence ratio (Intervention vs. control)") + 
     theme_ki() + 
     theme(axis.ticks.x=element_blank(),
           legend.position = "bottom",

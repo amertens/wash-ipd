@@ -196,11 +196,11 @@ for(i in unique(d$study)){
   hhwealth <- factor(NA)
   if(length(unique(df$hhwealth_cont))>4){
     hhwealth=factor(quantcut(df$hhwealth_cont, na.rm=T), labels=c("1","2","3","4"))
+    hhwealth = fct_explicit_na(hhwealth, na_level = "Missing")
   }
   d$hhwealth[d$study==i] <- hhwealth
 }
-#d$hhwealth[d$study=="Odagiri 2016"] <- 5
-d$hhwealth <- factor(d$hhwealth, labels=c("1","2","3","4"))
+d$hhwealth <- factor(d$hhwealth, labels=c("1","2","3","4","Missing"))
 d$hhwealth = fct_explicit_na(d$hhwealth, na_level = "Missing")
 
 table(d$study, d$hhwealth)

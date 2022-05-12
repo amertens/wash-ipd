@@ -11,6 +11,9 @@ table(d$target)
 
 #drop baseline observations and food because only in one study and no estimates
 table(is.na(d$round))
+food <- d %>% filter(sample=="FP") %>% droplevels()
+table(food$study)
+table(food$target, food$pos)
 d <- d %>% filter(round!="bl", sample!="FP") %>% droplevels()
 
 #clean covariates
@@ -110,7 +113,7 @@ saveRDS(res, file=here("results/unadjusted_aim1_RR.Rds"))
 
 
 # #-----------------------------------
-# # Unadjusted RD 
+# # Unadjusted RD
 # #-----------------------------------
 # res <- d %>% group_by(study, sample, target, aggregate_Y) %>%
 #   do(aim1_glm(., outcome="pos", study=.$study[1], sample=.$sample[1], target=.$target[1], family="gaussian"))
@@ -138,9 +141,9 @@ table(res$sample)
 temp<-res %>% filter(sample=="FlyLat", target=="Pathogenic E. coli")
 
 # #-----------------------------------
-# # Adjusted RD 
+# # Adjusted RD
 # #-----------------------------------
-# res <- d %>% 
+# res <- d %>%
 #   group_by(study, sample, target, aggregate_Y) %>%
 #   do(aim1_glm(., outcome="pos", study=.$study[1], sample=.$sample[1], target=.$target[1], Ws=Wvars, family="gaussian"))
 # res$sparse <- ifelse(is.na(res$RR), "yes", "no")
