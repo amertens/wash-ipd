@@ -102,12 +102,108 @@ unique(df$target)
 #XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 colnames(d)
+dY_path <- d %>% 
+  group_by(study, trial, dataid, hhid, clusterid, child_date, agedays, sex, childid) %>%
+  distinct(study, trial, dataid, hhid, clusterid, child_date, agedays, sex, childid, ch_pos_giardia,  
+         ch_pos_entamoeba, 
+         ch_pos_crypto, 
+         ch_qpcr_pos_ascaris,   
+         ch_qpcr_pos_trichuris, 
+         ch_pos_ascaris,   
+         ch_pos_trichuris,  
+         ch_pos_giardia_EE,     
+         ch_pos_entamoeba_EE, 
+         ch_pos_crypto_EE,      
+         ch_pos_ascaris_EE,  
+         ch_pos_trichuris_EE,  
+         ch_pos_adenovirus,   
+         ch_pos_norovirus,   
+         ch_pos_rotavirus,     
+         ch_pos_cdiff,      
+         ch_pos_campylobacter, 
+         ch_pos_salmonella,  
+         ch_pos_shigella,   
+         ch_pos_cholera, 
+         ch_pos_yersinia,     
+         ch_pos_path_ecoli) %>%
+  mutate(N=n(), path_infections=sum(ch_pos_giardia,  
+                             ch_pos_entamoeba, 
+                             ch_pos_crypto, 
+                             ch_qpcr_pos_ascaris,   
+                             ch_qpcr_pos_trichuris, 
+                             ch_pos_ascaris,   
+                             ch_pos_trichuris,  
+                             ch_pos_giardia_EE,     
+                             ch_pos_entamoeba_EE, 
+                             ch_pos_crypto_EE,      
+                             ch_pos_ascaris_EE,  
+                             ch_pos_trichuris_EE,  
+                             ch_pos_adenovirus,   
+                             ch_pos_norovirus,   
+                             ch_pos_rotavirus,     
+                             ch_pos_cdiff,      
+                             ch_pos_campylobacter, 
+                             ch_pos_salmonella,  
+                             ch_pos_shigella,   
+                             ch_pos_cholera, 
+                             ch_pos_yersinia,     
+                             ch_pos_path_ecoli, na.rm=T),
+         path_obs=sum(!is.na(ch_pos_giardia),  
+                      !is.na(ch_pos_entamoeba), 
+                      !is.na(ch_pos_crypto), 
+                      !is.na(ch_qpcr_pos_ascaris),   
+                      !is.na(ch_qpcr_pos_trichuris), 
+                      !is.na(ch_pos_ascaris),   
+                      !is.na(ch_pos_trichuris),  
+                      !is.na(ch_pos_giardia_EE),     
+                      !is.na(ch_pos_entamoeba_EE), 
+                      !is.na(ch_pos_crypto_EE),      
+                      !is.na(ch_pos_ascaris_EE),  
+                      !is.na(ch_pos_trichuris_EE),  
+                      !is.na(ch_pos_adenovirus),   
+                      !is.na(ch_pos_norovirus),   
+                      !is.na(ch_pos_rotavirus),     
+                      !is.na(ch_pos_cdiff),      
+                      !is.na(ch_pos_campylobacter), 
+                      !is.na(ch_pos_salmonella),  
+                      !is.na(ch_pos_shigella),   
+                      !is.na(ch_pos_cholera), 
+                      !is.na(ch_pos_yersinia),     
+                      !is.na(ch_pos_path_ecoli), na.rm=T)) %>%
+  select(study, trial, dataid, hhid, clusterid, child_date, agedays, sex, childid, ch_pos_giardia,  
+           ch_pos_entamoeba, 
+           ch_pos_crypto, 
+           ch_qpcr_pos_ascaris,   
+           ch_qpcr_pos_trichuris, 
+           ch_pos_ascaris,   
+           ch_pos_trichuris,  
+           ch_pos_giardia_EE,     
+           ch_pos_entamoeba_EE, 
+           ch_pos_crypto_EE,      
+           ch_pos_ascaris_EE,  
+           ch_pos_trichuris_EE,  
+           ch_pos_adenovirus,   
+           ch_pos_norovirus,   
+           ch_pos_rotavirus,     
+           ch_pos_cdiff,      
+           ch_pos_campylobacter, 
+           ch_pos_salmonella,  
+           ch_pos_shigella,   
+           ch_pos_cholera, 
+           ch_pos_yersinia,     
+           ch_pos_path_ecoli, N,
+           path_infections, path_obs) %>% filter(!is.na(path_infections), path_obs>0)
+
 dY_diar <- d %>% distinct(study, trial, dataid, hhid, clusterid, child_date, agedays, sex, childid, diar7d) %>% filter(!is.na(diar7d))
 dY_haz <- d %>% distinct(study, trial, dataid, hhid, clusterid, child_date, agedays, sex, childid, haz) %>% filter(!is.na(haz))
 dY_waz <- d %>% distinct(study, trial, dataid, hhid, clusterid, child_date, agedays, sex, childid, waz) %>% filter(!is.na(waz))
 dY_whz <- d %>% distinct(study, trial, dataid, hhid, clusterid, child_date, agedays, sex, childid, whz) %>% filter(!is.na(whz))
 dim(dY_diar)
 dim(dY_haz)
+
+tab_path <- dY_path %>% group_by(trial, study) %>%
+  summarise(N_paths=max(path_obs, na.rm=T), N_path_obs=sum(path_infections, na.rm=T),N_path_obs=n(), N_path_cases=sum(path_infections, na.rm=T), prev_path=round(mean(path_infections>0, na.rm=T)*100, 1))
+
 
 tab_diar <- dY_diar %>% group_by(trial, study) %>%
   summarise(N_diar_obs=n(), N_diar_cases=sum(diar7d, na.rm=T), prev_diar=round(mean(diar7d, na.rm=T)*100, 1))
@@ -122,14 +218,17 @@ tab_whz <- dY_whz %>% group_by(trial, study) %>%
 tab_Y <- left_join(tab_diar, tab_haz, by =c("trial","study")) 
 tab_Y <- left_join(tab_Y, tab_waz, by =c("trial","study")) 
 tab_Y <- left_join(tab_Y, tab_whz, by =c("trial","study")) 
+tab_Y <- left_join(tab_Y, tab_path, by =c("trial","study")) 
 
 colnames(tab_Y)
-colnames(tab_Y) <- c( "Trial","Study","# diarrhea obs.","# diarrhea cases","Diarrhea prevalence","# HAZ obs.",
-                      "Mean HAZ","Stunting prevalence", "# WAZ obs.","Mean WAZ","Underweight prevalence","# WHZ obs.",
-                      "Mean WHZ","Wasting prevalence" )
+N_cols <- ncol(tab_Y)
+tab_Y <- tab_Y[,c(2,1,(N_cols-3):N_cols,3:(N_cols-4))]
+colnames(tab_Y) <- c( "Study","Trial","# pathogens measured","# pathogen obs.","# pathogen cases","Pathogen prev.","# diarrhea obs.","# diarrhea cases","Diarrhea prev.","# HAZ obs.",
+                      "Mean HAZ","Stunting prev.", "# WAZ obs.","Mean WAZ","Underweight prev.","# WHZ obs.",
+                      "Mean WHZ","Wasting prev." )
 
 save(tab_Y,
-     file=here("figures/all_tables.Rdata"))
+     file=here("figures/aim2_all_tables.Rdata"))
 
 
 

@@ -32,12 +32,7 @@ table(is.na(d$child_date_pathogen), d$ch_pos_path_ecoli, d$study)
 d <- d %>% filter(!(grepl("Any ",target) & target != "Any STH"),
                   !(target %in% c("Zoonotic E. coli","Non-zoonotic E. coli")))
 
-# #drop dates out of range.
-# dim(d)
-# d <- d %>% filter(!is.na(pathogen_date))
-# dim(d)
-# d <- d %>% filter(pathogen_date - env_date >= 0 & pathogen_date - env_date <= 124)
-# dim(d)
+
 
 
 

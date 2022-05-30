@@ -139,6 +139,35 @@ res_uptake <- adj_RR %>% group_by(sample, target) %>%
   do(poolRR(.)) 
 res_uptake
 
+
+#pool by time since intervention
+# We did not have data on the dates of intervention delivery for the individual studies so we pooled 
+# estimates separately for studies with short follow-up (<6 months), 
+# intermediate follow-up (6 months - 2 years) and long follow-up (>2 years) between intervention
+# onset and environmental sampling as reported by the individual studies. 
+unique(adj_RR$study)
+                                    
+
+# adj_RR <- adj_RR %>% mutate(
+#   time = case_when(
+#     study%in% c("Boehm 2016" ) ~ "<6 months",
+#     study%in% c("Fuhrmeister 2020","Holcomb 2021","Capone 2021","Odagiri 2016" ) ~ "6 months - 2yrs",
+#     study%in% c("Kwong 2021","Capone 2022 in prep","Steinbaum 2019","Reese 2017" ) ~ ">2yrs"
+#   )
+# ) 
+adj_RR <- adj_RR %>% mutate(
+  time = case_when(
+    study%in% c("Boehm 2016","Holcomb 2021","Capone 2021","Odagiri 2016" ) ~ "<2yrs",
+    study%in% c("Kwong 2021","Fuhrmeister 2020","Capone 2022 in prep","Steinbaum 2019","Reese 2017" ) ~ ">=2yrs"
+  )
+)
+res_time <- adj_RR %>% group_by(sample, target) %>%
+  filter(!is.na(se)) %>% mutate(N=n()) %>%
+  filter(N>=4)%>% group_by(sample, target, time) %>%
+  do(poolRR(.))
+res_time
+
+
 #Check if unadjusted are different
 unadj_RR$trial <- ifelse(unadj_RR$study%in% c("Holcomb 2021","Capone et al. 2021", " Capone 2022 in prep." )| unadj_RR$study=="Reese 2017", "Matched Cohort", "Trial")
 res_trial_unadj <- unadj_RR %>% group_by(sample, target) %>% 
@@ -187,11 +216,15 @@ res_uptake_comp <- res_uptake %>% group_by(sample, target) %>%
   do(rma_format(., subgroup="uptake"))
 res_uptake_comp
 
+res_time_comp <- res_time %>% group_by(sample, target) %>% 
+  do(rma_format(., subgroup="time"))
+res_time_comp
+
 res_trial_comp_unadj <- res_trial_unadj %>% group_by(sample, target) %>% 
   do(rma_format(., subgroup="trial"))
 res_trial_comp_unadj
 
 
-saveRDS(list(urban=res_urban, urban_comp=res_urban_comp, trial=res_trial, trial_comp=res_trial_comp, uptake=res_uptake, uptake_comp=res_uptake_comp), file=here("results/subgroup_aim1_RR_pooled.Rds"))
+saveRDS(list(urban=res_urban, urban_comp=res_urban_comp, trial=res_trial, trial_comp=res_trial_comp, uptake=res_uptake, uptake_comp=res_uptake_comp, time=res_time, time_comp=res_time_comp), file=here("results/subgroup_aim1_RR_pooled.Rds"))
 
 

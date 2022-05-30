@@ -1,5 +1,5 @@
 ---
-title: "Effect of water, sanitation, and hygiene interventions on detection of enteropathogens and host-specific fecal markers in the environment: an individual-data meta-analysis"
+title: "Effects of water, sanitation, and hygiene interventions on detection of enteropathogens and host-specific faecal markers in the environment: an individual-participant data meta-analysis"
 author: "Andrew Mertens, Benjamin F. Arnold, Jade Benjamin-Chung, Alexandria Boehm, Joe Brown, Drew Capone, Thomas Clasen, Erica Fuhrmeister, Jessica Grembi, David Holcomb, Jackie Knee, Laura Kwong, Audrie Lin, Stephen P. Luby, Rassul Nala, Kara Nelson, Sammy Njenga, Clair Null, Amy J. Pickering, Mahbubur Rahman, Heather Reese, Lauren Steinbaum, Jill Stewart, Ruwan Thilakaratne, Oliver Cumming, John M. Colford Jr., Ayse Ercumen"
 #output: redoc::redoc
 output: 
@@ -86,6 +86,7 @@ load(here("figures/all_tables.Rdata"))
 load(here("figures/abundance_tables.Rdata"))
 load(here("figures/all_figures.Rdata"))
 load(here("figures/subgroup_figures.Rdata"))
+load(here("figures/subgroup_figures_PD.Rdata"))
 load(here("figures/abund_dist_figures.Rdata"))
 #load(here("figures/density_figures.Rdata"))
 load(here("figures/outcome_groups.Rdata"))
@@ -267,18 +268,18 @@ cmt <- function(txt, cm, author, date = "2021-01-01", comN = commentN){
 ## Figures
 
 
-```{r, echo=F, warning=F, message=F, fig.width = 6.5, fig.height = 7, fig.align = 'left'}
+```{r, echo=F, warning=F, message=F, fig.width = 7, fig.height = 7, fig.align = 'left'}
 p_adj_1
 ```
 
-__Figure 1.__ Forest plots of intervention effects on the prevalence of any enteropathogen or type of enteropathogen (any bacteria, any virus, any protozoa and any STH) in different types of environmental samples. Pooled estimates are presented when there are four or more study-specific estimates for a specific sample type and target combination and are denoted with diamond-shaped points. Grey crossed points denote data that were too sparse to estimate a prevalence ratio (i.e., <10 positive or negative observations). Samples of the same type from different locations (source vs. stored water, flies in kitchen vs. latrine, soil from courtyard vs. latrine) or different individuals (child vs. mother's hands) are plotted separately. Point estimates and confidence intervals are printed next to pooled estimates. All estimates are adjusted for potential confounders.
+__Figure 1.__ Forest plots of WASH intervention  effects on the prevalence of any enteropathogen or type of enteropathogen (any bacteria, any virus, any protozoa and any STH) in different types of environmental samples. Pooled estimates are presented when there are four or more study-specific estimates for a specific sample type and target combination and are denoted with diamond-shaped points. Grey crossed points denote data that were too sparse to estimate a prevalence ratio (i.e., <10 positive observations). Samples of the same type from different locations (source vs. stored water, flies in kitchen vs. latrine, soil from courtyard vs. latrine) or different individuals (child vs. mother's hands) are plotted separately. Point estimates and confidence intervals are printed next to pooled estimates. All estimates are adjusted for potential confounders.
 
 
-```{r, echo=F, warning=F, message=F, fig.width = 6.5, fig.height = 5}
+```{r, echo=F, warning=F, message=F, fig.width = 7, fig.height = 5}
 p_adj_2
 ```
 
-__Figure 2.__ Forest plots of intervention effects on the prevalence of any MST marker or type of MST marker (human or animal MST markers) in different types of environmental samples. Pooled estimates are presented when there are four or more study-specific estimates for a specific sample type and target combination and are denoted with diamond-shaped points. Grey crossed points denote data that were too sparse to estimate a prevalence ratio (i.e., <10 positive or negative observations). Samples of the same type from different locations (source vs. stored water, flies in kitchen vs. latrine, soil from courtyard vs. latrine) or different individuals (child vs. mother's hands) are plotted separately. Point estimates and confidence intervals are printed next to pooled estimates. All estimates are adjusted for potential confounders.
+__Figure 2.__ Forest plots of WASH intervention effects on the prevalence of any MST marker or type of MST marker (human or animal MST markers) in different types of environmental samples. Pooled estimates are presented when there are four or more study-specific estimates for a specific sample type and target combination and are denoted with diamond-shaped points. Grey crossed points denote data that were too sparse to estimate a prevalence ratio (i.e., <10 positive observations). Samples of the same type from different locations (source vs. stored water, flies in kitchen vs. latrine, soil from courtyard vs. latrine) or different individuals (child vs. mother's hands) are plotted separately. Point estimates and confidence intervals are printed next to pooled estimates. All estimates are adjusted for potential confounders.
 
 
 ## Tables
@@ -314,14 +315,14 @@ ROQ: Range of quantification; SD: Standard deviation; CI: Confidence interval; W
 
 ## Supplementary Figures
 
-```{r, echo=F, warning=F, message=F, fig.width = 6.5, fig.height = 10}
+```{r, echo=F, warning=F, message=F, fig.width = 7, fig.height = 10}
 p_adj_s1
 ```
 
 __Figure S1.__ Forest plots of intervention effects on the prevalence of specific pathogens.
 
 
-```{r, echo=F, warning=F, message=F, fig.width = 6.5, fig.height = 9}
+```{r, echo=F, warning=F, message=F, fig.width = 7, fig.height = 9}
 p_adj_s2
 ```
 
@@ -329,39 +330,9 @@ __Figure S2.__ Forest plots of intervention effects on the prevalence of specifi
 
 
 
-```{r, echo=F, warning=F, message=F, fig.width = 6.5, fig.height = 5}
-p_wet_1
-```
-
-__Figure S3.__ Forest plots of intervention effects on any enteropathogen, and any MST markers in different types of environmental samples, stratified by whether the sample was collected during the wet versus dry season (defined by the 6 months of highest average rainfall). Significant effect modification, as determined by the p-values on the regression model interaction term, is marked with asterisks (P < 0.05 = "\*", P < 0.01 = "\*\*", P < 0.001 = "\*\*\*").
-
-```{r, echo=F, warning=F, message=F, fig.width = 6.5, fig.height = 5}
-p_animals_1
-```
-
-__Figure S4.__ Forest plots of intervention effects on any enteropathogen, and any MST markers in different types of environmental samples, stratified by whether any animals were present in the compound. Significant effect modification, as determined by the p-values on the regression model interaction term, is marked with asterisks (P < 0.05 = "\*", P < 0.01 = "\*\*", P < 0.001 = "\*\*\*"). 
-
-```{r, echo=F, warning=F, message=F, fig.width = 6.5, fig.height = 5}
-p_zoo
-```
-
-__Figure S5.__ Forest plots of intervention effects on any enteropathogen in any type of environmental samples , stratified by whether the pathogen is zoonotically transmitted.
-
-```{r, echo=F, warning=F, message=F, fig.width = 6.5, fig.height = 7}
-p_unadj_1
-```
-
-__Figure S6.__ Forest plots of unadjusted intervention effects on the prevalence of any enteropathogen or type of enteropathogen (any bacteria, any virus, any protozoa and any STH) in different types of environmental samples. Point estimates and confidence intervals are printed next to pooled estimates.
 
 
-```{r, echo=F, warning=F, message=F, fig.width = 6.5, fig.height = 7}
-p_unadj_2
-```
-
-__Figure S7.__ Forest plots of unadjusted intervention effects on the prevalence of any MST marker or type of MST marker (human or animal MST markers) in different types of environmental samples. Point estimates and confidence intervals are printed next to pooled estimates.
-
-
-```{r, echo=F, warning=F, message=F, fig.width = 6.5, fig.height = 3}
+```{r, echo=F, warning=F, message=F, fig.width = 7, fig.height = 3}
 p_abund_dist_capone           
 p_abund_dist_holcomb           
 p_abund_dist_fuhrmeister       
@@ -369,4 +340,45 @@ p_abund_dist_kwong
 p_abund_dist_steinbaum       
 ```
 
-__Figure S8.__ Distributions of abundance outcomes. The X-axes are displayed on the log-10 scale. Black vertical lines mark the means, and dashed lines mark the medians.
+__Figure S3.__ Distributions of abundance outcomes. The X-axes are displayed on the log-10 scale. Black vertical lines mark the means, and dashed lines mark the medians.
+
+
+
+```{r, echo=F, warning=F, message=F, fig.width = 7, fig.height = 5}
+p_wet_1_PD
+```
+
+
+__Figure S4.__ 
+
+Forest plots of any enteropathogen prevalence differences or any MST prevalence differences between intervention and control arms, stratified by whether the sample was collected during the wet versus dry season (defined by the 6 months of highest average rainfall).  Significant effect modification, as determined by the p-values on the regression model interaction term, is marked above points with asterisks (P < 0.05 = "\*", P < 0.01 = "\*\*", P < 0.001 = "\*\*\*"). Grey crossed points denote data that were too sparse to estimate a prevalence ratio (i.e., <10 positive observations).
+
+  
+
+```{r, echo=F, warning=F, message=F, fig.width = 7, fig.height = 5}
+p_animals_1_PD
+```
+
+__Figure S5.__ Forest plots of any enteropathogen prevalence differences or any MST prevalence differences between intervention and control arms, stratified by whether any animals were present in the compound. Significant effect modification, as determined by the p-values on the regression model interaction term, is marked above points with asterisks (P < 0.05 = "\*", P < 0.01 = "\*\*", P < 0.001 = "\*\*\*"). Grey crossed points denote data that were too sparse to estimate a prevalence ratio (i.e., <10 positive observations).
+
+
+```{r, echo=F, warning=F, message=F, fig.width = 7, fig.height = 5}
+p_zoo_PD
+```
+
+__Figure S6.__ Forest plots of any enteropathogen prevalence differences or any MST prevalence differences between intervention and control arms, stratified by whether the pathogen is zoonotically transmitted. Grey crossed points denote data that were too sparse to estimate a prevalence ratio (i.e., <10 positive observations). Significant effect modification, as determined by the p-values on the regression model interaction term, is marked above points with asterisks (P < 0.05 = "\*", P < 0.01 = "\*\*", P < 0.001 = "\*\*\*"). Grey crossed points denote data that were too sparse to estimate a prevalence ratio (i.e., <10 positive observations).
+
+
+```{r, echo=F, warning=F, message=F, fig.width = 7, fig.height = 7}
+p_unadj_1
+```
+
+__Figure S6.__ Forest plots of unadjusted intervention effects on the prevalence of any enteropathogen or type of enteropathogen (any bacteria, any virus, any protozoa and any STH) in different types of environmental samples. Point estimates and confidence intervals are printed next to pooled estimates. Grey crossed points denote data that were too sparse to estimate a prevalence ratio (i.e., <10 positive observations).
+
+
+```{r, echo=F, warning=F, message=F, fig.width = 7, fig.height = 7}
+p_unadj_2
+```
+
+__Figure S7.__ Forest plots of unadjusted intervention effects on the prevalence of any MST marker or type of MST marker (human or animal MST markers) in different types of environmental samples. Point estimates and confidence intervals are printed next to pooled estimates. Grey crossed points denote data that were too sparse to estimate a prevalence ratio (i.e., <10 positive observations).
+

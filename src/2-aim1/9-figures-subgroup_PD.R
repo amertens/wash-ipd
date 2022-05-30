@@ -6,6 +6,7 @@ library(scales)
 
 adj_RD <- readRDS(file=here("results/adjusted_aim1_emm_pooled_RD.Rds")) 
 
+adj_zoo <- readRDS(file=here("results/adjusted_zoonotic_animals.Rds")) %>% filter(!is.na(coef))
 
 
 Ns <- adj_RD %>% group_by(study, sample, target, aggregate_Y, V) %>% summarise(N=n())
@@ -68,6 +69,10 @@ mydf <- adj_RD %>%
   filter(target %in% c("Any pathogen","Any MST"), V=="wet")
 drop_full_sparse=T
 legend_labels=sample_cats
+ylimits=c(-1,1)
+
+mydf <- adj_zoo 
+drop_full_sparse=F
 
 
 base_plot <- function(mydf, legend_labels=sample_cats, drop_full_sparse=F, ylimits=c(-1,1)){
@@ -93,11 +98,10 @@ base_plot <- function(mydf, legend_labels=sample_cats, drop_full_sparse=F, ylimi
   }
   
   mydf <- mydf %>% droplevels(.)
+   Y_breaks=c(-1,-0.8, -0.6 -0.4, -0.2, 0, 0.2, 0.4, 0.6, 0.8, 1)
+  # Y_breaks2=c("1/4", "1/2","1", "2", "4", "8")
   
-  Y_breaks=c(.25, .5,1, 2, 4, 8)
-  Y_breaks2=c("1/4", "1/2","1", "2", "4", "8")
-  
-  ggplot(data = mydf, (aes(x=study, y=RR, group=Vlevel, color=Vlevel, shape=Vlevel))) + 
+  ggplot(data = mydf, (aes(x=study, y=coef, group=Vlevel, color=Vlevel, shape=Vlevel))) + 
   geom_point(size=3, position = position_dodge(0.5)) +
     geom_errorbar(aes(ymin=ci.lb, ymax=ci.ub), position = position_dodge(0.5),
                   width = 0.3, size = 1) +
@@ -105,15 +109,16 @@ base_plot <- function(mydf, legend_labels=sample_cats, drop_full_sparse=F, ylimi
     geom_text(aes(label=int.p), color="black", position = position_dodge(0.5), hjust = -0.01, vjust = -0.05, size=4) + 
     scale_color_manual(#breaks = legend_labels,
       values = c(cbbPalette[2:3],"grey50"), drop = FALSE) +
-    scale_shape_manual(values=c(16, 16,16), guide=FALSE)+  
+    scale_shape_manual(values=c(16, 16,16), guide=FALSE) +  
     geom_hline(yintercept = 0, linetype="dashed") +
     facet_grid(target_f~sample_cat,  scales="free_y", space = "free_x", labeller = label_wrap_gen(width = 10, multi_line = TRUE)) +
-    # scale_y_continuous(#breaks=scales::breaks_pretty(c(0.25, 0.5,1, 2, 4, 8)),
-    #   breaks=Y_breaks, 
-    #                    labels = Y_breaks2
-    #                    ) + 
-    coord_flip(ylim=ylimits)+
-    labs(color="Subgroup") + xlab("") + ylab("Prevalence ratio") + 
+     scale_y_continuous(#breaks=scales::breaks_pretty(c(-1, -0.5, 0, 0.5, 1)),
+       breaks=pretty_breaks()
+       #breaks=Y_breaks#,
+       #labels = Y_breaks2
+       ) + 
+    coord_flip(ylim=ylimits) +
+    labs(color="Subgroup") + xlab("") + ylab("Prevalence difference") + 
     theme_ki() + 
     theme(axis.ticks.x=element_blank(),
           legend.position = "bottom",
@@ -126,29 +131,29 @@ base_plot <- function(mydf, legend_labels=sample_cats, drop_full_sparse=F, ylimi
 #---------------------------------------------------------------
 # Plot figures
 #---------------------------------------------------------------
-p_wet_1 <- adj_RD %>% 
+p_wet_1_PD <- adj_RD %>% 
   filter(target %in% c("Any pathogen","Any MST"), V=="wet") %>%
-  base_plot(drop_full_sparse=T)
-p_wet_1
+  base_plot(drop_full_sparse=T,  ylimits=c(-0.55,0.4))
+p_wet_1_PD
 
-p_animals_1 <- adj_RD %>% 
+p_animals_1_PD <- adj_RD %>% 
   filter(target %in% c("Any pathogen","Any MST"), V=="animals") %>%
-  base_plot(drop_full_sparse=T)
-p_animals_1
+  base_plot(drop_full_sparse=T,  ylimits=c(-0.75,0.75))
+p_animals_1_PD
 
-p_wet_2 <- adj_RD %>% 
+p_wet_2_PD <- adj_RD %>% 
   filter(target %in% c("Any human MST","Any animal MST","Any general MST"), V=="wet") %>%
   base_plot
 
-p_animals_2 <- adj_RD %>% 
+p_animals_2_PD <- adj_RD %>% 
   filter(target %in% c("Any human MST","Any animal MST","Any general MST"), V=="animals") %>%
   base_plot
 
-p_wet_3 <- adj_RD %>% 
+p_wet_3_PD <- adj_RD %>% 
   filter(target %in% c("Any bacteria", "Any protozoa", "Any STH", "Any virus"), V=="wet") %>%
   base_plot
 
-p_animals_3 <- adj_RD %>% 
+p_animals_3_PD <- adj_RD %>% 
   filter(target %in% c("Any bacteria", "Any protozoa", "Any STH", "Any virus"), V=="animals") %>%
   base_plot
 
@@ -157,42 +162,75 @@ p_animals_3 <- adj_RD %>%
 #-	Fig S2. Prevalence of pathogen with human hosts, and pathogen with human/animal hosts 
    #(same as fig 3)
 # -	Fig S3. Prevalence of specific pathogens 
-p_wet_s1 <- adj_RD %>% 
+p_wet_s1_PD <- adj_RD %>% 
   filter(target %in% any_pathogens, !c(target %in% c("Any STH","any pathogen-improved","any pathogen-unimproved")), V=="wet") %>%
   base_plot(drop_full_sparse=T)
 
-p_animals_s1 <- adj_RD %>% 
+p_animals_s1_PD <- adj_RD %>% 
   filter(target %in% any_pathogens, !c(target %in% c("Any STH","any pathogen-improved","any pathogen-unimproved")), V=="animals") %>%
   base_plot(drop_full_sparse=T)
 
 
 
 # -	Fig S4. Prevalence of specific MST markers 
-p_wet_s2 <- adj_RD %>% 
+p_wet_s2_PD <- adj_RD %>% 
   filter(target %in% any_MST, V=="wet") %>%
   base_plot
 
-p_animals_s2 <- adj_RD %>% 
+p_animals_s2_PD <- adj_RD %>% 
   filter(target %in% any_MST, V=="animals") %>%
   base_plot
 
 
-# Supplimentary figure: zoonotic stratified
-p_zoo <- adj_zoo %>% 
-  filter(target %in% c("Any zoonotic","Any non-zoonotic"), 
-         sample_cat!="Sparse data"
-         ) %>% 
-  group_by(study) %>% #mutate(N=n()) %>% filter(N==2) %>%
-  mutate(Vlevel=target, target_f="Any pathogen", int.p="") %>%
-  # group_by() %>% #drop when only one target
-  # filter(N==2) %>%
-  base_plot(.)
-p_zoo
+# # Supplimentary figure: zoonotic stratified
+# p_zoo <- adj_zoo %>% 
+#   filter(target %in% c("Any zoonotic","Any non-zoonotic"), 
+#          sample_cat!="Sparse data"
+#          ) %>% 
+#   group_by(study) %>% #mutate(N=n()) %>% filter(N==2) %>%
+#   mutate(Vlevel=target, target_f="Any pathogen", int.p="") %>%
+#   # group_by() %>% #drop when only one target
+#   # filter(N==2) %>%
+#   base_plot(.)
+# p_zoo
+
+adj_zoo <- adj_zoo %>%
+  mutate(Vlevel = factor(Vlevel)) 
+adj_zoo <- clean_res_subgroup(adj_zoo)
+
+adj_zoo$target_f
+adj_zoo$sample_cat
+
+adj_zoo <- adj_zoo %>% mutate(
+  int.p =case_when(
+    Vlevel==0 ~ NA_character_,
+    int.p<0.001~"***",
+    int.p<0.01~"**",
+    int.p<0.05~"*",
+    int.p>=0.05~""
+  ),
+  Vlevel = factor(case_when(
+    sparse=="yes" ~ "Sparse data",
+    Vlevel==0 ~ "Non-zoonotic",
+    Vlevel==1 ~ "Zoonotic",
+  ), levels = c("Non-zoonotic", "Zoonotic","Sparse data"))
+)
+
+unique(adj_zoo$study)
+#adj_zoo$study <- factor(adj_zoo$study, levels = rev(c("Steinbaum 2019","Fuhrmeister 2020", "Kwong 2021", "Pooled")))
+
+p_zoo_PD <- adj_zoo %>%
+  # filter(target %in% c("Any zoonotic","Any non-zoonotic"),
+  #        sample_cat!="Sparse data") %>%
+  # group_by(study) %>% 
+  # mutate(Vlevel=target, target_f="Any pathogen", int.p="") %>%
+  base_plot(., drop_full_sparse = F,  ylimits=c(-0.75,0.25))
+p_zoo_PD
 
 
 
 #save figures
-save(list=ls(pattern="p_"), file=here("figures/subgroup_figures.Rdata"))
+save(list=ls(pattern="p_"), file=here("figures/subgroup_figures_PD.Rdata"))
 
 
 

@@ -63,7 +63,6 @@ source(here("0-config.R"))
 # )
 
 
-
 op = function(x, d=2) sprintf(paste0("%1.",d,"f"), x) 
 
 Print <- function(x){
@@ -294,7 +293,7 @@ load(here("figures/aim2_subgroup_figures.Rdata"))
 load(here("figures/aim2_subgroup_figures_age.Rdata"))
 load(here("figures/aim2_path_heatmap.Rdata"))
 load(here("figures/aim2_abund_heatmap.Rdata"))
-load(here("figures/all_tables.Rdata"))
+load(here("figures/aim2_all_tables.Rdata"))
 
 
 
@@ -347,20 +346,20 @@ cmt <- function(txt, cm, author, date = "2021-01-01", comN = commentN){
 p_pathogen
 ```
 
-__Figure 1.__ Forest plots of associations between specific enteropathogens in environmental samples and child infections with the same enteropathogens.  Samples of the same type from different locations (source vs. stored water, flies in kitchen vs. latrine, soil from courtyard vs. latrine) or different individuals (child vs. mother's hands) are plotted separately and denoted by different colors.  All estimates are adjusted for potential confounders.
+__Figure 1.__ Forest plots of associations between specific enteropathogens in environmental samples and child infections with the same enteropathogens. The presented prevalence ratios compare the detection prevalence of a pathogen in stool between children from compounds where the pathogen was detected vs. not detected in environmental samples. Samples of the same type from different locations (source vs. stored water, flies in kitchen vs. latrine, soil from courtyard vs. latrine) or different individuals (child vs. mother's hands) are plotted separately and denoted by different colors. All estimates are adjusted for potential confounders.
 
 ```{r p_diar_1_adj, echo=F, warning=F, message=F, fig.width = 10, fig.height = 5}
 p_diar_1_adj
 ```
 
-__Figure 2.__ Forest plots of associations between child diarrheal disease and the prevalence of any enteropathogen or any MST markers in different types of environmental samples. Pooled estimates are presented when there are four or more study-specific estimates for a specific sample type and target combination and are denoted with diamond-shaped points. Grey crossed points denote data that were too sparse to estimate a prevalence ratio (i.e., <10 positive or negative observations). Samples of the same type from different locations (source vs. stored water, flies in kitchen vs. latrine, soil from courtyard vs. latrine) or different individuals (child vs. mother's hands) are plotted separately. Asterisks above estimates denote statistical significance (\*= P-value < 0.05, \*\*= P-value < 0.01, \*\*\*= P-value < 0.001). All estimates are adjusted for potential confounders.
+__Figure 2.__ Forest plots of associations between the prevalence of any enteropathogen or any MST markers in different types of environmental samples and child diarrheal disease. The presented prevalence ratios compare diarrhea prevalence between children from compounds where any pathogen/MST marker was detected vs. not detected in environmental samples. Pooled estimates are presented when there are four or more study-specific estimates for a specific sample type and target combination and are denoted with diamond-shaped points. Grey crossed points denote data that were too sparse to estimate a prevalence ratio (i.e., <10 positive or negative observations). Samples of the same type from different locations (source vs. stored water, flies in kitchen vs. latrine, soil from courtyard vs. latrine) or different individuals (child vs. mother's hands) are plotted separately. Asterisks above estimates denote statistical significance (\*= P-value < 0.05, \*\*= P-value < 0.01, \*\*\*= P-value < 0.001). All estimates are adjusted for potential confounders.
 
 
 ```{r p_haz_1_adj, fig.cap ="", echo=F, warning=F, message=F, fig.width = 10, fig.height = 5}
 p_haz_1_adj
 ```
 
-__Figure 3.__ Forest plots of associations between child HAZ and the prevalence of any enteropathogen or any MST markers in different types of environmental samples. Pooled estimates are presented when there are four or more study-specific estimates for a specific sample type and target combination and are denoted with diamond-shaped points. Grey crossed points denote data that were too sparse to estimate a mean difference. Samples of the same type from different locations (source vs. stored water, flies in kitchen vs. latrine, soil from courtyard vs. latrine) or different individuals (child vs. mother's hands) are plotted separately.  Asterisks above estimates denote statistical significance (\*= P-value < 0.05, \*\*= P-value < 0.01, \*\*\*= P-value < 0.001). All estimates are adjusted for potential confounders.
+__Figure 3.__ Forest plots of associations between the prevalence of any enteropathogen or any MST markers in different types of environmental samples and heigh-for-age Z-scores (HAZ). The presented differences compare HAZ between children from compounds where any pathogen/MST marker was detected vs. not detected in environmental samples. Pooled estimates are presented when there are four or more study-specific estimates for a specific sample type and target combination and are denoted with diamond-shaped points. Grey crossed points denote data that were too sparse to estimate a mean difference. Samples of the same type from different locations (source vs. stored water, flies in kitchen vs. latrine, soil from courtyard vs. latrine) or different individuals (child vs. mother's hands) are plotted separately. Asterisks above estimates denote statistical significance (\*= P-value < 0.05, \*\*= P-value < 0.01, \*\*\*= P-value < 0.001). All estimates are adjusted for potential confounders.
 
 
 # Supplementary figures
@@ -487,23 +486,23 @@ __Figure S5.__ Heatmap of significance and direction of associations between the
 
 
 ```{r p_age_diar_1, echo=F, warning=F, message=F, fig.width = 10, fig.height = 6.5}
-p_age_diar_1
+p_age_diar_1_PD
 ```
 
-__Figure S6.__ Forest plots of associations between child diarrheal disease and any enteropathogen, and any MST markers, in different types of environmental samples, stratified by child age. Grey points mark sparse age strata without estimated relative risks. Significant effect modification, as determined by the p-values on the regression model interaction term, is marked with asterisks (P < 0.05 = \*, P < 0.01 = \*\*, P < 0.001 = \*\*\*).
+__Figure S6.__ Forest plots of child diarrheal disease prevalence differences between environmental samples with and without any enteropathogen or any MST marker detected, stratified by child age. Grey points mark sparse age strata without estimated relative risks. Significant effect modification, as determined by the p-values on the regression model interaction term, is marked above points with asterisks (P < 0.05 = \*, P < 0.01 = \*\*, P < 0.001 = \*\*\*).
 
 
 ```{r p_age_haz_1, echo=F, warning=F, message=F, fig.width = 10, fig.height = 6.5}
 p_age_haz_1
 ```
 
-__Figure S7.__ Forest plots of associations between child HAZ and any enteropathogen, and any MST markers, in different types of environmental samples, stratified by child age. Grey points mark sparse age strata without estimated mean differences. Significant effect modification, as determined by the p-values on the regression model interaction term, is marked with asterisks (P < 0.05 = \*, P < 0.01 = \*\*, P < 0.001 = \*\*\*).
+__Figure S7.__ Forest plots of associations between any enteropathogen/any MST markers in different types of environmental samples and child height-for-age Z-score (HAZ), stratified by child age. Grey points mark sparse age strata without estimated mean differences. Significant effect modification, as determined by the p-values on the regression model interaction term, is marked above points with asterisks (P < 0.05 = \*, P < 0.01 = \*\*, P < 0.001 = \*\*\*).
 
 ```{r p_sex_diar_1, echo=F, warning=F, message=F, fig.width = 10, fig.height = 6.5}
-p_sex_diar_1
+p_sex_diar_1_PD
 ```
 
-__Figure S8.__ Forest plots of associations between child diarrheal disease and any enteropathogen, and any MST markers, in different types of environmental samples, stratified by child sex. Significant effect modification, as determined by the p-values on the regression model interaction term, is marked with asterisks (P < 0.05 = \*, P < 0.01 = \*\*, P < 0.001 = \*\*\*).
+__Figure S8.__ Forest plots of child diarrheal disease prevalence differences between environmental samples with and without any enteropathogen or any MST marker detected, stratified by child sex. Significant effect modification, as determined by the p-values on the regression model interaction term, is marked above points with asterisks (P < 0.05 = \*, P < 0.01 = \*\*, P < 0.001 = \*\*\*).
 
 
 
@@ -511,7 +510,7 @@ __Figure S8.__ Forest plots of associations between child diarrheal disease and 
 p_sex_haz_1
 ```
 
-__Figure S9.__ Forest plots of associations between child HAZ and any enteropathogen, and any MST markers, in different types of environmental samples, stratified by child sex. Significant effect modification, as determined by the p-values on the regression model interaction term, is marked with asterisks (P < 0.05 = \*, P < 0.01 = \*\*, P < 0.001 = \*\*\*).
+__Figure S9.__ Forest plots of associations between any enteropathogen/any MST markers in different types of environmental samples and child height-for-age Z-scores (HAZ), stratified by child sex. Significant effect modification, as determined by the p-values on the regression model interaction term, is marked above points with asterisks (P < 0.05 = \*, P < 0.01 = \*\*, P < 0.001 = \*\*\*).
 
 
 
@@ -519,15 +518,15 @@ __Figure S9.__ Forest plots of associations between child HAZ and any enteropath
 p_animals_haz_1
 ```
 
-__Figure S10.__ Forest plots of associations between child HAZ and any enteropathogen, and any MST markers, in different types of environmental samples, stratified by whether any animals were present in the compound. Significant effect modification, as determined by the p-values on the regression model interaction term, is marked with asterisks (P < 0.05 = \*, P < 0.01 = \*\*, P < 0.001 = \*\*\*).
+__Figure S10.__ Forest plots of associations between any enteropathogen/any MST markers in different types of environmental samples and child height-for-age Z-scores (HAZ), stratified by whether any animals were present in the compound. Significant effect modification, as determined by the p-values on the regression model interaction term, is marked above points with asterisks (P < 0.05 = \*, P < 0.01 = \*\*, P < 0.001 = \*\*\*).
 
 
 
 ```{r p_wet_diar_2, echo=F, warning=F, message=F, fig.width = 10, fig.height = 6.5}
-p_wet_diar_2
+p_wet_diar_2_PD
 ```
 
-__Figure S11.__ Forest plots of relative risks between diarrhea disease and any enteropathogen, and any MST markers, in different types of environmental samples, stratified by whether the diarrheal disease occurred during the wet versus dry season (defined by the 6 months of highest average rainfall). Significant effect modification, as determined by the p-values on the regression model interaction term, is marked with asterisks (P < 0.05 = \*, P < 0.01 = \*\*, P < 0.001 = \*\*\*).
+__Figure S11.__ Forest plots of child diarrheal disease prevalence differences between environmental samples with and without any enteropathogen or any MST marker detected, stratified by whether the diarrheal disease occurred during the wet versus dry season (defined by the 6 months of highest average rainfall). Significant effect modification, as determined by the p-values on the regression model interaction term, is marked above points with asterisks (P < 0.05 = \*, P < 0.01 = \*\*, P < 0.001 = \*\*\*).
 
 
 
@@ -579,7 +578,7 @@ __Figure S15.__ Comparison between associations estimated with generalized linea
 p_haz_1_adj_tmle
 ```
 
-__Figure S16.__ Comparison between associations estimated with generalized linear models (GLM) and machine-learning based targeted likelihood estimation models (TMLE) for the height-for-age Z-score outcome.
+__Figure S16.__ Comparison between associations estimated with generalized linear models (GLM) and machine-learning based targeted likelihood estimation models (TMLE) for the height-for-age (HAZ) Z-score outcome.
 
 ```{r, echo=F, warning=F, message=F, fig.width = 10, fig.height = 6}
 p_diar_time
@@ -592,13 +591,13 @@ __Figure S17.__ Comparison between associations estimated in the primary diarrhe
 # Tables
 
 
-__Table 1.__ Descriptive statistics of child health outcomes by study.
+__Table 1.__ Descriptive statistics of child health outcomes by study. Pathogen-specific infection prevalence is the prevalence of at least one pathogen detected in child stool, and the number of pathogen cases is the total number of detected infections (counting co-infections separately).
 
 ```{r tab_Y, fig.cap = "Descriptive statistics of child health outcomes by study.", echo=FALSE, warning=F, message=F}
 FitFlextableToPage(flextable(tab_Y))
 ```
 
-
+HAZ: Height-for-age Z-score; WAZ: Weight-for-age Z-score; WHZ: Weight-for-height Z-score. 
 
 
 

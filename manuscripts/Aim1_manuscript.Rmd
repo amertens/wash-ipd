@@ -1,5 +1,5 @@
 ---
-title: "Effect of water, sanitation, and hygiene interventions on detection of enteropathogens and host-specific fecal markers in the environment: an individual-participant data meta-analysis"
+title: "Effects of water, sanitation, and hygiene interventions on detection of enteropathogens and host-specific faecal markers in the environment: an individual-participant data meta-analysis"
 author: "Andrew Mertens, Benjamin F. Arnold, Jade Benjamin-Chung, Alexandria Boehm, Joe Brown, Drew Capone, Thomas Clasen, Erica Fuhrmeister, Jessica Grembi, David Holcomb, Jackie Knee, Laura Kwong, Audrie Lin, Stephen P. Luby, Rassul Nala, Kara Nelson, Sammy Njenga, Clair Null, Amy J. Pickering, Mahbubur Rahman, Heather Reese, Lauren Steinbaum, Jill Stewart, Ruwan Thilakaratne, Oliver Cumming, John M. Colford Jr., Ayse Ercumen"
 #output: redoc::redoc
 output: 
@@ -39,14 +39,6 @@ library(bibtex)
 library(citr)
 library(redoc)
 source(here("0-config.R"))
-#citr:::insert_citation(bib_file ="WASH-IPD.bib", use_betterbiblatex =F)
-# 
-# tidy_bib_file(
-#   rmd_file = "Aim1_manuscript.Rmd"
-#   , messy_bibliography = "WASH-IPD.bib"
-#   , file = "tidy_references.bib"
-# )
-
 
 
 op = function(x, d=2) sprintf(paste0("%1.",d,"f"), x) 
@@ -267,7 +259,6 @@ add_footnote <- function(df, col, pattern, symbol){
       as_chunk(symbol, props = fp_text(vertical.align = 'superscript')))
     ) 
 }
-#adj_RR %>% filter(target=="Any virus", sample!="any sample type") %>% select(sample, target, RR, ci.lb, ci.ub, study, a,b,c,d) %>% arrange(sample) %>% as.data.frame()
 
 
 ```

@@ -576,6 +576,16 @@ MICS_prescreen<-function (Y, W, family = "gaussian", pval = 0.2, print = TRUE){
 
 
 #Subgroup function 
+# d=df2
+# Vvar="zoonotic"
+# outcome="pos"
+# study=df2$study[1]
+# sample=df2$sample[1]
+# target=df2$target[1]
+# Ws=Wvars
+# family="gaussian"
+
+
 aim1_subgroup <- function(d, Vvar, Ws=NULL, outcome="pos", study="mapsan", sample="ds", target="Mnif", family="binomial"){
   
   
@@ -602,6 +612,13 @@ aim1_subgroup <- function(d, Vvar, Ws=NULL, outcome="pos", study="mapsan", sampl
       minN_v1 <- min(table(df$Y[df$V==1], df$tr[df$V==1]))
     }else{
       minN <- 0
+      if(length(unique(df$V))==1){
+        if(unique(df$V)==1){
+          minN_v1 <- min(table(df$Y[df$V==1], df$tr[df$V==1]))
+        }else{
+          minN_v0 <- min(table(df$Y[df$V==0], df$tr[df$V==0]))
+        }
+      }
     }
     #Get cell counts
     a <- sum(df$Y==1 & df$tr=="Intervention")
@@ -676,18 +693,24 @@ aim1_subgroup <- function(d, Vvar, Ws=NULL, outcome="pos", study="mapsan", sampl
     
     #model formula
     f <- ifelse(is.null(Wvars),
-                "Y ~ tr +V",
-                paste0("Y ~ tr + V +", paste(Wvars, collapse = " + ")))
+                "Y ~ tr *V",
+                paste0("Y ~ tr * V +", paste(Wvars, collapse = " + ")))
     #fit model
     fullfit <- mpreg(formula = as.formula(f), df = df, vcv=TRUE, family=family)
     #coef <- as.data.frame(t(fit[2,]))
     fit <- fullfit$fit
     
+    # contrasts1 <- contrasts2 <- rep(0, nrow(fit))
+    # contrasts1[2] <- 1
+    # contrasts2[2:3] <- 1
+    
+    #Contrasting intervention effect in each subgroup
     contrasts1 <- contrasts2 <- rep(0, nrow(fit))
     contrasts1[2] <- 1
-    contrasts2[2:3] <- 1
+    contrasts2[2] <- 1
+    contrasts2[nrow(fit)] <- 1
     
-    meas <- ifelse(family=="gausian","RD","RR")
+    meas <- ifelse(family=="gaussian","RD","RR")
     v1 <- suppressWarnings(lincom(lc = contrasts1, fit = fullfit$fit, vcv = fullfit$vcovCL, measure = meas, flag = 1))
     v2 <- suppressWarnings(lincom(lc = contrasts2, fit = fullfit$fit, vcv = fullfit$vcovCL, measure = meas, flag = 1))
     res <- bind_rows(data.frame(v1),data.frame(v2))
@@ -695,8 +718,7 @@ aim1_subgroup <- function(d, Vvar, Ws=NULL, outcome="pos", study="mapsan", sampl
     res$nV <- NA
     res$nV[1] <- sum(df$V==0)
     res$nV[2] <- sum(df$V==1)
-    res$int.p <- fit[3,4]
-    
+    res$int.p <- fit[nrow(fit),4]
     
     res <- data.frame(Y=outcome,
                       V=Vvar,
@@ -713,11 +735,21 @@ aim1_subgroup <- function(d, Vvar, Ws=NULL, outcome="pos", study="mapsan", sampl
         #cat("d")
         Wvars <- res_v0[[2]]
         res_v0 <- res_v0[[1]]
+        if(family=="binomial"){
+          res_v0$RR <- exp(res_v0$coef)
+          res_v0$ci.lb <- exp(res_v0$coef - 1.96 * res_v0$se)
+          res_v0$ci.ub <- exp(res_v0$coef + 1.96 * res_v0$se)
+        }
       }
       if(minN_v1 >= 1 & min(table(df$Y[df$V==1], df$tr[df$V==1]))>=1 & length(unique(df$Y[df$V==1]))>1 & length(unique(df$tr[df$V==1]))>1){
         res_v1 <- subgroup_single_level_est(df=df, Vvar=Vvar, Vlevel=1, family=family, Ws=Ws, outcome=outcome, sample=sample, target=target)
         Wvars <- res_v1[[2]]
         res_v1 <- res_v1[[1]]
+        if(family=="binomial"){
+          res_v1$RR <- exp(res_v1$coef)
+          res_v1$ci.lb <- exp(res_v1$coef - 1.96 * res_v1$se)
+          res_v1$ci.ub <- exp(res_v1$coef + 1.96 * res_v1$se)
+        }
       }
     }
     if(is.null(res_v0)){
@@ -1001,7 +1033,7 @@ subgroup_single_level_est <- function(df, Vvar, Vlevel, family, Ws, outcome, sam
 #     contrasts1[2] <- 1
 #     contrasts2[2:3] <- 1
 #     
-#     meas <- ifelse(family=="gausian","RD","RR")
+#     meas <- ifelse(family=="gaussian","RD","RR")
 #     v1 <- suppressWarnings(lincom(lc = contrasts1, fit = fullfit$fit, vcv = fullfit$vcovCL, measure = meas, flag = 1))
 #     v2 <- suppressWarnings(lincom(lc = contrasts2, fit = fullfit$fit, vcv = fullfit$vcovCL, measure = meas, flag = 1))
 #     res <- bind_rows(data.frame(v1),data.frame(v2))
@@ -1396,7 +1428,7 @@ pool.cont<-function(d, method="REML"){
 
 
 
-aim2_subgroup <- function(d, Vvar, Ws=NULL, forcedW=NULL, outcome="pos", exposure, study="mapsan", sample="ds", target="Mnif", family="binomial", minN_thres = 5){
+aim2_subgroup <- function(d, Vvar, Ws=NULL, forcedW=NULL, outcome="pos", exposure, study="mapsan", sample="ds", target="Mnif", family="binomial", minN_thres = 1){
   
   df <- d %>% filter(study=={{study}}, sample=={{sample}}, target=={{target}}) %>% droplevels(.)
   
@@ -1422,8 +1454,8 @@ aim2_subgroup <- function(d, Vvar, Ws=NULL, forcedW=NULL, outcome="pos", exposur
     if(length(unique(df$Y))>1 & length(unique(df$X))>1 & length(unique(df$V))>1){
       #minN <- min(table(df$Y))
       minN <- min(table(df$Y, df$X, df$V))
-      minN_v0 <- min(table(df$Y[df$V==0], df$tr[df$V==0]))
-      minN_v1 <- min(table(df$Y[df$V==1], df$tr[df$V==1]))
+      minN_v0 <- min(table(df$Y[df$V==0], df$X[df$V==0]))
+      minN_v1 <- min(table(df$Y[df$V==1], df$X[df$V==1]))
     }else{
       minN <- 0
     }
@@ -1432,18 +1464,20 @@ aim2_subgroup <- function(d, Vvar, Ws=NULL, forcedW=NULL, outcome="pos", exposur
     b <- sum(df$Y==0 & df$X==1)
     c <- sum(df$Y==1 & df$X==0)
     d <- sum(df$Y==0 & df$X==0)
+  }else{
+    if(length(unique(df$Y))>2 & length(unique(df$V))>1){
+      minN <- min(table(df$X, df$V))
+      #Get cell counts
+      a <- mean(df$Y[df$X==0], na.rm=T)
+      b <- mean(df$Y[df$X==1], na.rm=T)
+      c <- sd(df$Y[df$X==0], na.rm=T)
+      d <- sd(df$Y[df$X==1], na.rm=T)
+    }else{
+      minN <- 0
+    }
   }
   
-  if(length(unique(df$Y))>2 & length(unique(df$V))>1){
-    minN <- min(table(df$X, df$V))
-    #Get cell counts
-    a <- mean(df$Y[df$X==0], na.rm=T)
-    b <- mean(df$Y[df$X==1], na.rm=T)
-    c <- sd(df$Y[df$X==0], na.rm=T)
-    d <- sd(df$Y[df$X==1], na.rm=T)
-  }else{
-    minN <- 0
-  }
+
   
   cat(minN,"\n")
   
@@ -1493,7 +1527,7 @@ aim2_subgroup <- function(d, Vvar, Ws=NULL, forcedW=NULL, outcome="pos", exposur
         #Wvars <- c(Wvars,forcedW)
         df <- df %>% subset(., select =c("Y","X","V","clusterid",Wvars))
         df <- data.frame(df,forcedWdf)
-        Wvars = colnames(df)[-c(1:3)]
+        Wvars = colnames(df)[-c(1:4)]
       }else{
         df <- df %>% subset(., select =c("Y","X","V","clusterid", Wvars))
       }
@@ -1517,16 +1551,20 @@ aim2_subgroup <- function(d, Vvar, Ws=NULL, forcedW=NULL, outcome="pos", exposur
     
     #model formula
     f <- ifelse(is.null(Wvars),
-                "Y ~ X + V",
-                paste0("Y ~ X + V + ", paste(Wvars, collapse = " + ")))
+                "Y ~ X * V",
+                paste0("Y ~ X * V + ", paste(Wvars, collapse = " + ")))
  
     #fit model
     fullfit <- mpreg(formula = as.formula(f), df = df, vcv=TRUE, family=family)
     fit <- fullfit$fit
     
+    # prop.table(table(df$X[df$V==0],df$Y[df$V==0]),1) *100
+    # prop.table(table(df$X[df$V==1],df$Y[df$V==1]),1)*100
+    
     contrasts1 <- contrasts2 <- rep(0, nrow(fit))
     contrasts1[2] <- 1
-    contrasts2[2:3] <- 1
+    contrasts2[2] <- 1
+    contrasts2[nrow(fit)] <- 1
     
     meas <- ifelse(family=="gaussian","RD","RR")
     v1 <- suppressWarnings(lincom(lc = contrasts1, fit = fullfit$fit, vcv = fullfit$vcovCL, measure = meas, flag = 1))
@@ -1536,8 +1574,9 @@ aim2_subgroup <- function(d, Vvar, Ws=NULL, forcedW=NULL, outcome="pos", exposur
     res$nV <- NA
     res$nV[1] <- sum(df$V==0)
     res$nV[2] <- sum(df$V==1)
-    res$int.p <- fit[3,4]
+    res$int.p <- fit[nrow(fit),4]
     
+    cat(fit[nrow(fit),4])
     
     res <- data.frame(Y=outcome,
                       V=Vvar,
@@ -1547,17 +1586,18 @@ aim2_subgroup <- function(d, Vvar, Ws=NULL, forcedW=NULL, outcome="pos", exposur
     
     
   }else{
-
+    cat("b")
+    
     
     res <-res_v0 <-res_v1 <- NULL
-    if((minN_v0 >= 1 | minN_v1 >= 1)){
-      if(minN_v0 >= 1 & min(table(df$Y[df$V==0], df$X[df$V==0]))>=1& length(unique(df$Y[df$V==0]))>1 & length(unique(df$X[df$V==0]))>1){
+    if((minN_v0 >= minN_thres | minN_v1 >= minN_thres)){
+      if(minN_v0 >= minN_thres & min(table(df$Y[df$V==0], df$X[df$V==0]))>=minN_thres& length(unique(df$Y[df$V==0]))>1 & length(unique(df$X[df$V==0]))>1){
         res_v0 <- subgroup_single_level_est_aim2(df=df, Vvar=Vvar, Vlevel=0, family=family, Ws=Ws, outcome=outcome, sample=sample, target=target)
         #cat("d")
         Wvars <- res_v0[[2]]
         res_v0 <- res_v0[[1]]
       }
-      if(minN_v1 >= 1 & min(table(df$Y[df$V==1], df$X[df$V==1]))>=1 & length(unique(df$Y[df$V==1]))>1 & length(unique(df$X[df$V==1]))>1){
+      if(minN_v1 >= minN_thres & min(table(df$Y[df$V==1], df$X[df$V==1]))>=minN_thres & length(unique(df$Y[df$V==1]))>1 & length(unique(df$X[df$V==1]))>1){
         res_v1 <- subgroup_single_level_est_aim2(df=df, Vvar=Vvar, Vlevel=1, family=family, Ws=Ws, outcome=outcome, sample=sample, target=target)
         Wvars <- res_v1[[2]]
         res_v1 <- res_v1[[1]]
@@ -1614,6 +1654,252 @@ aim2_subgroup <- function(d, Vvar, Ws=NULL, forcedW=NULL, outcome="pos", exposur
   res$study <- study
   return(res)
 }
+
+
+
+
+
+
+
+aim2_subgroup_age_lrtest <- function(d, Vvar, Ws=NULL, forcedW=NULL, outcome="pos", exposure, study="mapsan", sample="ds", target="Mnif", family="binomial", minN_thres = 1){
+  
+  df <- d %>% filter(study=={{study}}, sample=={{sample}}, target=={{target}}) %>% droplevels(.)
+  
+  cat(levels(df$study)[1],", ", sample,", ", target,"\n")
+  cat("N before dropping missing: ", nrow(df),"\n")
+  
+  df$Y <- df[[outcome]]
+  df <- df %>% filter(!is.na(Y))
+  
+  df$X <- df[[exposure]]
+  df <- df %>% filter(!is.na(X))
+  
+  df$V <- df[[Vvar]]
+  df <- df %>% filter(!is.na(V))
+  
+  forcedWdf<-Wvars<-NULL
+  minN<-NA
+  minN_v0 <- minN_v1 <- 0
+  forcedW_n <- 0
+  
+  df <- df %>% droplevels()
+  
+  # if(length(unique(df$Y))<=2){
+  #     minN_immobile <- min(table(df$Y[df$V=="immobile"], df$X[df$V=="immobile"]))
+  #     minN_crawling <- min(table(df$Y[df$V=="crawling"], df$X[df$V=="crawling"]))
+  #     minN_walking  <- min(table(df$Y[df$V=="walking"], df$X[df$V=="walking"]))
+  #     minN_schoolage <- min(table(df$Y[df$V=="school-age"], df$X[df$V=="school-age"]))
+  # }else{
+  #   minN_immobile <- min(table(df$X[df$V=="immobile"]))
+  #   minN_crawling <- min(table(df$X[df$V=="crawling"]))
+  #   minN_walking  <- min(table(df$X[df$V=="walking"]))
+  #   minN_schoolage <- min(table(df$X[df$V=="school-age"]))
+  # }
+  # 
+  # non_sparse <- 0
+  # non_sparse <- ifelse(minN_immobile>minN_thres, non_sparse+1,non_sparse)
+  # non_sparse <- ifelse(minN_crawling>minN_thres, non_sparse+1,non_sparse)
+  # non_sparse <- ifelse(minN_walking>minN_thres, non_sparse+1,non_sparse)
+  # non_sparse <- ifelse(minN_schoolage>minN_thres, non_sparse+1,non_sparse)
+  
+  
+  #cat(minN,"\n")
+  
+  #if((minN>=minN_thres & min(table(df$Y, df$X))>1) | (minN>=minN_thres & length(unique(df$Y)) > 2 & length(unique(df$X)) == 2) | (minN>=minN_thres & length(unique(df$X)) > 2 & length(unique(df$Y)) >= 2)){
+  #if(non_sparse>1){
+    
+    if(!is.null(Ws)){
+      forcedW_n <- 0
+      if(!is.null(forcedW)){
+        Ws <- Ws[!(Ws %in% forcedW)]
+        forcedWdf <- df %>% ungroup() %>% select(any_of(forcedW)) %>% select_if(~sum(!is.na(.)) > 0)
+        if(length(nearZeroVar(forcedWdf))>0){
+          forcedWdf <- forcedWdf[,-nearZeroVar(forcedWdf)]
+        }
+        forcedW_n <- ncol(forcedWdf)
+      }
+      
+      Wdf <- df %>% ungroup() %>% select(any_of(Ws)) %>% select_if(~sum(!is.na(.)) > 0)
+      
+      if(ncol(Wdf)>0){
+        #drop covariates with near zero variance
+        if(length(nearZeroVar(Wdf))>0){
+          Wdf <- Wdf[,-nearZeroVar(Wdf)]
+        }
+        if(family=="neg.binom"){
+          Wvars <- MICS_prescreen(Y=df$Y, W=Wdf, family="gaussian", print=F)
+        }else{
+          Wvars <- MICS_prescreen(Y=df$Y, W=Wdf, family=family, print=F)
+        }
+        if(family!="gaussian" & !is.null(Wvars)){
+          nY<-floor(min(table(df$Y))/10) -1 #minus one because 10 variables needed to estimate coef. of X
+          nY <- nY - forcedW_n
+          if(nY>=1){
+            if(length(Wvars)>nY){
+              Wvars<-Wvars[1:nY]
+            }        
+          }else{
+            Wvars=NULL
+          }
+        }
+        if(identical(Wvars, character(0)) ){
+          Wvars <- NULL
+        }
+      }else{
+        Wvars <- NULL
+      }
+      if(!is.null(forcedW)){
+        #Wvars <- c(Wvars,forcedW)
+        df <- df %>% subset(., select =c("Y","X","V","clusterid",Wvars))
+        df <- data.frame(df,forcedWdf)
+        Wvars = colnames(df)[-c(1:4)]
+      }else{
+        df <- df %>% subset(., select =c("Y","X","V","clusterid", Wvars))
+      }
+      
+      df <- df[complete.cases(df),]
+      cat("N after dropping missing: ", nrow(df),"\n")
+    }else{
+      df <- df %>% subset(., select =c("Y","X","V","clusterid"))
+      cat("N before dropping missing: ", nrow(df),"\n")
+      df <- df[complete.cases(df),]
+      cat("N after dropping missing: ", nrow(df),"\n")
+    }
+    
+
+    
+    #model formula
+    f <- ifelse(is.null(Wvars),
+                "Y ~ X + V",
+                paste0("Y ~ X + V + ", paste(Wvars, collapse = " + ")))
+    f2 <- ifelse(is.null(Wvars),
+                "Y ~ X * V",
+                paste0("Y ~ X * V + ", paste(Wvars, collapse = " + ")))
+    
+    #fit model
+    if(length(unique(df$V)) > 1){
+      if(family=="binomial"){
+        fullfit <- glm(as.formula(f),family=poisson(link="log"),  data=df)
+        fullfit_int <- glm(as.formula(f2),family=poisson(link="log"),  data=df)
+      }else{
+        fullfit <- glm(as.formula(f),family=family,  data=df)
+        fullfit_int <- glm(as.formula(f2),family=family,  data=df)
+      }
+      lr_res<-lrtest(fullfit_int,fullfit)
+      int_p <- NA
+      try(int_p <- lr_res$`Pr(>Chisq)`[2])
+    }else{
+      int_p <- NA
+    }
+
+    res <- data.frame(int.p=int_p)
+    return(res)
+  }
+    
+    # contrasts1 <- contrasts2 <- contrasts3 <- contrasts4 <- rep(0, nrow(fit))
+    # contrasts1[2] <- 1
+    # if(non_sparse==2){
+    #   contrasts2[2] <- 1
+    #   contrasts2[nrow(fit)] <- 1     
+    # }
+    # if(non_sparse==3){
+    #   contrasts2[2] <- contrasts3[2] <-1
+    #   contrasts2[(nrow(fit)-1)] <- 1
+    #   contrasts3[(nrow(fit))] <- 1
+    # }
+    # if(non_sparse==4){
+    #   contrasts2[2] <- contrasts3[2]<- contrasts4[2] <-1
+    #   contrasts2[(nrow(fit)-2)] <- 1
+    #   contrasts3[(nrow(fit)-1)] <- 1
+    #   contrasts4[(nrow(fit))] <- 1
+    # }
+    # 
+    # 
+    # meas <- ifelse(family=="gaussian","RD","RR")
+    # v1 <- suppressWarnings(lincom(lc = contrasts1, fit = fullfit$fit, vcv = fullfit$vcovCL, measure = meas, flag = 1))
+    # v2 <- suppressWarnings(lincom(lc = contrasts2, fit = fullfit$fit, vcv = fullfit$vcovCL, measure = meas, flag = 1))
+    # res <- bind_rows(data.frame(v1),data.frame(v2))
+    # if(non_sparse>2){
+    #   v3 <- suppressWarnings(lincom(lc = contrasts3, fit = fullfit$fit, vcv = fullfit$vcovCL, measure = meas, flag = 1))
+    #   res <- bind_rows(res,data.frame(v3))
+    # }
+    # if(non_sparse==4){
+    #   v4 <- suppressWarnings(lincom(lc = contrasts4, fit = fullfit$fit, vcv = fullfit$vcovCL, measure = meas, flag = 1))
+    #   res <- bind_rows(res,data.frame(v4))      
+    # }
+    #   
+    # res$Vlevel<-c(0,1)
+    # res$nV <- NA
+    # res$nV[1] <- sum(df$V==0)
+    # res$nV[2] <- sum(df$V==1)
+    # res$int.p <- fit[nrow(fit),4]
+    # 
+    # cat(fit[nrow(fit),4])
+    # 
+    # res <- data.frame(Y=outcome,
+    #                   V=Vvar,
+    #                   sample=sample,
+    #                   target=target,
+    #                   res)
+    
+  #   
+  # }else{
+  #   cat("b")
+  #   
+  #   
+  #   res <-res_v0 <-res_v1 <- NULL
+  #   if((minN_v0 >= minN_thres | minN_v1 >= minN_thres)){
+  #     if(minN_v0 >= minN_thres & min(table(df$Y[df$V==0], df$X[df$V==0]))>=minN_thres& length(unique(df$Y[df$V==0]))>1 & length(unique(df$X[df$V==0]))>1){
+  #       res_v0 <- subgroup_single_level_est_aim2(df=df, Vvar=Vvar, Vlevel=0, family=family, Ws=Ws, outcome=outcome, sample=sample, target=target)
+  #       #cat("d")
+  #       Wvars <- res_v0[[2]]
+  #       res_v0 <- res_v0[[1]]
+  #     }
+  #     if(minN_v1 >= minN_thres & min(table(df$Y[df$V==1], df$X[df$V==1]))>=minN_thres & length(unique(df$Y[df$V==1]))>1 & length(unique(df$X[df$V==1]))>1){
+  #       res_v1 <- subgroup_single_level_est_aim2(df=df, Vvar=Vvar, Vlevel=1, family=family, Ws=Ws, outcome=outcome, sample=sample, target=target)
+  #       Wvars <- res_v1[[2]]
+  #       res_v1 <- res_v1[[1]]
+  #     }
+  #   }
+  #   if(is.null(res_v0)){
+  #     res_v0 <- data.frame(Y=outcome,
+  #                          sample=sample,
+  #                          target=target,
+  #                          V=Vvar,
+  #                          Vlevel=0,
+  #                          coef=NA,
+  #                          RR=NA,
+  #                          se=NA,
+  #                          Zval=NA,
+  #                          pval=NA,
+  #                          ci.lb=NA,
+  #                          ci.ub=NA)
+  #   }
+  #   if(is.null(res_v1)){
+  #     res_v1 <- data.frame(Y=outcome,
+  #                          sample=sample,
+  #                          target=target,
+  #                          V=Vvar,
+  #                          Vlevel=1,
+  #                          coef=NA,
+  #                          RR=NA,
+  #                          se=NA,
+  #                          Zval=NA,
+  #                          pval=NA,
+  #                          ci.lb=NA,
+  #                          ci.ub=NA)
+  #   }
+  #   res <- bind_rows(res_v0,res_v1)
+    
+  # }
+  # 
+  # 
+  # res$N<-nrow(df)
+  # res$W <-ifelse(is.null(Wvars), "unadjusted", paste(Wvars, sep="", collapse=", "))
+  # res$study <- study
+  # return(res)
+  #}
+
 
 
 

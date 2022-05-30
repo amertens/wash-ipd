@@ -8,6 +8,7 @@ library(scales)
 #adj_zoo <- readRDS(file=here("results/adjusted_aim2_RR_pooled.Rds")) %>% filter(target %in% c("Any zoonotic","Any non-zoonotic"))
 #adj_RR <- readRDS(file=here("results/adjusted_aim2_emm.Rds")) 
 adj_RR <- readRDS(file=here("results/subgroup_aim2_pooled.Rds")) 
+adj_PD <- readRDS(file=here("results/subgroup_PD_aim2_pooled.Rds"))  #Need to add individual estimates
 
 
 
@@ -32,6 +33,8 @@ cbbPalette <- c("#000000", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2"
 # adj_RR$sparse <- ifelse(is.na(adj_RR$coef),"yes",adj_RR$coef)
 # adj_RR$RR[adj_RR$sparse=="yes"] <- 1
 adj_RR <- clean_res_subgroup(adj_RR)
+adj_PD <- clean_res_subgroup(adj_PD)
+
 adj_RR <- adj_RR %>% mutate(
   int.p =case_when(
     Vlevel==0 ~ NA_character_,
@@ -61,6 +64,29 @@ table(adj_RR$Vlevel)
 adj_RR$target[is.na(adj_RR$target_f)]
 sample_cats = levels(adj_RR$sample_cat)[levels(adj_RR$sample_cat)!="Any sample"]
 
+
+
+
+adj_PD <- adj_PD %>% mutate(
+  int.p =case_when(
+    Vlevel==0 ~ NA_character_,
+    int.p<0.001~"***",
+    int.p<0.01~"**",
+    int.p<0.05~"*",
+    int.p>=0.05~""
+  ),
+  Vlevel = factor(case_when(
+    sparse=="yes" ~ "Sparse data",
+    V=="sex" & Vlevel==0 ~ "Female",
+    V=="sex" & Vlevel==1 ~ "Male",
+    V=="wet" & Vlevel==0 ~ "Dry season",
+    V=="wet" & Vlevel==1 ~ "Wet season",
+    V=="wet_CH" & Vlevel==0 ~ "Dry season",
+    V=="wet_CH" & Vlevel==1 ~ "Wet season",
+    V=="animals" & Vlevel==0 ~ "No animals",
+    V=="animals" & Vlevel==1 ~ "Animals in\ncompound"
+  ), levels = c("Male","Female","Dry season", "Wet season","No animals", "Animals in\ncompound","Sparse data"))
+)
 
 
 #---------------------------------------------------------------
@@ -99,7 +125,7 @@ base_plot <- function(mydf, legend_labels=sample_cats, drop_full_sparse=F, ylimi
   Y_breaks2=c("1/4", "1/2","1", "2", "4", "8")
   
   ggplot(data = mydf, (aes(x=study, y=RR, group=Vlevel, color=Vlevel, shape=Vlevel))) + 
-    geom_point(size=3, position = position_dodge(0.5)) +
+    geom_point(size=2, position = position_dodge(0.5)) +
     geom_errorbar(aes(ymin=ci.lb, ymax=ci.ub), position = position_dodge(0.5),
                   width = 0.3, size = 1) +
     #Mark significant interactions
@@ -126,7 +152,7 @@ base_plot <- function(mydf, legend_labels=sample_cats, drop_full_sparse=F, ylimi
 
 
 
-base_plot_diff <- function(mydf, legend_labels=sample_cats, drop_full_sparse=F, ylimits=c(-1,1)){
+base_plot_diff <- function(mydf, legend_labels=sample_cats, drop_full_sparse=F, ylimits=c(-1,1), p_hjust=-0.5, ylab="Mean Z-score difference"){
   
   my_colors = c("grey20",carto_pal(12, "Prism"))
   
@@ -152,11 +178,11 @@ base_plot_diff <- function(mydf, legend_labels=sample_cats, drop_full_sparse=F, 
   # Y_breaks2=c("1/4", "1/2","1", "2", "4", "8")
   
   ggplot(data = mydf, (aes(x=study, y=coef, group=Vlevel, color=Vlevel, shape=Vlevel))) + 
-    geom_point(size=3, position = position_dodge(0.5)) +
+    geom_point(size=2, position = position_dodge(0.5)) +
     geom_errorbar(aes(ymin=ci.lb, ymax=ci.ub), position = position_dodge(0.5),
                   width = 0.3, size = 1) +
     #Mark significant interactions
-    geom_text(aes(y=ci.ub, label=int.p), color="black", position = position_dodge(0.5), hjust = -0.5, size=4) +
+    geom_text(aes(y=coef, label=int.p), color="black", position = position_dodge(0.5), hjust = p_hjust, size=4) +
     scale_color_manual(#breaks = legend_labels,
       values = c(cbbPalette[2:3],"grey50"), drop = FALSE) +
     scale_shape_manual(values=c(16, 16,18), guide=FALSE)+  
@@ -167,7 +193,7 @@ base_plot_diff <- function(mydf, legend_labels=sample_cats, drop_full_sparse=F, 
     #   labels = Y_breaks2
     # ) + 
     coord_flip(ylim=ylimits)+
-    labs(color="Subgroup") + xlab("") + ylab("Mean Z-score difference") + 
+    labs(color="Subgroup") + xlab("") + ylab(ylab) + 
     theme_ki() + 
     theme(axis.ticks.x=element_blank(),
           legend.position = "bottom",
@@ -180,10 +206,10 @@ base_plot_diff <- function(mydf, legend_labels=sample_cats, drop_full_sparse=F, 
 #---------------------------------------------------------------
 # Plot figures
 #---------------------------------------------------------------
-p_wet_diar_1 <- adj_RR %>% 
-  filter(target %in% c("Any pathogen","Any MST"), Y=="diar7d", V=="wet") %>%
-  base_plot(drop_full_sparse=T, ylimits=c(0.125,8))
-ggsave(p_wet_diar_1, file = paste0(here::here(),"/figures/pngs/subgroup_aim2_p_wet_diar.png"), width = 10, height = 6)
+# p_wet_diar_1 <- adj_RR %>% 
+#   filter(target %in% c("Any pathogen","Any MST"), Y=="diar7d", V=="wet") %>%
+#   base_plot(drop_full_sparse=T, ylimits=c(0.125,8))
+# ggsave(p_wet_diar_1, file = paste0(here::here(),"/figures/pngs/subgroup_aim2_p_wet_diar.png"), width = 10, height = 6)
 
 
 p_wet_diar_2 <- adj_RR %>% 
@@ -191,12 +217,19 @@ p_wet_diar_2 <- adj_RR %>%
   base_plot(drop_full_sparse=T, ylimits=c(0.125,8))
 ggsave(p_wet_diar_2, file = paste0(here::here(),"/figures/pngs/subgroup_aim2_p_wet_CH_diar.png"), width = 10, height = 6)
 
+#Prevalence difference:
+p_wet_diar_2_PD <- adj_PD %>% 
+  filter(target %in% c("Any pathogen","Any MST"), Y=="diar7d", V=="wet_CH") %>%
+  base_plot_diff(drop_full_sparse=T, ylimits=c(-.5,.25), ylab="Prevalence difference", p_hjust=-.75)
 
 p_animals_diar_1 <- adj_RR %>% 
   filter(target %in% c("Any pathogen","Any MST"), Y=="diar7d", V=="animals") %>%
   base_plot(drop_full_sparse=T, ylimits=c(0.125,8))
 ggsave(p_animals_diar_1, file = paste0(here::here(),"/figures/pngs/subgroup_aim2_p_animal_diar.png"), width = 10, height = 6)
 
+p_animals_diar_1_PD <- adj_PD %>% 
+  filter(target %in% c("Any pathogen","Any MST"), Y=="diar7d", V=="animals") %>%
+  base_plot_diff(drop_full_sparse=T, ylimits=c(-.5,.5), ylab="Prevalence difference", p_hjust=-.75)
 
 p_wet_haz_1 <- adj_RR %>% 
   filter(target %in% c("Any pathogen","Any MST"), Y=="haz", V=="wet") %>%
@@ -210,13 +243,14 @@ p_animals_haz_1 <- adj_RR %>%
 ggsave(p_animals_haz_1, file = paste0(here::here(),"/figures/pngs/subgroup_aim2_p_animals_haz.png"), width = 10, height = 6)
 
 
-
-
-
 p_sex_diar_1 <- adj_RR %>% 
   filter(target %in% c("Any pathogen","Any MST"), Y=="diar7d", V=="sex") %>%
   base_plot(drop_full_sparse=T, ylimits=c(0.125,8))
 ggsave(p_sex_diar_1, file = paste0(here::here(),"/figures/pngs/subgroup_aim2_p_sex_diar.png"), width = 10, height = 6)
+
+p_sex_diar_1_PD <- adj_PD %>% 
+  filter(target %in% c("Any pathogen","Any MST"), Y=="diar7d", V=="sex") %>%
+  base_plot_diff(drop_full_sparse=T, ylimits=c(-.5,.5), ylab="Prevalence difference", p_hjust=-.75)
 
 p_sex_haz_1 <- adj_RR %>% 
   filter(target %in% c("Any pathogen","Any MST"), Y=="haz", V=="sex") %>%
