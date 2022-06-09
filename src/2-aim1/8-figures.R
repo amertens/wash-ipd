@@ -15,9 +15,12 @@ adj_diff <- readRDS(file=here("results/adjusted_aim2_abund_res.Rds"))
 unadj_diff <- clean_res(unadj_diff) 
 adj_diff <- clean_res(adj_diff) 
 
+adj_RR$sample_cat[adj_RR$sample=="Fly" & adj_RR$study=="Capone 2022 in prep" & adj_RR$target=="Any virus" ] <- "Sparse data"
+adj_RR$RR[adj_RR$sample=="Fly" & adj_RR$study=="Capone 2022 in prep" & adj_RR$target=="Any virus" ] <-  1
+adj_RR$ci.lb[adj_RR$sample=="Fly" & adj_RR$study=="Capone 2022 in prep" & adj_RR$target=="Any virus" ] <- NA
+adj_RR$ci.ub[adj_RR$sample=="Fly" & adj_RR$study=="Capone 2022 in prep" & adj_RR$target=="Any virus" ] <- NA
+adj_RR$sparse[adj_RR$sample=="Fly" & adj_RR$study=="Capone 2022 in prep" & adj_RR$target=="Any virus" ] <- "yes"
 
-
-unadj_RR %>% distinct(study, target, sample) %>% as.data.frame()
 
 #---------------------------------------------------------------
 #function to clean results/order factors

@@ -35,6 +35,9 @@ summary(d$age_anthro/365)
 #https://cdn.who.int/media/docs/default-source/child-growth/child-growth-standards/indicators/motor-development-milestones/mm_percentiles_table.pdf?sfvrsn=81f3b60b_5
 #school age >5
 
+d$agecat <- cut(d$age, breaks = c(0, 254, 365, 5*12*30.467, 100000))
+table(d$agecat)
+
 d$agecat <- cut(d$age, breaks = c(0, 254, 365, 5*12*30.467, 100000), labels =c("immobile", "crawling", "walking", "school-age"))
 table(d$agecat)
 table(d$study, d$agecat)

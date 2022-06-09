@@ -60,7 +60,7 @@ ch <- ch %>%
     tr = factor(tr, levels = c("Control", "Sanitation"))
   )
 
-ch <- ch %>% subset(., select=c(trial, round,child_date,childid, female, age_months, dataid, hhid,clusterid, diar7d, diar7d_all, haz,whz,waz,
+ch <- ch %>% subset(., select=c(trial, round,child_date,child_date_pathogen,childid, female, age_months, dataid, hhid,clusterid, diar7d, diar7d_all, haz,whz,waz,
                                 Kkasc,
                                 KKtrc,
                                 KKhkw,
@@ -114,7 +114,6 @@ hol_ml <- env %>% filter(study=="Holcomb 2021", round=="ml")
 
 
 
-
 #Function to split data by hh versus compound samples
 unique(env$sample)
 
@@ -141,9 +140,10 @@ merge_ch <- function(env, ch){
 }
 
 
+
 cp_anthro_bl <- merge_ch(cp_bl, ch_ml %>% subset(., select = -c(diar7d, round))) %>% mutate(round="bl") %>% filter(!is.na(haz)|!is.na(waz)|!is.na(whz),!is.na(pos))
 cp_anthro_ml <- merge_ch(cp_ml, ch_el %>% subset(., select = -c(diar7d, round))) %>% mutate(round="ml") %>% filter(!is.na(haz)|!is.na(waz)|!is.na(whz),!is.na(pos))
-cp_anthro_el <- merge_ch(cp_el, ch_el %>% subset(., select = -c(diar7d, round))) %>% mutate(round="ml") %>% filter(!is.na(haz)|!is.na(waz)|!is.na(whz),!is.na(pos))
+cp_anthro_el <- merge_ch(cp_el, ch_el %>% subset(., select = -c(diar7d, round))) %>% mutate(round="el") %>% filter(!is.na(haz)|!is.na(waz)|!is.na(whz),!is.na(pos))
 
 cp_diar_bl <- merge_ch(cp_bl, ch_bl %>% subset(., select =  -c(haz, whz, waz, round))) %>% mutate(round="bl") %>% filter(!is.na(diar7d),!is.na(pos))
 cp_diar_ml <- merge_ch(cp_ml, ch_ml %>% subset(., select =  -c(haz, whz, waz, round))) %>% mutate(round="ml") %>% filter(!is.na(diar7d),!is.na(pos))
@@ -154,8 +154,6 @@ hol_anthro_ml <- merge_ch(hol_ml, ch_el %>% subset(., select = -c(diar7d, round)
 
 hol_diar_bl <- merge_ch(hol_bl, ch_bl %>% subset(., select =  -c(haz, whz, waz, round))) %>% mutate(round="bl") %>% filter(!is.na(diar7d),!is.na(pos))
 hol_diar_ml <- merge_ch(hol_ml, ch_ml %>% subset(., select =  -c(haz, whz, waz, round))) %>% mutate(round="ml") %>% filter(!is.na(diar7d),!is.na(pos))
-
-
 
 
 cp_df <- bind_rows(cp_anthro_bl, cp_anthro_ml, cp_anthro_el, cp_diar_bl, cp_diar_ml, cp_diar_el)
@@ -181,16 +179,41 @@ hol_res$samples_with_diar_after_merge <- nrow(hol_df %>% filter(!is.na(diar7d)) 
 hol_res$samples_with_haz_after_merge <- nrow(hol_df %>% filter(!is.na(haz)) %>% do(drop_agg(.)) %>% distinct(sampleid, dataid,  hhid, clusterid,sample, round))
 hol_res$samples_with_ch_after_merge <- nrow(hol_df %>% filter(!is.na(haz)|!is.na(diar7d)) %>% do(drop_agg(.)) %>% distinct(sampleid, dataid,  hhid, clusterid,sample, round))
 
-
+summary(d$env_date)
+#Fix 2025 date
+d$env_date[d$env_date=="2025-06-25" ] <- "2015-06-25"
+  
 summary(as.numeric(d$child_date- d$env_date))
-date_diff <- d %>% mutate(date_diff = child_date-env_date) %>% select(study, sampleid, target, dataid, round, hhid, date_diff, diar7d, haz) %>% distinct()
+date_diff <- d %>% filter(!is.na(haz), target=="Any pathogen", sample=="any sample type") %>% 
+  mutate(date_diff = child_date-env_date) %>% select(study, sampleid, target, dataid, round, hhid, date_diff, pos, diar7d, haz) %>% distinct()
+date_diff[date_diff$date_diff<0,]
+temp <-d[d$sampleid=="2095_bl",]
+temp%>% filter(!is.na(haz), target=="Any pathogen", sample=="any sample type", study=="Capone 2022 in prep") %>% 
+  mutate(date_diff = child_date-env_date)
 
-d <- d %>% 
-  filter(child_date +14 >=env_date) %>% #add 14 because child data had been coarsened to the month
+d <- d %>%
+  filter(child_date +14 >=env_date) %>% #add 15 because child data had been coarsened to the month
   mutate(
     diar7d_full=diar7d,
-    diar7d = ifelse(child_date-env_date > 124, NA, diar7d))
+    diar7d = ifelse(child_date-env_date > 124, NA, diar7d)#,
+    # Kkasc_full=Kkasc,
+    # Kkasc = ifelse(child_date-env_date > 124 +0, NA, Kkasc),
+    # KKtrc = ifelse(child_date-env_date > 124 +0, NA, KKtrc),
+    # gpp_cdif = ifelse(child_date-env_date > 124 +0, NA, gpp_cdif),
+    # gpp_giar = ifelse(child_date-env_date > 124 +0, NA, gpp_giar),
+    # gpp_shig = ifelse(child_date-env_date > 124 +0, NA, gpp_shig),
+    # gpp_o157 = ifelse(child_date-env_date > 124 +0, NA, gpp_o157),
+    # gpp_enta = ifelse(child_date-env_date > 124 +0, NA, gpp_enta),
+    # gpp_etec = ifelse(child_date-env_date > 124 +0, NA, gpp_etec),
+    # gpp_stec = ifelse(child_date-env_date > 124 +0, NA, gpp_stec),
+    # gpp_cryp = ifelse(child_date-env_date > 124 +0, NA, gpp_cryp)
+    )
+d %>% group_by(study, pos) %>% filter(!is.na(haz), target=="Any pathogen", sample=="any sample type") %>% summarise(N=n(), mean(haz,na.rm=T))
+
+
+table(d$pos, d$diar7d_full)
 table(d$pos, d$diar7d)
+table(d$pos, d$Kkasc)
 table(d$pos, !is.na(d$haz))
 
 #quartile HH wealth

@@ -131,8 +131,23 @@ head(qPCR)
 #----------------------------------------------------------------------------
 #Merge in env. STH data
 #----------------------------------------------------------------------------
+
+#get dates
+soil_dates <- read_dta("C:/Users/andre/Downloads/WASHB-soil-sth-raw.dta") %>% 
+  mutate(env_date=dmy(DateCollected)) %>% filter(!(UniqueID %in% c("LB","DS","SI","SS"))) %>%
+  select(UniqueID, env_date)
+summary(soil_dates$env_date)
+
+soil_dates <- soil_dates %>% filter(UniqueID %in% soilSTH$UniqueID) %>% distinct()
+
+
+dim(soilSTH)
+soilSTH <- left_join(soilSTH, soil_dates, by="UniqueID")
+dim(soilSTH)
+
+table(soilSTH$labmonth)
 soilSTH <- soilSTH %>% 
-  mutate(env_date=dmy(paste0(16,"-",labmonth,"-",2015))-lag) %>%
+  #mutate(env_date=dmy(paste0(16,"-",labmonth,"-",2015))-lag) %>%
   subset(., select=c(dataid, env_date, UniqueID, possth, posal, postt, epgal, epgtt, epgsth)) %>%
                        rename(sampleid=UniqueID)
                         

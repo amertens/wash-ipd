@@ -194,6 +194,37 @@ dY_path <- d %>%
            ch_pos_path_ecoli, N,
            path_infections, path_obs) %>% filter(!is.na(path_infections), path_obs>0)
 
+df <- dY_path %>% filter(ch_pos_ascaris_EE==1 & ch_pos_ascaris==1)
+df
+table(d$ch_pos_ascaris_EE, d$ch_pos_ascaris)
+
+c("ch_pos_giardia",   "Giardia"),     
+c("ch_pos_entamoeba", "Entamoeba histolytica"),     
+c("ch_pos_crypto", "Cryptosporidium"),       
+c("ch_qpcr_pos_ascaris",   "Ascaris"),
+c("ch_qpcr_pos_trichuris", "Trichuris"),
+c("ch_pos_ascaris",   "Ascaris"),
+c("ch_pos_trichuris",  "Trichuris"),
+c("ch_pos_giardia_EE",   "Giardia"),     
+c("ch_pos_entamoeba_EE", "Entamoeba histolytica"),     
+c("ch_pos_crypto_EE", "Cryptosporidium"),       
+c("ch_pos_ascaris_EE",   "Ascaris"),
+c("ch_pos_trichuris_EE",  "Trichuris"),
+c( "ch_pos_adenovirus", "Adenovirus"),   
+c("ch_pos_norovirus",   "Norovirus"),   
+c("ch_pos_rotavirus",  "Rotavirus"),    
+c("ch_pos_cdiff",  "C. difficile"),       
+c( "ch_pos_campylobacter",  "Campylobacter"),
+c( "ch_pos_salmonella",  "Salmonella"),   
+c( "ch_pos_shigella",   "Shigella"),   
+c( "ch_pos_cholera", "V. cholerae"),       
+c("ch_pos_yersinia",   "Yersinia"),     
+c("ch_pos_path_ecoli", "Pathogenic E. coli"))))
+
+dY_path_Holcomb <- dY_path %>% filter(study=="Holcomb 2021")
+table(dY_path_Holcomb$path_infections)
+
+
 dY_diar <- d %>% distinct(study, trial, dataid, hhid, clusterid, child_date, agedays, sex, childid, diar7d) %>% filter(!is.na(diar7d))
 dY_haz <- d %>% distinct(study, trial, dataid, hhid, clusterid, child_date, agedays, sex, childid, haz) %>% filter(!is.na(haz))
 dY_waz <- d %>% distinct(study, trial, dataid, hhid, clusterid, child_date, agedays, sex, childid, waz) %>% filter(!is.na(waz))
@@ -223,7 +254,7 @@ tab_Y <- left_join(tab_Y, tab_path, by =c("trial","study"))
 colnames(tab_Y)
 N_cols <- ncol(tab_Y)
 tab_Y <- tab_Y[,c(2,1,(N_cols-3):N_cols,3:(N_cols-4))]
-colnames(tab_Y) <- c( "Study","Trial","# pathogens measured","# pathogen obs.","# pathogen cases","Pathogen prev.","# diarrhea obs.","# diarrhea cases","Diarrhea prev.","# HAZ obs.",
+colnames(tab_Y) <- c( "Study","Trial","Distinct pathogens measured","# pathogen obs.","# pathogen cases","Pathogen prev.","# diarrhea obs.","# diarrhea cases","Diarrhea prev.","# HAZ obs.",
                       "Mean HAZ","Stunting prev.", "# WAZ obs.","Mean WAZ","Underweight prev.","# WHZ obs.",
                       "Mean WHZ","Wasting prev." )
 

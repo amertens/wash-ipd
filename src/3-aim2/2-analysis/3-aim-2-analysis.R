@@ -17,7 +17,14 @@ unique(d$target)
 
 d <- d %>% filter(sample!="FP") %>% droplevels()
 
+table(d$target)
+df <- d %>% filter(target=="Animal (BacCow)" & sample=="any sample type")
+prop.table(table(df$study, df$pos),1)
 
+df <- d %>% filter(target=="Human (HumM2)" & sample=="S")
+prop.table(table(df$study, df$pos),1)
+
+ 
 #clean pathogen dates/child ages
 
 
@@ -37,20 +44,39 @@ Wvars = c("sex","age","hfiacat","momage","hhwealth", "Nhh","nrooms","walls", "ro
 Wvars_anthro = c("sex","age_anthro","hfiacat","momage","hhwealth", "Nhh","nrooms","walls", "roof", "floor","elec","dadagri","landacre","landown", "momedu", "tr")         
 
 
+
+# outcome="haz"
+# exposure="pos"
+# study="Kwong 2021"
+# sample="any sample type"
+# target= "Any pathogen"
+# family="binomial"
+# forcedW=c("age_anthro", "hhwealth")
+# Ws=Wvars_anthro
+# dtemp<-d %>% filter(study=="Kwong 2021", sample=="any sample type", target=="Any pathogen")
+# summary(dtemp$haz)
+# summary(dtemp$age_anthro)
+# summary(dtemp$hhwealth)
+# kwong_res<- aim2_glm(dtemp, outcome="haz", exposure="pos", Ws = Wvars_anthro, forcedW=c("age_anthro", "hhwealth"), study=dtemp$study[1], sample=dtemp$sample[1], target=dtemp$target[1], family="gaussian")
+# 
+# 
+# 
+# 
+# res_haz_adj <- d %>% group_by(study, sample, target)  %>% filter(sample=="any sample type", target=="Any pathogen") %>% 
+#   do(aim2_glm(., Ws = Wvars_anthro, forcedW=c("age_anthro", "hhwealth"), outcome="haz", exposure="pos", study=.$study[1], sample=.$sample[1], target=.$target[1], family="gaussian", minN_thres = 5)) 
+# res_haz_adj$sparse <- ifelse(is.na(res_haz_adj$coef), "yes", "no")
+# res_haz_adj$coef[is.na(res_haz_adj$coef)] <- 0
+# res_haz_adj %>% filter(sample=="any sample type", target=="Any pathogen")
+# res_haz_adj  %>% filter(target=="Any pathogen") %>%
+#   group_by(Y, sample, target) %>% 
+#   filter(!is.na(se)) %>% mutate(N=n()) %>%
+#   filter(N>=4) %>% 
+#   do(try(pool.cont(.))) 
+# kwong_res
+
 #-----------------------------------
 # Unadjusted RR
 #-----------------------------------
-
-outcome="diar7d"
-exposure="pos"
-study="Holcomb 2021"
-sample="any sample type"
-target= "Any MST"
-family="binomial"
-forcedW=c("age", "hhwealth")
-Ws=Wvars
-
-
 
 
 fullres <- NULL
@@ -130,21 +156,33 @@ fullres_adj <- bind_rows(fullres_adj, res_underwt_adj)
 
 
 res_haz_adj <- d %>% group_by(study, sample, target) %>%
-  do(aim2_glm(., Ws = Wvars_anthro, forcedW=c("age", "hhwealth"), outcome="haz", exposure="pos", study=.$study[1], sample=.$sample[1], target=.$target[1], family="gaussian")) 
+  do(aim2_glm(., Ws = Wvars_anthro, forcedW=c("age_anthro", "hhwealth"), outcome="haz", exposure="pos", study=.$study[1], sample=.$sample[1], target=.$target[1], family="gaussian")) 
 res_haz_adj$sparse <- ifelse(is.na(res_haz_adj$coef), "yes", "no")
 res_haz_adj$coef[is.na(res_haz_adj$coef)] <- 0
-res_haz_adj
+res_haz_adj %>% filter(sample=="any sample type", target=="Any pathogen")
+res_haz_adj  %>% filter(target=="Any pathogen") %>%
+  group_by(Y, sample, target) %>% 
+  filter(!is.na(se)) %>% mutate(N=n()) %>%
+  filter(N>=4) %>% 
+  do(try(pool.cont(.))) 
+
+# res_haz_adj <- d %>% group_by(study, sample, target) %>%
+#   do(aim2_glm(., Ws = Wvars_anthro, forcedW=NULL, outcome="haz", exposure="pos", study=.$study[1], sample=.$sample[1], target=.$target[1], family="gaussian")) 
+# res_haz_adj$sparse <- ifelse(is.na(res_haz_adj$coef), "yes", "no")
+# res_haz_adj$coef[is.na(res_haz_adj$coef)] <- 0
+# res_haz_adj
+
 fullres_adj <- bind_rows(fullres_adj, res_haz_adj)
 
 res_waz_adj <- d %>% group_by(study, sample, target) %>%
-  do(aim2_glm(., Ws = Wvars_anthro, forcedW=c("age", "hhwealth"), outcome="waz", exposure="pos", study=.$study[1], sample=.$sample[1], target=.$target[1], family="gaussian")) 
+  do(aim2_glm(., Ws = Wvars_anthro, forcedW=c("age_anthro", "hhwealth"), outcome="waz", exposure="pos", study=.$study[1], sample=.$sample[1], target=.$target[1], family="gaussian")) 
 res_waz_adj$sparse <- ifelse(is.na(res_waz_adj$coef), "yes", "no")
 res_waz_adj$coef[is.na(res_waz_adj$coef)] <- 0
 res_waz_adj
 fullres_adj <- bind_rows(fullres_adj, res_waz_adj)
 
 res_whz_adj <- d %>% group_by(study, sample, target) %>%
-  do(aim2_glm(., Ws = Wvars_anthro, forcedW=c("age", "hhwealth"), outcome="whz", exposure="pos", study=.$study[1], sample=.$sample[1], target=.$target[1], family="gaussian")) 
+  do(aim2_glm(., Ws = Wvars_anthro, forcedW=c("age_anthro", "hhwealth"), outcome="whz", exposure="pos", study=.$study[1], sample=.$sample[1], target=.$target[1], family="gaussian")) 
 res_whz_adj$sparse <- ifelse(is.na(res_whz_adj$coef), "yes", "no")
 res_whz_adj$coef[is.na(res_whz_adj$coef)] <- 0
 res_whz_adj
@@ -171,7 +209,7 @@ fullres_adj <- bind_rows(fullres_adj, res_whz_adj)
 
 
 saveRDS(fullres, file=here("results/unadjusted_aim2_res.Rds"))
-saveRDS(fullres_adj, file=here("results/adjusted_aim2_res.Rds"))
+saveRDS(fullres_adj, file=here("results/adjusted_aim2_res2.Rds"))
 
 
 

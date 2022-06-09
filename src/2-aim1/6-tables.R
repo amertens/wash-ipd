@@ -245,14 +245,14 @@ df2 <- df %>%
   `Maternal\neducation`=momedu, 
   `Maternal\nage`=momage)
 
-tab2 <- table1(~. |study, format_number = TRUE, data=df)
+tab2 <- table1(~. |study, format_number = TRUE, data=df2)
 tab2 <- as.data.frame(read_html(tab2) %>% html_table(fill=TRUE))
 #Drop overall column
 tab2 <- tab2[,!grepl("Overall",colnames(tab2))]
 tab2 <- tab2[-c(1:8),]
 colnames(tab2) <- paste0(str_split(colnames(tab2),"\\.", simplify = T)[,1]," ", str_split(colnames(tab2),"\\.", simplify = T)[,2])
 colnames(tab2)[1] <- "."
-colnames(tab2)[8] <- "Capone 2022 in prep."      
+colnames(tab2 )[8] <- "Capone 2022 in prep."      
 
 #Prevalence and abundance of outcomes by sample sample
 df <- d %>% group_by(study, target, sample) %>% filter(!is.na(pos)) %>%
@@ -326,7 +326,7 @@ save(target_presence_P, target_presence_MST, tab1, tab2,
      animal_MST_tab, human_MST_tab,
      any_pathogens_tab2, any_virus_tab2, any_bacteria_tab2, any_helminth_tab2, any_protozoa_tab2,
      animal_MST_tab2, human_MST_tab2,
-     file=here("figures/all_tables.Rdata"))
+     file=here("figures/aim1_all_tables.Rdata"))
 
 
 

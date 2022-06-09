@@ -5,6 +5,11 @@ rm(list=ls())
 source(here::here("0-config.R"))
 
 wbb <- readRDS(paste0(dropboxDir,"Data/WBB_env_CH_data.rds"))
+summary(wbb$child_date_pathogen)
+summary(wbb$child_date_sth)
+wbb  %>% filter(!is.na(haz), study=="Kwong 2021", target=="Any pathogen", sample=="any sample type") %>% group_by(pos) %>% summarise(N=n(), mean(haz,na.rm=T))
+
+
 wbk <- readRDS(paste0(dropboxDir,"Data/WBK_env_CH_data.rds"))
 mapsan <- readRDS(paste0(dropboxDir,"Data/mapsan_env_CH_data.rds"))
 gv <- readRDS(paste0(dropboxDir,"Data/gv_env_CH_data.rds"))
@@ -104,13 +109,13 @@ table(d$study[!is.na(d$haz)], is.na(d$age_anthro[!is.na(d$haz)]))
 #-----------------------------------------------------------
 saveRDS(d, file=paste0(dropboxDir,"Data/merged_env_CH_data.rds"))
 
-table(is.na(d$child_date_pathogen), d$ch_pos_path_ecoli, d$study)
-
-
-d %>% group_by(study) %>%
-  summarize(N=n(), N_pos=sum(pos), N_diar=sum(!is.na(diar7d)), N_pos_diar=sum(diar7d==1, na.rm=T), N_haz=sum(!is.na(haz)), N_waz=sum(!is.na(waz)))
-
-tab <- d %>% group_by(study, sample, target) %>%
-  summarize(N=n(), N_pos=sum(pos), N_diar=sum(!is.na(diar7d)), N_pos_diar=sum(diar7d==1, na.rm=T), N_pos_env_diar=sum(pos==1 & diar7d==1, na.rm=T), N_haz=sum(!is.na(haz)))
-tab %>% filter(sample=="any sample type", target=="Any pathogen")
-tab %>% filter(sample=="any sample type", target=="Any MST")
+# table(is.na(d$child_date_pathogen), d$study)
+# 
+# 
+# d %>% group_by(study) %>%
+#   summarize(N=n(), N_pos=sum(pos), N_diar=sum(!is.na(diar7d)), N_pos_diar=sum(diar7d==1, na.rm=T), N_haz=sum(!is.na(haz)), N_waz=sum(!is.na(waz)))
+# 
+# tab <- d %>% group_by(study, sample, target) %>%
+#   summarize(N=n(), N_pos=sum(pos), N_diar=sum(!is.na(diar7d)), N_pos_diar=sum(diar7d==1, na.rm=T), N_pos_env_diar=sum(pos==1 & diar7d==1, na.rm=T), N_haz=sum(!is.na(haz)))
+# tab %>% filter(sample=="any sample type", target=="Any pathogen")
+# tab %>% filter(sample=="any sample type", target=="Any MST")

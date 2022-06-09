@@ -13,12 +13,15 @@ env <- read_dta(paste0(dropboxDir,"Data/WBK/wbk_STH_soil.dta"))
 enrol <- read.csv(paste0(dropboxDir,"Data/WBK/washb-kenya-enrol.csv"))
 
 head(env)
+#convert stata date
+#https://stackoverflow.com/questions/64266007/convert-dates-from-stata-data-to-r
+env$env_date <- as.Date(env$ms_el_up_date, origin = "1960-01-01")
 
 # labs <- makeVlist(env) %>% mutate(label=as.character(label)) %>% as.data.frame()
 # labs$label[labs$name=="a2_1 "]
 # write.csv(labs, paste0(dropboxDir,"Data/WBK/wbk_STH_soil_codebook.csv"))
 
-#mark any animcals
+#mark any animals
 colnames(env)
 table(env$cow)
 table(env$poultry)
@@ -34,14 +37,14 @@ table((env$animals))
 
 #Make positive and log_quant longform datasets
 #(Don't use viable because PCR can't detect the difference)
-pos <- env %>% subset(., select=c(hhid, block, soil_id,
+pos <- env %>% subset(., select=c(hhid, block, env_date, soil_id, 
                                    dummy_sth,
                                    dummy_ascaris,
                                    dummy_trichuris)) %>%
   gather(dummy_sth:dummy_trichuris, key = target, value = pos) %>%
   mutate(target=gsub("dummy_","", target))
 
-quant <- env %>% subset(., select=c(hhid, block, soil_id,
+quant <- env %>% subset(., select=c(hhid, block, env_date, soil_id,
                                     total_eggs,
                                     ascaris,
                                     trichuris)) %>%
@@ -55,7 +58,7 @@ table(quant$target)
 
 dim(pos)
 dim(quant)
-env2 <- full_join(pos, quant, by=c("hhid","block","soil_id","target"))
+env2 <- full_join(pos, quant, by=c("hhid","block","env_date","soil_id","target"))
 dim(env2)
 head(env2)
 
@@ -94,15 +97,16 @@ dim(env2)
 colnames(env2)
 colnames(enrol)
 enrol2 <- enrol %>% 
-  mutate(env_date=dmy(ms_el_up_date),
+  mutate(#env_date=dmy(ms_el_up_date),
          momedu=case_when(momedu==""~"Missing",
                           momedu=="Incomplete Primary"~"Incomplete Primary",
                           momedu=="Any Secondary (>5y)"~"Secondary",
                           momedu=="Primary (1-5y)"~"Primary",
                           )) %>%
-  subset(., select=c(hhid, env_date, momedu, momage, Ncomp, HHS)) %>%
+  subset(., select=c(hhid, #env_date, 
+                     momedu, momage, Ncomp, HHS)) %>%
   rename(hfiacat=HHS) %>%
-  filter(!is.na(env_date)) %>% 
+  #filter(!is.na(env_date)) %>% 
   distinct()
 
 dim(env2)

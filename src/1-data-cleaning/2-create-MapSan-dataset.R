@@ -15,7 +15,7 @@ table(env$hh)
 env <- env %>% rename(sampleid=ï..samp_id, clusterid=comp, env_date=samp_date) %>%
   mutate(hh=ifelse(is.na(hh),52,hh),
     hhid=clusterid*100+hh)
-
+summary(env$env_date)
 
 #Drop cultured and qPCR E.Coli
 env <- env %>% filter(target!="cEC" & target!="EC23S")
@@ -260,12 +260,14 @@ child <- child %>% rename(childid=ï..totchildID, clusterid=compID, hhid=totHHid)
 child <- child %>% mutate_all(~na_if(., 99999999))
 
 #Create child sample date
-child <- child %>% mutate(child_date= ymd(paste0(ch_surveydate_coarsed,"-15")))
+child <- child %>% mutate(child_date= ymd(paste0(ch_surveydate_coarsed,"-15")), child_date_pathogen=child_date)
+table(is.na(child$child_date_pathogen))
+child %>% select(diarrhea, child_date, ch_surveydate_coarsed, sampDate_coarsed)
 
 table(child$ch_careEDUorig)
 
 child <- child %>% select(childid, actualPhase, clusterid, hhid,
-                          child_date,
+                          child_date, child_date_pathogen,
                    studyArm_binary, #studyArm_ternary, 
                    age_months, #age_sampMonths,
                    carerEDU,

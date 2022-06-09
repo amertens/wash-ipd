@@ -102,7 +102,7 @@ base_plot <- function(mydf, legend_labels=sample_cats, drop_full_sparse=F, ylimi
   # Y_breaks2=c("1/4", "1/2","1", "2", "4", "8")
   
   ggplot(data = mydf, (aes(x=study, y=coef, group=Vlevel, color=Vlevel, shape=Vlevel))) + 
-  geom_point(size=3, position = position_dodge(0.5)) +
+  geom_point(size=2, position = position_dodge(0.5)) +
     geom_errorbar(aes(ymin=ci.lb, ymax=ci.ub), position = position_dodge(0.5),
                   width = 0.3, size = 1) +
     #Mark significant interactions

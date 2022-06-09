@@ -2,15 +2,17 @@
 rm(list=ls())
 source(here::here("0-config.R"))
 unadj_RR <- readRDS(here("results/unadjusted_aim2_res.Rds"))
-adj_RR <- readRDS(here("results/adjusted_aim2_res.Rds"))
+adj_RR <- readRDS(here("results/adjusted_aim2_res2.Rds"))
 unadj_emm <- readRDS(here("results/unadjusted_aim2_emm.Rds"))
 adj_emm <- readRDS(here("results/adjusted_aim2_emm.Rds"))
 adj_emm_PD <- readRDS(here("results/adjusted_aim2_emm_PD.Rds"))
 
+adj_RR_old <- readRDS("C:/Users/andre/Downloads/adjusted_aim2_res.Rds")
 
 
 unadj_RR <- clean_res(unadj_RR) #%>% distinct()
 adj_RR <- clean_res(adj_RR) #%>% distinct()
+adj_RR_old <- clean_res(adj_RR_old) #%>% distinct()
 #adj_emm <- clean_res(adj_emm) #%>% distinct()
 adj_emm <- clean_res_subgroup(adj_emm) #%>% distinct()
 adj_emm_PD <- clean_res_subgroup(adj_emm_PD) #%>% distinct()
@@ -18,8 +20,10 @@ head(unadj_RR)
 table(unadj_RR$sample_cat)
 
 
-df <- adj_RR %>% filter(target=="Any STH", Y=="haz")
-df
+adj_RR_old %>% filter(sample=="any sample type", target=="Any pathogen", Y=="haz")
+adj_RR %>% filter(sample=="any sample type", target=="Any pathogen", Y=="haz")
+
+
 
 binary_Y =c("diar7d","stunt","wast","underwt")
 cont_Y =c("haz","waz","whz")
@@ -38,6 +42,7 @@ res_RR_adj <- adj_RR %>% filter(Y%in%binary_Y, sample_cat!="Sparse data") %>%
   filter(N>=4) %>% 
   do(poolRR(.)) 
 
+
 res_cont_unadj <- unadj_RR %>% filter(Y%in%cont_Y, sample_cat!="Sparse data") %>%
   group_by(Y, sample, target) %>% 
   filter(!is.na(se)) %>% mutate(N=n()) %>%
@@ -50,6 +55,14 @@ res_cont_adj <- adj_RR %>% filter(Y%in%cont_Y, sample_cat!="Sparse data") %>%
   filter(!is.na(se)) %>% mutate(N=n()) %>%
   filter(N>=4) %>% 
   do(try(pool.cont(.))) 
+res_cont_adj %>% filter(target=="Any pathogen")
+
+res_cont_adj_old <- adj_RR_old %>% filter(Y%in%cont_Y, sample_cat!="Sparse data") %>%
+  group_by(Y, sample, target) %>% 
+  filter(!is.na(se)) %>% mutate(N=n()) %>%
+  filter(N>=4) %>% 
+  do(try(pool.cont(.))) 
+res_cont_adj_old
 
 res_emm_bin_adj <- adj_emm %>% filter(Y%in%binary_Y, sample_cat!="Sparse data") %>%
   group_by(Y, sample, target, V, Vlevel) %>% 

@@ -255,6 +255,7 @@ heatmap_plot2 <- function(d, colours, textcol= "grey20"){
 
 
 
+bias_tab <- readxl::read_excel(here("manuscripts/WASH_IPD_bias_assessment.xlsx"), sheet = "aim2")
 
 
 
@@ -305,6 +306,15 @@ odisha_res <- readRDS(file=paste0(here(),"/results/odisha_merge_Ns.rds"))
 merge_Ns <- bind_rows(
   gv_res, mapsan_res, wbb_res, wbk_res, odisha_res
 )
+
+
+FitFlextableToPage_landscape <- function(ft, pgwidth = 10){
+
+  ft_out <- ft %>% autofit()
+
+  ft_out <- width(ft_out, width = dim(ft_out)$widths*pgwidth /(flextable_dim(ft_out)$widths))
+  return(ft_out)
+}
 
 
 
@@ -601,3 +611,40 @@ HAZ: Height-for-age Z-score; WAZ: Weight-for-age Z-score; WHZ: Weight-for-height
 
 
 
+
+
+
+## Table S1. Risk of bias based on modified Newcastle-Ottawa scale
+Stars are given for low risk of bias in each category, up to a total of nine stars. Scoring details are in the footnotes.
+
+```{r, echo=F, warning=F, message=F,  results = 'asis'}
+# autofit(flextable(target_presence_long_P))
+# 
+bias_tab_char <- bias_tab
+bias_tab <- flextable(bias_tab)
+bias_tab <- compose(bias_tab, part = "body", i = 1, j = 2, value = as_paragraph(as.character(bias_tab_char[1,2]), as_sup("a")))
+bias_tab <- compose(bias_tab, part = "body", i = 1, j = 3, value = as_paragraph(as.character(bias_tab_char[1,3]), as_sup("b")))
+bias_tab <- compose(bias_tab, part = "body", i = 1, j = 4, value = as_paragraph(as.character(bias_tab_char[1,4]), as_sup("c")))
+bias_tab <- compose(bias_tab, part = "body", i = 1, j = 5, value = as_paragraph(as.character(bias_tab_char[1,5]), as_sup("d")))
+bias_tab <- compose(bias_tab, part = "body", i = 1, j = 6, value = as_paragraph(as.character(bias_tab_char[1,6]), as_sup("e")))
+bias_tab <- compose(bias_tab, part = "body", i = 1, j = 7, value = as_paragraph(as.character(bias_tab_char[1,7]), as_sup("f")))
+bias_tab <- compose(bias_tab, part = "body", i = 1, j = 8, value = as_paragraph(as.character(bias_tab_char[1,8]), as_sup("g")))
+
+FitFlextableToPage_landscape(bias_tab, pgwidth=10)
+
+```
+
+
+^a^ RCTs receive 1 star, unless evidence of selection bias (e.g. randomisation procedures not followed). Meaningful differences between groups at baseline in RCTs receive 0 stars. Rates of declining to participate >10% receive 0 stars. Non- or quasi-randomised studies receive 0 stars. 
+
+^b^ If intervention recipient was not blinded to intervention status, 0 stars. 
+ 
+^c^ <10% receives 1 star, greater than or equal to 10% receives 0 stars.
+ 
+^d^ Interventions delivered at the household/individual level receive 1 star. Interventions delivered at the community level that missed a substantial, i.e. greater than or equal to 10%,  proportion of the target population receive 0 stars, including when there is insufficient information to verify whether this is the case. Interventions with substantial risk of contamination (control households receiving intervention) receive 0 stars.
+ 
+^e^ Parent / person recall (=0 stars). Fieldworker assessed (=1 star). Physician/microbiologically assessed (=2 stars)
+ 
+^f^ If outcome measurement staff were not blinded to intervention status, 0 stars.
+ 
+^g^ Scoring is based on losing stars (max. 2). Individual RCTs with baseline balance on covariates are unlikely to require adjustment (=2 stars). Cluster-RCTs and non-randomised trials may require adjustment for clustering (-1 star if not done). RCTs or cRCTs may require adjustment for covariates, with justification (-1 star if not done). Non-randomised studies require adjustment for covariates (-1 star if not done), but also adequate justification for covariate selection (-1 star if not included), and there can be too few or too many covariates.

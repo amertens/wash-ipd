@@ -3,6 +3,11 @@ rm(list=ls())
 source(here::here("0-config.R"))
 
 adj_RR <- readRDS(file=here("results/pathogen_specific_aim2_res.Rds")) 
+
+adj_RR_old <- readRDS(file="C:/Users/andre/Downloads/pathogen_specific_aim2_res.Rds") 
+
+
+
 adj_RR$N_W <- str_count(adj_RR$W,",") + 1
 adj_RR$N_W[adj_RR$W=="unadjusted"] <- 0
 
@@ -16,6 +21,9 @@ unique(adj_RR$Y)
 adj_RR <- adj_RR %>% filter(!(study=="Kwong 2021" & (Y=="ch_pos_ascaris" | Y=="ch_pos_trichuris")))
 
 adj_RR <- adj_RR %>% filter(sample!="any sample type")
+
+#drop sparse
+adj_RR <- adj_RR %>% filter(n>10) %>% filter(minN>=5 | study=="Capone 2022 in prep")
 
 
 #---------------------------------------------------------------
@@ -35,6 +43,10 @@ adj_RR <- adj_RR %>% mutate(
 )
 
 sample_cats = levels(adj_RR$sample_cat)[levels(adj_RR$sample_cat)!="Any sample"]
+
+adj_RR <- adj_RR %>% droplevels()
+unique(adj_RR$target_f)
+adj_RR <- adj_RR %>% mutate(target_f=factor(target_f, levels=c("Ascaris","Trichuris","Giardia","C. difficile","Pathogenic\nE. coli","Shigella")))
 
 
 #---------------------------------------------------------------
