@@ -138,12 +138,20 @@ soil_dates <- read_dta("C:/Users/andre/Downloads/WASHB-soil-sth-raw.dta") %>%
   select(UniqueID, env_date)
 summary(soil_dates$env_date)
 
-soil_dates <- soil_dates %>% filter(UniqueID %in% soilSTH$UniqueID) %>% distinct()
+#soil_dates <- soil_dates %>% filter(UniqueID %in% soilSTH$UniqueID) %>% arrange(env_date) %>% group_by(UniqueID) %>% slice(1)
+soil_dates <- soil_dates %>% filter(UniqueID %in% soilSTH$UniqueID) %>% distinct() 
 
+summary(soil_dates$env_date)
+
+summary(soil_dates$la)
+summary(soilSTH$lal)
 
 dim(soilSTH)
 soilSTH <- left_join(soilSTH, soil_dates, by="UniqueID")
 dim(soilSTH)
+
+summary(soilSTH$env_date)
+table(is.na(soilSTH$env_date))
 
 table(soilSTH$labmonth)
 soilSTH <- soilSTH %>% 

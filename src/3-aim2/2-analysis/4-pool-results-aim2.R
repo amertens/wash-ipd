@@ -8,13 +8,23 @@ adj_emm <- readRDS(here("results/adjusted_aim2_emm.Rds"))
 adj_emm_PD <- readRDS(here("results/adjusted_aim2_emm_PD.Rds"))
 
 adj_RR_old <- readRDS("C:/Users/andre/Downloads/adjusted_aim2_res.Rds")
+adj_RR_old  %>%  filter(study=="Holcomb 2020", sample=="SW", target=="Any MST")
+adj_RR_old  %>% filter(study=="Boehm 2016", sample=="W", target=="Any pathogen", Y=="haz")
+adj_RR  %>% filter(study=="Boehm 2016", sample=="W", target=="Any pathogen", Y=="haz")
 
+
+adj_emm_old <- readRDS("C:/Users/andre/Downloads/adjusted_aim2_emm.Rds")
+adj_emm_old %>% filter(sample=="any sample type", target=="Any pathogen",  V=="animals", Y=="haz")
+
+temp <- adj_RR %>% filter(minN<10, !is.na(coef))
+temp2 <- temp %>% filter(pval < 0.05)
 
 unadj_RR <- clean_res(unadj_RR) #%>% distinct()
 adj_RR <- clean_res(adj_RR) #%>% distinct()
 adj_RR_old <- clean_res(adj_RR_old) #%>% distinct()
 #adj_emm <- clean_res(adj_emm) #%>% distinct()
 adj_emm <- clean_res_subgroup(adj_emm) #%>% distinct()
+adj_emm_old <- clean_res_subgroup(adj_emm_old) #%>% distinct()
 adj_emm_PD <- clean_res_subgroup(adj_emm_PD) #%>% distinct()
 head(unadj_RR)
 table(unadj_RR$sample_cat)
@@ -23,6 +33,41 @@ table(unadj_RR$sample_cat)
 adj_RR_old %>% filter(sample=="any sample type", target=="Any pathogen", Y=="haz")
 adj_RR %>% filter(sample=="any sample type", target=="Any pathogen", Y=="haz")
 
+adj_RR %>% filter(sample=="any sample type", target=="Any pathogen", Y=="diar7d")
+adj_RR_old %>% filter(sample=="any sample type", target=="Any pathogen", Y=="diar7d")
+
+
+
+temp <- adj_emm %>% filter(Y%in%"haz", sample_cat!="Sparse data", sample=="any sample type", target=="Any pathogen", V=="sex")# %>% filter(Vlevel==1)
+temp_old <- adj_emm_old %>% filter(Y%in%"haz", sample_cat!="Sparse data", sample=="any sample type", target=="Any pathogen", V=="sex") #%>% filter(Vlevel==1)
+temp  %>% filter(Vlevel==1)
+temp_old  %>% filter(Vlevel==1)
+
+comp.temp <- left_join(temp %>% select(Y,V,Vlevel,sample,target,  coef, se), 
+                       temp_old %>% select(Y,V,Vlevel,sample,target,  coef, se), 
+                       by=c("study","Y","V","Vlevel","sample","target")) %>% mutate(diff=coef.x-coef.y)
+
+temp2 <- temp
+temp2$coef[3] <- temp_old$coef[3]
+temp2$se[3] <- temp_old$se[3]
+
+temp%>%
+  group_by(Y, sample, target, V, Vlevel) %>%  
+  filter(!is.na(se)) %>% mutate(N=n()) %>%
+  filter(N>=4)%>% group_by(Y, sample, target, V, Vlevel) %>%
+  do(try(pool.cont(.))) 
+
+temp_old%>%
+  group_by(Y, sample, target, V, Vlevel) %>%
+  filter(!is.na(se)) %>% mutate(N=n()) %>%
+  filter(N>=4)%>% group_by(Y, sample, target, V, Vlevel) %>%
+  do(try(pool.cont(.))) 
+
+temp2 %>%
+  group_by(Y, sample, target, V, Vlevel) %>% 
+  filter(!is.na(se)) %>% mutate(N=n()) %>%
+  filter(N>=4)%>% group_by(Y, sample, target, V, Vlevel) %>%
+  do(try(pool.cont(.))) 
 
 
 binary_Y =c("diar7d","stunt","wast","underwt")
@@ -56,6 +101,14 @@ res_cont_adj <- adj_RR %>% filter(Y%in%cont_Y, sample_cat!="Sparse data") %>%
   filter(N>=4) %>% 
   do(try(pool.cont(.))) 
 res_cont_adj %>% filter(target=="Any pathogen")
+
+# #Get res_RR_adj MST for the abstract
+# res_adj_MST <- adj_RR %>% filter(sample_cat!="Sparse data", sample=="any sample type", target=="Any MST", Y=="diar7d") %>%
+#   group_by(Y, sample, target) %>% 
+#   filter(!is.na(se)) %>% mutate(N=n()) %>%
+#   filter(N>=3) %>% 
+#   do(try(poolRR(.))) 
+# res_adj_MST
 
 res_cont_adj_old <- adj_RR_old %>% filter(Y%in%cont_Y, sample_cat!="Sparse data") %>%
   group_by(Y, sample, target) %>% 

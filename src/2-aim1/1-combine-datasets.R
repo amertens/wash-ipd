@@ -310,31 +310,7 @@ agg_function <- function(targets, name){
     filter(target %in% !!(targets)) %>%
     select(pos, target) %>%
     group_by(study,  dataid, tr, clusterid, sample, round, sampleid,  target)# %>%
-    # mutate(perc_pos = mean(pos, na.rm=T), N_neg=sum(pos==0,na.rm=T)) %>%
-    # ungroup()
-  
-  # #Drop too-positive strata
-  # df <- df %>% filter(!(study=="Odagiri 2016" & sample=="W" & target=="Animal (BacCow)"), 
-  #                     # !(study=="Boehm 2016" & sample=="CH" & target=="General (GenBac3)"),
-  #                     # !(study=="Boehm 2016" & sample=="S" & target=="General (GenBac3)"),
-  #                     !(study=="Fuhrmeister 2020" & sample=="CH" & target=="Animal (BacCow)"),
-  #                     !(study=="Capone 2022 in prep" & sample=="Fly" & target=="Human (BacHum)"))
 
-  
-  
-  # if(any(df$perc_pos>0.85)){
-  #   cat("Dropping too positive:\n")
-  #   df_dropped <- df %>% filter(perc_pos>0.9 | N_neg<10)
-  #   print(df_dropped %>% distinct(study, sample, target, perc_pos,N_neg))
-  #   df <- df %>% filter(perc_pos<=0.9 & N_neg>=10)
-  # }
-    
-  # summary(df$perc_pos)
-  # table(df$target, df$perc_pos)
-  # table(df$study, df$target, df$pos)
-  # 
-  # df %>% distinct(study,  target, perc_pos) %>% arrange(-perc_pos)
-  # 
   d_agg <- df %>% group_by(study,  dataid, tr, clusterid, sample, round, sampleid) %>%
     summarise(
       any_pos = 1*(sum(pos==1)>0), N=n()) %>% 
@@ -409,19 +385,29 @@ save(d_any_pathogen, d_any_virus, d_any_protozoa, d_any_bacteria,
 
 #covariates
 dim(d)
+
+table(d$study, d$round)
+table(is.na(d$round))
 #compound covariates
-cov <- d %>% group_by(study, tr,  dataid, clusterid, sample) %>%
+cov <- d %>% 
+  #group_by(study, tr,  dataid, clusterid, sample) %>%
+  group_by(study, tr,  dataid, clusterid, sample, round) %>% #XXXXXXX
   #arrange(Nhh, floor, hhwealth) %>% fill(Nhh, floor, hhwealth) %>%
   slice(1) %>% ungroup() %>%
-  subset(., select = -c(round, tr, sampleid, target, pos, abund)) %>% 
+  #subset(., select = -c(round, tr, sampleid, target, pos, abund)) %>% 
+  subset(., select = -c(tr, sampleid, target, pos, abund)) %>% 
   distinct(.)
 head(cov)
 
 dim(d)
 dim(d_agg)
 dim(cov)
-d_agg_cov <- left_join(d_agg, cov, by=c("study","dataid","clusterid","sample"))
+#d_agg_cov <- left_join(d_agg, cov, by=c("study","dataid","clusterid","sample"))
+d_agg_cov <- left_join(d_agg, cov, by=c("study","dataid","clusterid","sample","round"))
 dim(d_agg_cov)
+table(d_agg_cov$study)
+table(d_agg_cov$round)
+
 d <- bind_rows(d, d_agg_cov)
 dim(d)
 
@@ -520,5 +506,6 @@ table(d$target, d$animals)
 saveRDS(d, file=paste0(dropboxDir,"Data/cleaned_ipd_env_data.rds"))
 
 
-
+temp <- d %>% filter(sampleid=="2086_ml")
+head(temp)
 

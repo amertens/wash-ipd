@@ -321,7 +321,7 @@ cl   <- function(df,fm, cluster){
 
 #Need to add forcedW funciton, look at washbgam for code
 
-aim2_glm <- function(d, Ws=NULL, forcedW=NULL, outcome="pos", exposure, study="mapsan", sample="ds", target="Mnif", family="binomial", minN_thres = 5){
+aim2_glm <- function(d, Ws=NULL, forcedW=NULL, outcome="pos", exposure, study="mapsan", sample="ds", target="Mnif", family="binomial", minN_thres = 6){
 
   df <- d %>% filter(study=={{study}}, sample=={{sample}}, target=={{target}}) %>% droplevels(.)
   
@@ -358,7 +358,9 @@ aim2_glm <- function(d, Ws=NULL, forcedW=NULL, outcome="pos", exposure, study="m
   }
   
   if(length(unique(df$Y))>2){
-    minN <- length(unique(df$Y))
+    #minN <- length(unique(df$Y))
+    minN <- min(table(df$X))
+    
     #Get cell counts
     a <- mean(df$Y[df$X==0], na.rm=T)
     b <- mean(df$Y[df$X==1], na.rm=T)

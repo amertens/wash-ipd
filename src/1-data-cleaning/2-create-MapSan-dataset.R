@@ -170,6 +170,8 @@ dim(flypos)
 flypos <- left_join(flypos,fly_dates, by=c("compound", "round", "compound_phase"))
 dim(flypos)
 
+# temp <- flypos %>% filter(sampleid=="2086_ml")
+# head(temp)
 
 #Abundance
 head(flyabund)
@@ -219,6 +221,9 @@ table(fly$target, fly$pos)
 fly <- fly %>% filter(target!="human_mtDNA") %>%
   mutate(study="Capone 2022 in prep")
 
+
+
+
 #bind into main data
 env <- bind_rows(env, fly)
 
@@ -252,6 +257,7 @@ table(is.na(env$pos))
 child <- read.csv(paste0(dropboxDir,"Data/MapSan/triPhase_database_20200824 1412_IPD.csv"))
 colnames(child)
 head(child)
+child$ch_surveydate_coarsed
 
 #rename variables
 child <- child %>% rename(childid=ï..totchildID, clusterid=compID, hhid=totHHid)
@@ -263,6 +269,10 @@ child <- child %>% mutate_all(~na_if(., 99999999))
 child <- child %>% mutate(child_date= ymd(paste0(ch_surveydate_coarsed,"-15")), child_date_pathogen=child_date)
 table(is.na(child$child_date_pathogen))
 child %>% select(diarrhea, child_date, ch_surveydate_coarsed, sampDate_coarsed)
+
+child$child_date[child$actualPhase==0]
+child$child_date[child$actualPhase==1]
+child$child_date[child$actualPhase==2]
 
 table(child$ch_careEDUorig)
 
@@ -357,7 +367,7 @@ table(soil$trial_arm)
 table(child$clusterid, child$studyArm_binary)
 
 saveRDS(child, file=paste0(dropboxDir,"Data/MapSan/mapsan_child_cleaned.rds"))
-
+child[child$childid=="20950201",]
 
 #merge datasets
 dim(child)
@@ -571,4 +581,6 @@ env_clean %>% distinct(study, target) %>% group_by(study) %>%
   summarize(n())
 
 
-  
+
+temp <- env_clean %>% filter(sampleid=="2086_ml")
+head(temp)

@@ -16,6 +16,8 @@ unadj_RR$N_W <- ""
 adj_RR$N_W <- str_count(adj_RR$W,",") + 1
 adj_RR$N_W[adj_RR$W=="unadjusted"] <- 0
 
+temp <- adj_RR %>% filter(study=="Holcomb 2021", target=="Any MST", !is.na(coef), Y %in% c("diar7d","haz"))
+
 
 table(adj_RR$minN)
 table(adj_RR$a)

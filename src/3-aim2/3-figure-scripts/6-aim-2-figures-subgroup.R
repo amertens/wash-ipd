@@ -37,7 +37,6 @@ adj_PD <- clean_res_subgroup(adj_PD)
 
 adj_RR <- adj_RR %>% mutate(
   int.p =case_when(
-    Vlevel==0 ~ NA_character_,
     int.p<0.001~"***",
     int.p<0.01~"**",
     int.p<0.05~"*",
@@ -69,7 +68,6 @@ sample_cats = levels(adj_RR$sample_cat)[levels(adj_RR$sample_cat)!="Any sample"]
 
 adj_PD <- adj_PD %>% mutate(
   int.p =case_when(
-    Vlevel==0 ~ NA_character_,
     int.p<0.001~"***",
     int.p<0.01~"**",
     int.p<0.05~"*",
@@ -88,6 +86,9 @@ adj_PD <- adj_PD %>% mutate(
   ), levels = c("Male","Female","Dry season", "Wet season","No animals", "Animals in\ncompound","Sparse data"))
 )
 
+
+adj_RR <- adj_RR %>% group_by(study, target, sample, Y, V) %>% arrange(Vlevel) %>% mutate(int.p=ifelse(Vlevel==last(Vlevel),int.p,NA))
+adj_PD <- adj_PD %>% group_by(study, target, sample, Y, V) %>% arrange(Vlevel) %>% mutate(int.p=ifelse(Vlevel==last(Vlevel),int.p,NA))
 
 #---------------------------------------------------------------
 #plot function

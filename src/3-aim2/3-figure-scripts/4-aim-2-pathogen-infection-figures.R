@@ -84,15 +84,15 @@ pathogen_plot <- function(mydf, legend_labels=sample_cats, drop_full_sparse=F){
                   width = 0.3, size = 1) +
     scale_color_manual(breaks = legend_labels,
       values = colours, drop = FALSE) +
-    geom_text(aes(y=ci.ub, label=sig_cat), color="black", position = position_dodge(0.5), hjust = -0.5, size=4) +
+    geom_text(aes(y=RR, label=sig_cat), color="black", position = position_dodge(0.5), hjust = -0.5, vjust=-0.05, size=4) +
     scale_shape_manual(values=c(16, 13,18), guide="none") + 
     geom_hline(yintercept = 1, linetype="dashed") +
     facet_wrap(~target_f,  nrow=2) +
     scale_y_continuous(
-      breaks=c(.5,1, 2, 4, 8), 
+      breaks=c(.5,1, 2, 4, 8, 16), 
       trans='log10', 
-      labels = c( "1/2","1", "2", "4", "8")
-    ) + coord_flip(ylim=c(0.74,15)) +
+      labels = c( "1/2","1", "2", "4", "8","16")
+    ) + coord_flip(ylim=c(0.5,15)) +
     labs(color="Sample type") + xlab("") + ylab("Prevalence ratio") + 
     theme_ki() + 
     theme(axis.ticks.x=element_blank(),

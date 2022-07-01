@@ -65,6 +65,8 @@ mapsan <- mapsan %>% rename(
   subset(., select = -c(KKhkw, gpp_o157, gpp_etec, gpp_stec))
 wbk <- zap_labels(wbk)
 
+wbb <- wbb %>% subset(., select=-c(date_diff))
+
 
 #d <- bind_rows(wbb, wbk, mapsan, gv, odisha)
 d <- data.table::rbindlist(list( wbb, wbk, mapsan, gv, odisha), fill=T)

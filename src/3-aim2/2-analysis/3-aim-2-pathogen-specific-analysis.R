@@ -36,9 +36,14 @@ ch_pathogens <- c(
 
 d <- readRDS(paste0(dropboxDir,"Data/merged_env_CH_data_clean.rds"))
 
+# table(d$study, d$ch_pos_cdiff, is.na(d$target))
+# df <- d %>% filter(study=="Capone 2021", ch_pos_cdiff==1)
+# head(df)
+
 # #drop aggregate values:
 d <- d %>% filter(!(grepl("Any ",target) & target != "Any STH"), sample!="any sample type",
                   !(target %in% c("Zoonotic E. coli","Non-zoonotic E. coli")))
+table(d$study, d$ch_pos_cdiff)
 
 dim(d)
 d <- d %>% filter(!is.na(ch_pos_giardia)|  
@@ -64,6 +69,8 @@ d <- d %>% filter(!is.na(ch_pos_giardia)|
                   !is.na(ch_pos_yersinia)|     
                   !is.na(ch_pos_path_ecoli)) %>% droplevels()
 dim(d)
+
+table(d$study)
 
 #use sth date for Kwong
 d$child_date_pathogen[d$study=="Kwong 2021"] <- d$child_date_sth[d$study=="Kwong 2021"]
@@ -141,6 +148,9 @@ d$ch_qpcr_pos_trichuris[d$study=="Kwong 2021" & d$date_diff > 124 | d$study=="Kw
 d$ch_pos_ascaris[d$study=="Steinbaum 2019" & d$date_diff > 124 | d$study=="Steinbaum 2019" &  d$date_diff < 0] <- NA
 d$ch_pos_trichuris[d$study=="Steinbaum 2019" & d$date_diff > 124 | d$study=="Steinbaum 2019" &  d$date_diff < 0] <- NA
 
+#Save data for table 1
+saveRDS(d, file=paste0(dropboxDir,"Data/pathogen_analysis_data.rds"))
+
 
 
 
@@ -193,6 +203,9 @@ colnames(paired_pathogens_cont) <- c("outcome","exposure")
 
 #NOTE: Need to get right covariates including age... make age pathogens above
 
+d$age[!is.na(d$aged_pathogen)] <- d$aged_pathogen[!is.na(d$aged_pathogen)]
+
+
 #Covariate list
 Wvars = c("sex","age","hfiacat","momage","hhwealth", "Nhh","nrooms","walls", "roof", "floor","elec","dadagri","landacre","landown", "momedu", "tr")         
 
@@ -238,7 +251,8 @@ table(d$child_date_pathogen - d$env_date)
 # df <- d %>% filter(study=="Capone 2021" ,  sample=="LS" ,  target=="Trichuris")
 # Ws = Wvars, forcedW=NULL, outcome=paired_pathogens$outcome[7], exposure="pos", study=.$study[1], sample=.$sample[1], target=paired_pathogens$exposure[7], family="binomial"
 
-minN=3
+minN=5
+#minN=10
 
 res_full <- NULL
 #Don't forc W for Giardia because of convergence errors
@@ -246,16 +260,17 @@ res_full <- NULL
 #   do(aim2_glm(., Ws = Wvars, forcedW=NULL, outcome=paired_pathogens$outcome[1], exposure="pos", study=.$study[1], sample=.$sample[1], target=paired_pathogens$exposure[1], family="binomial", minN_thres=minN))
 # res_full <- bind_rows(res_full, res_adj1)
 for(i in 1:nrow(paired_pathogens)){
-  res_adj <- d %>% group_by(study, sample) %>%
-    do(aim2_glm(., Ws = Wvars, forcedW=c("age", "hhwealth"), outcome=paired_pathogens$outcome[i], exposure="pos", study=.$study[1], sample=.$sample[1], target=paired_pathogens$exposure[i], family="binomial", minN_thres=minN)) 
-    #do(aim2_glm(., Ws = Wvars, forcedW=NULL, outcome=paired_pathogens$outcome[i], exposure="pos", study=.$study[1], sample=.$sample[1], target=paired_pathogens$exposure[i], family="binomial", minN_thres=minN)) 
+  res_adj=NULL
+  try(res_adj <- d %>% group_by(study, sample) %>% do(aim2_glm(., Ws = Wvars, forcedW=c("age", "hhwealth"), outcome=paired_pathogens$outcome[i], exposure="pos", study=.$study[1], sample=.$sample[1], target=paired_pathogens$exposure[i], family="binomial", minN_thres=minN))) 
   res_full <- bind_rows(res_full, res_adj)
 }
 res_full <- res_full %>% filter(!is.na(RR))
 
+#
+
 #LS pathogenic E-coli failed to converge. Rerun here
 res_adj2 <- d %>% group_by(study, sample) %>%
-  do(aim2_glm(., Ws = Wvars[Wvars!="sex"], forcedW=NULL, outcome="ch_pos_path_ecoli", exposure="pos", study="Capone 2021", sample=.$sample[1], target="Pathogenic E. coli", family="binomial", minN_thres=minN))
+  do(aim2_glm(., Ws = Wvars[Wvars!="nrooms"], forcedW=NULL, outcome="ch_pos_path_ecoli", exposure="pos", study="Capone 2021", sample=.$sample[1], target="Pathogenic E. coli", family="binomial", minN_thres=minN))
 res_adj2 <- res_adj2 %>% filter(!is.na(RR),sample=="LS")
 
 #LS Trichuris failed to converge. Rerun here

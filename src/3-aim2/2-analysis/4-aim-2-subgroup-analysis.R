@@ -80,30 +80,67 @@ Wvars_anthro = c("sex","age_anthro","hfiacat","momage","hhwealth", "Nhh","nrooms
 
 
 
-# outcome="diar7d"
-# study="Fuhrmeister 2020"
-# exposure="pos"
-# sample="any sample type"
-# target="Any pathogen"
-# Ws=Wvars
-# forcedW=c("age", "hhwealth")
-# # forcedW=NULL
-# #Ws=NULL
-# Vvar="wet"
-# family="gaussian"
-# dtemp=d_wet %>% filter(study=="Fuhrmeister 2020", sample=="any sample type",target== "Any pathogen", !is.na(pos), !is.na(diar7d))
-# minN_thres = 5
-# d=dtemp
-# 
-# table(dtemp$diar7d, dtemp$pos, dtemp$sex)
-# res <- aim2_subgroup(d=dtemp , Ws = Wvars, Vvar=Vvar, outcome="diar7d", exposure="pos", study=study, sample=sample, target=target, family="binomial")
-# res
-# res2 <- aim2_subgroup(d=dtemp , Ws = Wvars, Vvar=Vvar, outcome="diar7d", exposure="pos", study=study, sample=sample, target=target, family="gaussian")
-# res2
+# res_haz_sex_adj <- d_sex %>% group_by(study, sample, target) %>% filter(sample=="any sample type", target=="Any pathogen") %>%
+#   do(aim2_subgroup(., Ws = Wvars_anthro[Wvars_anthro!="sex"], Vvar="sex", forcedW=c("age_anthro", "hhwealth"), outcome="haz", exposure="pos", study=.$study[1], sample=.$sample[1], target=.$target[1], family="gaussian")) 
 
- #Error in eval(predvars, data, env) : object 'Vclusterid' not found 
-#Why is N so large/
-  
+
+Wvars_anthro_sex = c("age_anthro","hfiacat","momage","hhwealth", "tr","Nhh","nrooms","walls","roof", "floor","elec","dadagri","landown","momedu")         
+
+res_haz_sex_adj <- d_sex %>% group_by(study, sample, target) %>% filter(sample=="any sample type", target=="Any pathogen",!is.na(haz)) %>%
+  do(aim2_subgroup(., Ws = Wvars_anthro_sex, Vvar="sex", forcedW=c("age_anthro", "hhwealth"), outcome="haz", exposure="pos", study=.$study[1], sample=.$sample[1], target=.$target[1], family="gaussian")) 
+
+# [1] "sex"        "age_anthro" "hfiacat"    "momage"     "hhwealth"   "Nhh"        "nrooms"     "walls"      "roof"       "floor"      "elec"      
+# [12] "dadagri"    "landacre"   "landown"    "momedu"     "tr" 
+# res_haz_sex_adj %>% filter(Vlevel==0)
+ res_haz_sex_adj %>% filter(Vlevel==1) 
+
+res_haz_sex_adj%>%
+  group_by(Y, sample, target, V, Vlevel) %>%
+  filter(!is.na(se)) %>% mutate(N=n()) %>%
+  filter(N>=4)%>% group_by(Y, sample, target, V, Vlevel) %>%
+  do(try(pool.cont(.))) 
+
+# res_haz_sex_adj <- NULL
+# res_haz_sex_adj <- d_sex %>% group_by(study, sample, target) %>% filter(sample=="any sample type", target=="Any pathogen",!is.na(haz)) %>% droplevels() %>%
+#   do(aim2_subgroup(., Ws = Wvars_anthro[Wvars_anthro!="sex" & Wvars_anthro!="hhwealth"& Wvars_anthro!="age_anthro"& Wvars_anthro!="Nhh"], Vvar="sex", forcedW=NULL, outcome="haz", exposure="pos", study=.$study[1], sample=.$sample[1], target=.$target[1], family="gaussian"))
+# res_haz_sex_adj %>% filter(Vlevel==1)
+# 
+# res_haz_sex_adj <- d_sex %>% group_by(study, sample, target) %>% filter(sample=="any sample type", target=="Any pathogen",!is.na(haz)) %>% droplevels() %>%
+#   do(aim2_subgroup(., Ws =c("age_anthro", "hhwealth"), Vvar="sex", forcedW=c("age_anthro", "hhwealth"), outcome="haz", exposure="pos", study=.$study[1], sample=.$sample[1], target=.$target[1], family="gaussian", minN_thres=10))
+# res_haz_sex_adj %>% filter(Vlevel==1)
+
+
+
+
+
+
+
+temp<-d_sex %>%  filter(sex==1,sample=="any sample type", target=="Any pathogen", !is.na(haz), study=="Capone 2021")
+temp<-d_animals %>%  filter(sample=="any sample type", target=="Any pathogen", !is.na(haz), study=="Kwong 2021")
+table(temp$animals)
+
+res_haz_animals_adj <- d_animals %>% group_by(study, sample, target) %>% filter(sample=="any sample type", target=="Any pathogen") %>%
+  do(aim2_subgroup(., Ws = Wvars_anthro, Vvar="animals", forcedW=c("age", "hhwealth"), outcome="haz", exposure="pos", study=.$study[1], sample=.$sample[1], target=.$target[1], family="gaussian", minN_thres =0))
+res_haz_animals_adj%>% arrange(Vlevel) %>%
+  group_by(Y, sample, target, V, Vlevel) %>%
+  filter(!is.na(se)) %>% mutate(N=n()) %>%
+  filter(N>=4)%>% group_by(Y, sample, target, V, Vlevel) %>%
+  do(try(pool.cont(.)))
+
+
+
+
+
+res_diar_wet_CH_adj_PD <- d_wet_ch %>% group_by(study, sample, target) %>% filter(sample=="any sample type", target=="Any pathogen") %>%
+  do(aim2_subgroup(., Ws = Wvars, Vvar="wet_CH", 
+                   forcedW=c("age", "hhwealth"), 
+                   outcome="diar7d", exposure="pos", study=.$study[1], sample=.$sample[1], target=.$target[1], family="gaussian")) 
+res_diar_wet_CH_adj_PD%>%filter(V=="wet_CH", sample=="any sample type", target=="Any pathogen")
+res_diar_wet_CH_adj_PD %>%
+  group_by(Y, sample, target, V, Vlevel) %>%
+  filter(!is.na(se)) %>% mutate(N=n()) %>%
+  filter(N>=4)%>% group_by(Y, sample, target, V, Vlevel) %>%
+  do(try(pool.cont(.))) 
 
 #-----------------------------------
 # Unadjusted RR
@@ -165,8 +202,11 @@ res_diar_animals_adj <- d_animals %>% group_by(study, sample, target) %>%
   do(aim2_subgroup(., Ws = Wvars, Vvar="animals", forcedW=c("age", "hhwealth"),outcome="diar7d", exposure="pos", study=.$study[1], sample=.$sample[1], target=.$target[1], family="binomial")) 
 res_diar_wet_adj <- d_wet %>% group_by(study, sample, target) %>%
   do(aim2_subgroup(., Ws = Wvars, Vvar="wet", forcedW=c("age", "hhwealth"), outcome="diar7d", exposure="pos", study=.$study[1], sample=.$sample[1], target=.$target[1], family="binomial")) 
+
+
+Wvars_diar_sex  = c("age","hfiacat","momage","hhwealth", "Nhh","nrooms","walls", "roof", "floor","elec","dadagri","landacre","landown", "momedu", "tr")         
 res_diar_sex_adj <- d_sex %>% group_by(study, sample, target) %>%
-  do(aim2_subgroup(., Ws = Wvars[Wvars!="sex"], Vvar="sex", forcedW=c("age", "hhwealth"), outcome="diar7d", exposure="pos", study=.$study[1], sample=.$sample[1], target=.$target[1], family="binomial")) 
+  do(aim2_subgroup(., Ws = Wvars_diar_sex, Vvar="sex", forcedW=c("age", "hhwealth"), outcome="diar7d", exposure="pos", study=.$study[1], sample=.$sample[1], target=.$target[1], family="binomial")) 
 
 
 res_diar_animals_adj_PD <- d_animals %>% group_by(study, sample, target) %>%
@@ -174,17 +214,20 @@ res_diar_animals_adj_PD <- d_animals %>% group_by(study, sample, target) %>%
 res_diar_wet_adj_PD <- d_wet %>% group_by(study, sample, target) %>%
   do(aim2_subgroup(., Ws = Wvars, Vvar="wet", forcedW=c("age", "hhwealth"), outcome="diar7d", exposure="pos", study=.$study[1], sample=.$sample[1], target=.$target[1], family="gaussian")) 
 res_diar_sex_adj_PD <- d_sex %>% group_by(study, sample, target) %>%
-  do(aim2_subgroup(., Ws = Wvars[Wvars!="sex"], Vvar="sex", forcedW=c("age", "hhwealth"), outcome="diar7d", exposure="pos", study=.$study[1], sample=.$sample[1], target=.$target[1], family="gaussian")) 
+  do(aim2_subgroup(., Ws = Wvars_diar_sex, Vvar="sex", forcedW=c("age", "hhwealth"), outcome="diar7d", exposure="pos", study=.$study[1], sample=.$sample[1], target=.$target[1], family="gaussian")) 
 
 
 res_haz_animals_adj <- d_animals %>% group_by(study, sample, target) %>%
   do(aim2_subgroup(., Ws = Wvars_anthro, Vvar="animals", forcedW=c("age", "hhwealth"), outcome="haz", exposure="pos", study=.$study[1], sample=.$sample[1], target=.$target[1], family="gaussian")) 
 res_haz_wet_adj <- d_wet %>% group_by(study, sample, target) %>%
   do(aim2_subgroup(., Ws = Wvars_anthro, Vvar="wet", forcedW=c("age", "hhwealth"), outcome="haz", exposure="pos", study=.$study[1], sample=.$sample[1], target=.$target[1], family="gaussian")) 
+
+#Wvars without sex
+Wvars_anthro_sex = c("age_anthro","hfiacat","momage","hhwealth", "tr","Nhh","nrooms","walls","roof", "floor","elec","dadagri","landown","momedu")         
 res_haz_sex_adj <- d_sex %>% group_by(study, sample, target) %>%
-  do(aim2_subgroup(., Ws = Wvars_anthro[Wvars_anthro!="sex"], Vvar="sex", forcedW=c("age", "hhwealth"), outcome="haz", exposure="pos", study=.$study[1], sample=.$sample[1], target=.$target[1], family="gaussian")) 
+  do(aim2_subgroup(., Ws = Wvars_anthro_sex, Vvar="sex", forcedW=c("age", "hhwealth"), outcome="haz", exposure="pos", study=.$study[1], sample=.$sample[1], target=.$target[1], family="gaussian")) 
 res_waz_sex_adj <- d_sex %>% group_by(study, sample, target) %>%
-  do(aim2_subgroup(., Ws = Wvars_anthro[Wvars_anthro!="sex"], Vvar="sex", forcedW=c("age", "hhwealth"), outcome="waz", exposure="pos", study=.$study[1], sample=.$sample[1], target=.$target[1], family="gaussian")) 
+  do(aim2_subgroup(., Ws = Wvars_anthro_sex, Vvar="sex", forcedW=c("age", "hhwealth"), outcome="waz", exposure="pos", study=.$study[1], sample=.$sample[1], target=.$target[1], family="gaussian")) 
 
 res_diar_wet_CH_adj <- d_wet_ch %>% group_by(study, sample, target) %>%
   do(aim2_subgroup(., Ws = Wvars, Vvar="wet_CH", forcedW=c("age", "hhwealth"), outcome="diar7d", exposure="pos", study=.$study[1], sample=.$sample[1], target=.$target[1], family="binomial")) 

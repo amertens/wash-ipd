@@ -6,6 +6,7 @@ source(here::here("0-config.R"))
 
 d <- readRDS(paste0(dropboxDir,"Data/merged_env_CH_data.rds"))
 
+table(d$study, d$ch_pos_cdiff)
 
 #drop food samples
 d <- d %>% filter(sample!="FP") %>% droplevels()
@@ -16,6 +17,17 @@ Wvars = c("sex","age","hfiacat","momage","hhwealth_cont", "Nhh","nrooms","walls"
 Wvars_anthro = c("sex","age_anthro","hfiacat","momage","hhwealth_cont", "Nhh","nrooms","walls", "roof", "floor","elec","dadagri","landacre","landown", "momedu", "tr")         
 
 all_Wvars <- unique(c(Wvars, Wvars_anthro))
+
+table(1*is.na(d$sex), is.na(d$haz), d$study)
+
+d %>% filter(study=="Kwong 2021") %>% group_by(sex,pos) %>%
+  summarise(mean(haz,na.rm=T))
+
+# temp <- d %>% filter(is.na(sex), !is.na(haz), target=="Any pathogen", sample=="any sample type")
+# temp$childid
+# temp$dataid
+# temp$pos
+# temp$haz
 
 
 

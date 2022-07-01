@@ -270,3 +270,6 @@ makeVlist <- function(dta) {
   return(labs)
 }
 
+stata_origin = "1960-01-01"
+csv_origin = as.Date(stata_origin) -21880
+

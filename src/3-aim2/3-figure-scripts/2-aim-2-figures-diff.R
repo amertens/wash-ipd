@@ -262,50 +262,50 @@ ls(pattern="p_")
 
 
 
-#Check some of the more unexpected findings
-
-d <- readRDS(paste0(dropboxDir,"Data/merged_env_CH_data_clean.rds"))
-unique(d$study)
-unique(d$target)
-df <- d %>% filter(study=="Capone 2022 in prep") %>% filter(!is.na(abund)) %>% droplevels()
-head(df)
-
-p_spline <- ggplot(df, aes(x=abund, y=haz)) +
-  facet_wrap(~target) +
-  geom_smooth(method="lm") +
-  scale_x_continuous(trans = "log10")
-p_spline
-
-
-df <- d %>% filter(study=="Holcomb 2020") %>% filter(!is.na(abund)) %>% droplevels()
-head(df)
-
-p_spline <- ggplot(df, aes(x=abund, y=haz)) +
-  facet_wrap(sample~target) +
-  geom_smooth(method="lm") +
-  scale_x_continuous(trans = "log10")
-p_spline
-
-df2 <- df %>% filter(target=="Avian (GFD)", sample=="LS") 
-
-table(df2$abund)
-table(round(df2$haz,1), round(df2$abund,0))
-
-hist(df2$abund)
-hist(log10(df2$abund))
-
-p_spline2 <- ggplot(df2, aes(x=log10(abund), y=haz)) +
-  geom_jitter() +
-  geom_smooth(method="lm") 
-p_spline2
-
-df3 <- df %>% filter(target=="Avian (GFD)", sample=="LS", qual=="ROQ") 
-
-table(round(df3$haz,1), round(df3$abund,0))
-
-p_spline2 <- ggplot(df2, aes(x=log10(abund), y=haz)) +
-  geom_jitter() +
-  geom_smooth(method="lm") 
-p_spline2
+# #Check some of the more unexpected findings
+# 
+# d <- readRDS(paste0(dropboxDir,"Data/merged_env_CH_data_clean.rds"))
+# unique(d$study)
+# unique(d$target)
+# df <- d %>% filter(study=="Capone 2022 in prep") %>% filter(!is.na(abund)) %>% droplevels()
+# head(df)
+# 
+# p_spline <- ggplot(df, aes(x=abund, y=haz)) +
+#   facet_wrap(~target) +
+#   geom_smooth(method="lm") +
+#   scale_x_continuous(trans = "log10")
+# p_spline
+# 
+# 
+# df <- d %>% filter(study=="Holcomb 2020") %>% filter(!is.na(abund)) %>% droplevels()
+# head(df)
+# 
+# p_spline <- ggplot(df, aes(x=abund, y=haz)) +
+#   facet_wrap(sample~target) +
+#   geom_smooth(method="lm") +
+#   scale_x_continuous(trans = "log10")
+# p_spline
+# 
+# df2 <- df %>% filter(target=="Avian (GFD)", sample=="LS") 
+# 
+# table(df2$abund)
+# table(round(df2$haz,1), round(df2$abund,0))
+# 
+# hist(df2$abund)
+# hist(log10(df2$abund))
+# 
+# p_spline2 <- ggplot(df2, aes(x=log10(abund), y=haz)) +
+#   geom_jitter() +
+#   geom_smooth(method="lm") 
+# p_spline2
+# 
+# df3 <- df %>% filter(target=="Avian (GFD)", sample=="LS", qual=="ROQ") 
+# 
+# table(round(df3$haz,1), round(df3$abund,0))
+# 
+# p_spline2 <- ggplot(df2, aes(x=log10(abund), y=haz)) +
+#   geom_jitter() +
+#   geom_smooth(method="lm") 
+# p_spline2
 
 

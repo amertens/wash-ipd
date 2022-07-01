@@ -83,6 +83,11 @@ adj_PD <- adj_PD %>% mutate(
   ))
 
 
+adj_RR <- adj_RR %>% group_by(study, target, sample, Y) %>% arrange(Vlevel) %>% mutate(int.p=ifelse(Vlevel==last(Vlevel),int.p,NA))
+adj_PD <- adj_PD %>% group_by(study, target, sample, Y) %>% arrange(Vlevel) %>% mutate(int.p=ifelse(Vlevel==last(Vlevel),int.p,NA))
+
+adj_RR %>% filter(target %in% c("Any pathogen"), sample=="any sample type", Y=="haz",
+                  study=="Capone 2022 in prep")
 
 #---------------------------------------------------------------
 #plot function
