@@ -12,6 +12,10 @@ adj_RR_old  %>%  filter(study=="Holcomb 2020", sample=="SW", target=="Any MST")
 adj_RR_old  %>% filter(study=="Boehm 2016", sample=="W", target=="Any pathogen", Y=="haz")
 adj_RR  %>% filter(study=="Boehm 2016", sample=="W", target=="Any pathogen", Y=="haz")
 
+adj_RR_old  %>% filter(target=="Rotavirus", study=="Boehm 2016", sample=="W", Y=="diar7d")
+adj_RR_old  %>% filter(target=="Rotavirus", study=="Boehm 2016", sample=="W", Y=="haz")
+adj_RR  %>% filter(target=="Rotavirus", study=="Boehm 2016", sample=="W", Y=="haz")
+
 
 adj_emm_old <- readRDS("C:/Users/andre/Downloads/adjusted_aim2_emm.Rds")
 adj_emm_old %>% filter(sample=="any sample type", target=="Any pathogen",  V=="animals", Y=="haz")

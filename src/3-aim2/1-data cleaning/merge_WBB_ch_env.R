@@ -301,6 +301,7 @@ env_boehm <- env_wbb %>% filter(study=="Boehm 2016")
 table(env_boehm$pos[env_boehm$target=="Any pathogen" & env_boehm$sample=="W"])
 table(env_boehm$pos[env_boehm$target=="Any pathogen" & env_boehm$sample=="SW"])
 
+table(env_boehm$pos[env_boehm$target=="Rotavirus"& env_boehm$sample=="W"])
 
 #world bank diarrhea
 labs <- haven::read_dta(paste0(dropboxDir,"Data/WBB/fecal_pathways_1_childhealth_micro_submit.dta"))
@@ -440,10 +441,13 @@ table(ch_env_boehm$env_date)
 table(ch_env_boehm$intmo)
 
 
-temp <- ch_env_boehm %>% filter(!is.na(haz), sample=="W", target=="Any pathogen")
-temp <- ch_env_boehm %>% filter( sample=="W", target=="Any pathogen")
+temp <- ch_env_boehm %>% filter(!is.na(haz), sample=="W", target=="Rotavirus")
+temp <- ch_env_boehm %>% filter(!is.na(haz), sample=="W", target=="Rotavirus")
 summary(temp$child_date_anthro)
 summary(temp$env_date)
+
+summary(temp$abund)
+table(temp$pos, temp$abund)
 
 summary(as.numeric(temp$child_date_anthro-temp$env_date))
 table(temp$child_date_anthro-temp$env_date)

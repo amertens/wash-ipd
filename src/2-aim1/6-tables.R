@@ -107,7 +107,10 @@ head(d)
 # human_MST = c("Any human MST","HumM2",  "Human (Bacteroides)",   "Human (M. smithii)")
 
 #Add target category
-d <- d %>% mutate(
+ unique(d$target)
+d <- d %>%
+  filter(target!="Zoonotic E. coli",target!="Non-zoonotic E. coli") %>% 
+  mutate(
   target_cat = case_when(
     target %in% any_virus ~ "Virus",  
     target %in% any_bacteria ~ "Bacteria",  
@@ -120,7 +123,8 @@ d <- d %>% mutate(
   target_type = case_when(
     target %in% any_pathogens ~ "P",  
     !(target %in% any_pathogens) ~ "MST"
-  ))
+  )) 
+  table(d$target, d$target_type)
 
 #target presence by sample and study
 target_presence <- d %>% filter(!grepl("Any ",target), !grepl("any ",sample)) %>%

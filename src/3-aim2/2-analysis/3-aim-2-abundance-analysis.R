@@ -113,6 +113,8 @@ res_wast_adj$sparse <- ifelse(is.na(res_wast_adj$RR), "yes", "no")
 res_wast_adj$RR[is.na(res_wast_adj$RR)] <- 1
 
 res_underwt_adj <- d %>% group_by(study, sample, target) %>%
+  filter(!(study=="Capone 2022 in prep" &  sample=="Fly" &  target=="Animal (BacCow)"),
+         !(study=="Capone 2022 in prep" &  sample=="Fly" &  target=="Rotavirus")) %>% #filter due to fit error
   mutate(abund=log10(abund)) %>%
   do(aim2_glm(., outcome="underwt", exposure="abund", study=.$study[1], sample=.$sample[1], target=.$target[1], Ws=Wvars, family="binomial")) 
 res_underwt_adj$sparse <- ifelse(is.na(res_underwt_adj$RR), "yes", "no")
@@ -167,13 +169,13 @@ res_diar$sparse[res_diar$RR >32 | 1/res_diar$RR > 32] <- "yes"
 res_diar$coef[res_diar$RR >32 | 1/res_diar$RR > 32] <- 0
 res_diar$RR[res_diar$RR >32 | 1/res_diar$RR > 32] <- 1
 
-res_diar_adj$sparse[res_diar$RR >32 | 1/res_diar_adj$RR > 32] <- "yes"
-res_diar_adj$coef[res_diar$RR >32 | 1/res_diar_adj$RR > 32] <- 0
-res_diar_adj$RR[res_diar$RR >32 | 1/res_diar_adj$RR > 32] <- 1=
+res_diar_adj$sparse[res_diar_adj$RR >32 | 1/res_diar_adj$RR > 32] <- "yes"
+res_diar_adj$coef[res_diar_adj$RR >32 | 1/res_diar_adj$RR > 32] <- 0
+res_diar_adj$RR[res_diar_adj$RR >32 | 1/res_diar_adj$RR > 32] <- 1=
 
-res_diar_roq_adj$sparse[res_diar$RR >32 | 1/res_diar_roq_adj$RR > 32] <- "yes"
-res_diar_roq_adj$coef[res_diar$RR >32 | 1/res_diar_roq_adj$RR > 32] <- 0
-res_diar_roq_adj$RR[res_diar$RR >32 | 1/res_diar_roq_adj$RR > 32] <- 1
+res_diar_roq_adj$sparse[res_diar_roq_adj$RR >32 | 1/res_diar_roq_adj$RR > 32] <- "yes"
+res_diar_roq_adj$coef[res_diar_roq_adj$RR >32 | 1/res_diar_roq_adj$RR > 32] <- 0
+res_diar_roq_adj$RR[res_diar_roq_adj$RR >32 | 1/res_diar_roq_adj$RR > 32] <- 1
 
 fullres <- bind_rows( res_haz, res_diar)
 fullres_adj <- bind_rows(res_haz_adj,res_waz_adj,res_whz_adj, res_diar_adj, res_stunt_adj, res_wast_adj, res_underwt_adj)

@@ -319,10 +319,9 @@ cl   <- function(df,fm, cluster){
 # target="Any pathogen"
 # family="binomial"
 
-#Need to add forcedW funciton, look at washbgam for code
 
 aim2_glm <- function(d, Ws=NULL, forcedW=NULL, outcome="pos", exposure, study="mapsan", sample="ds", target="Mnif", family="binomial", minN_thres = 6){
-
+  
   df <- d %>% filter(study=={{study}}, sample=={{sample}}, target=={{target}}) %>% droplevels(.)
   
   cat(levels(df$study)[1],", ", sample,", ", target,"\n")
@@ -337,9 +336,10 @@ aim2_glm <- function(d, Ws=NULL, forcedW=NULL, outcome="pos", exposure, study="m
   #print(summary(df$exposure))
   
   forcedWdf<-Wvars<-NULL
-  minN<-NA
+  minN<-minN_thres
   forcedW_n <- 0
-
+  a <- b <- c <- d <- NA
+  
   if(length(unique(df$Y))<=2){
     if(length(unique(df$Y))>1 & length(unique(df$X))>1){
       if(length(unique(df$X))>2){
@@ -357,7 +357,7 @@ aim2_glm <- function(d, Ws=NULL, forcedW=NULL, outcome="pos", exposure, study="m
     d <- sum(df$Y==0 & df$X==0)
   }
   
-  if(length(unique(df$Y))>2){
+  if(length(unique(df$Y))>2 & length(unique(df$X)) <= 2){
     #minN <- length(unique(df$Y))
     minN <- min(table(df$X))
     
@@ -370,7 +370,7 @@ aim2_glm <- function(d, Ws=NULL, forcedW=NULL, outcome="pos", exposure, study="m
     d <- sd(df$Y[df$X==1], na.rm=T)
   }
   
-  cat(minN,"\n")
+  #cat(minN,"\n")
   
   #cat(minN>=10 | length(unique(df$Y)) > 2)
   #if((minN>=10 & min(table(df$Y, df$X))>1) | (minN>=10 & length(unique(df$Y)) > 2 & length(unique(df$X)) == 2)){
@@ -514,6 +514,9 @@ aim2_glm <- function(d, Ws=NULL, forcedW=NULL, outcome="pos", exposure, study="m
   #print(res)
   return(res)
 }
+
+
+
 
 
 
