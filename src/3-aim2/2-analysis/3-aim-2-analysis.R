@@ -280,7 +280,7 @@ fullres_adj <- bind_rows(fullres_adj, res_whz_adj)
 
 
 saveRDS(fullres, file=here("results/unadjusted_aim2_res.Rds"))
-saveRDS(fullres_adj, file=here("results/adjusted_aim2_res2.Rds"))
+saveRDS(fullres_adj, file=here("results/adjusted_aim2_res.Rds"))
 
 
 

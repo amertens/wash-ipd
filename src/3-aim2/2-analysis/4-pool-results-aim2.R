@@ -2,7 +2,7 @@
 rm(list=ls())
 source(here::here("0-config.R"))
 unadj_RR <- readRDS(here("results/unadjusted_aim2_res.Rds"))
-adj_RR <- readRDS(here("results/adjusted_aim2_res2.Rds"))
+adj_RR <- readRDS(here("results/adjusted_aim2_res.Rds"))
 unadj_emm <- readRDS(here("results/unadjusted_aim2_emm.Rds"))
 adj_emm <- readRDS(here("results/adjusted_aim2_emm.Rds"))
 adj_emm_PD <- readRDS(here("results/adjusted_aim2_emm_PD.Rds"))
