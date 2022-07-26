@@ -294,6 +294,9 @@ load(here("figures/aim2_subgroup_figures_age.Rdata"))
 load(here("figures/aim2_path_heatmap.Rdata"))
 load(here("figures/aim2_abund_heatmap.Rdata"))
 load(here("figures/aim2_all_tables.Rdata"))
+load(here("figures/aim2_tr_figures.Rdata"))
+
+
 
 
 
@@ -595,6 +598,19 @@ p_diar_time
 
 __Figure S17.__ Comparison between associations estimated in the primary diarrhea analysis (diarrheal disease occurring after environmental sampling, but no more than 4 months later with associations estimated only using diarrheal disease cases within 1 month, or occuring at any time). For the analysis of all diarrhea, it included diarrheal cases, even cases occuring prior to sampling, under the hypothesis that enteropathogen presence at one time is a surrogate variable for general environmental contamination. 
 
+
+```{r, echo=F, warning=F, message=F, fig.width = 3.5, fig.height = 2}
+p_haz_tr
+```
+
+__Figure S18.__  WASH intervention effects on child height-for-age Z-scores within the subset of children used in the primary analysis who had  time-matched growth measurements and environmental samples.
+
+
+```{r, echo=F, warning=F, message=F, fig.width = 3.5, fig.height = 2}
+p_diar_tr
+```
+
+__Figure S19.__ WASH intervention effects on child diarrheal disease within the subset of children used in the primary analysis who had time-matched diarrhea observations and environmental samples.
 
 
 # Tables

@@ -11,7 +11,7 @@ header-includes:
 indent: true
 bibliography: WASH-IPD.bib
 bib-humanities: FALSE
-csl: nature.csl
+csl: the-lancet.csl
 
 ---
 

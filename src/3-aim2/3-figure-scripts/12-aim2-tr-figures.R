@@ -35,7 +35,7 @@ p_diar_tr <- ggplot(data = adj_RR %>% filter(Y=="diar7d"), (aes(x=trial, y=RR, s
   scale_y_continuous(
     trans='log10', 
   ) + coord_flip(ylim=NULL)+
-   xlab("") + ylab("Adjusted prevalence ratio- treatment effects on diarrhea") + 
+   xlab("") + ylab("Adjusted prevalence ratio:\nTreatment effects on diarrhea") + 
   theme_ki() + 
   theme(axis.ticks.x=element_blank(),
         legend.position = "bottom",
@@ -53,7 +53,7 @@ p_haz_tr <- ggplot(data = adj_RR %>% filter(Y=="haz"), (aes(x=trial, y=coef, sha
   scale_shape_manual(values=c(16, 13,18), guide=FALSE) + 
   geom_hline(yintercept = 0, linetype="dashed") +
   coord_flip()+
-  xlab("") + ylab("Adjusted mean difference- treatment effects on HAZ") + 
+  xlab("") + ylab("Adjusted mean difference:\nTreatment effects on HAZ") + 
   theme_ki() + 
   theme(axis.ticks.x=element_blank(),
         legend.position = "bottom",
