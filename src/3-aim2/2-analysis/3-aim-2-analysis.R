@@ -47,34 +47,34 @@ Wvars_anthro = c("sex","age_anthro","hfiacat","momage","hhwealth", "Nhh","nrooms
 
 
 
-outcome="diar7d"
-exposure="pos"
-study="Kwong 2021"
-sample="any sample type"
-target= "Any pathogen"
-family="binomial"
-forcedW=c("age_anthro", "hhwealth")
-Ws=Wvars_anthro
-
-
-dtemp<-d %>% filter(study=="Boehm 2016", sample=="W", target=="Rotavirus", !is.na(haz))
-table(dtemp$pos, !is.na(dtemp$haz))
-boehm_res<- aim2_glm(dtemp, outcome="haz", exposure="pos", Ws = Wvars_anthro, forcedW=c("age_anthro", "hhwealth"), study=dtemp$study[1], sample=dtemp$sample[1], target=dtemp$target[1], family="gaussian", minN_thres = 0)
-boehm_res
-
-boehm_res2<- aim2_glm(dtemp, outcome="haz", exposure="pos", Ws = NULL, forcedW=NULL, study=dtemp$study[1], sample=dtemp$sample[1], target=dtemp$target[1], family="gaussian", minN_thres = 0)
-boehm_res2
-
-# dtemp<-d %>% filter(study=="Kwong 2021", sample=="any sample type", target=="Any pathogen")
-# kwong_res<- aim2_glm(dtemp, outcome="diar7d", exposure="pos", Ws = Wvars, forcedW=c("age", "hhwealth"), study=dtemp$study[1], sample=dtemp$sample[1], target=dtemp$target[1], family="binomial")
-# kwong_res
-
-table(d$study)
-table(d$sample)
-dtemp<-d %>% filter(study=="Holcomb 2021", sample=="SW", target=="Any MST", !is.na(haz))
-dtemp %>% group_by(pos) %>% summarize(n(), mean(n(),haz, na.rm=T))
-res <- aim2_glm(dtemp, outcome="haz", exposure="pos", Ws = Wvars_anthro, forcedW=c("age_anthro", "hhwealth"), study=dtemp$study[1], sample=dtemp$sample[1], target=dtemp$target[1], family="gaussian", minN_thres = 0)
-res
+# outcome="diar7d"
+# exposure="pos"
+# study="Kwong 2021"
+# sample="any sample type"
+# target= "Any pathogen"
+# family="binomial"
+# forcedW=c("age_anthro", "hhwealth")
+# Ws=Wvars_anthro
+# 
+# 
+# dtemp<-d %>% filter(study=="Boehm 2016", sample=="W", target=="Rotavirus", !is.na(haz))
+# table(dtemp$pos, !is.na(dtemp$haz))
+# boehm_res<- aim2_glm(dtemp, outcome="haz", exposure="pos", Ws = Wvars_anthro, forcedW=c("age_anthro", "hhwealth"), study=dtemp$study[1], sample=dtemp$sample[1], target=dtemp$target[1], family="gaussian", minN_thres = 0)
+# boehm_res
+# 
+# boehm_res2<- aim2_glm(dtemp, outcome="haz", exposure="pos", Ws = NULL, forcedW=NULL, study=dtemp$study[1], sample=dtemp$sample[1], target=dtemp$target[1], family="gaussian", minN_thres = 0)
+# boehm_res2
+# 
+# # dtemp<-d %>% filter(study=="Kwong 2021", sample=="any sample type", target=="Any pathogen")
+# # kwong_res<- aim2_glm(dtemp, outcome="diar7d", exposure="pos", Ws = Wvars, forcedW=c("age", "hhwealth"), study=dtemp$study[1], sample=dtemp$sample[1], target=dtemp$target[1], family="binomial")
+# # kwong_res
+# 
+# table(d$study)
+# table(d$sample)
+# dtemp<-d %>% filter(study=="Holcomb 2021", sample=="SW", target=="Any MST", !is.na(haz))
+# dtemp %>% group_by(pos) %>% summarize(n(), mean(n(),haz, na.rm=T))
+# res <- aim2_glm(dtemp, outcome="haz", exposure="pos", Ws = Wvars_anthro, forcedW=c("age_anthro", "hhwealth"), study=dtemp$study[1], sample=dtemp$sample[1], target=dtemp$target[1], family="gaussian", minN_thres = 0)
+# res
 
 # res <- aim2_glm(dtemp, outcome="haz", exposure="pos", Ws = c("age_anthro", "hhwealth"), forcedW=c("age_anthro", "hhwealth"), study=dtemp$study[1], sample=dtemp$sample[1], target=dtemp$target[1], family="gaussian", minN_thres = 0)
 # res
@@ -96,10 +96,10 @@ res
 # res3
 # 
 # 
-dtemp<-d %>% filter(study=="Holcomb 2021", sample=="SW", target=="Any MST", !is.na(haz))
-dtemp %>% group_by(pos) %>% summarize(n(), mean(haz, na.rm=T))
-res <- aim2_glm(dtemp, outcome="haz", exposure="pos", Ws = NULL, forcedW=NULL, study=dtemp$study[1], sample=dtemp$sample[1], target=dtemp$target[1], family="gaussian")
-res
+# dtemp<-d %>% filter(study=="Holcomb 2021", sample=="SW", target=="Any MST", !is.na(haz))
+# dtemp %>% group_by(pos) %>% summarize(n(), mean(haz, na.rm=T))
+# res <- aim2_glm(dtemp, outcome="haz", exposure="pos", Ws = NULL, forcedW=NULL, study=dtemp$study[1], sample=dtemp$sample[1], target=dtemp$target[1], family="gaussian")
+# res
 # 
 # dtemp<-d %>% filter(study=="Holcomb 2021", sample=="LS", target=="Any MST", !is.na(haz))
 # dtemp %>% group_by(pos) %>% summarize(n(), mean(haz, na.rm=T))

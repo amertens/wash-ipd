@@ -118,6 +118,7 @@ p_pathogen <- adj_RR %>%
 p_pathogen
 
 ggsave(p_pathogen, file = paste0(here::here(),"/figures/pngs/aim2_p_pathogen.png"), width = 10, height = 6)
+ggsave(p_pathogen, file = paste0(here::here(),"/figures/pngs/aim2_p_pathogen_pres.png"), width = 8, height = 4)
 
 
 #save figures
