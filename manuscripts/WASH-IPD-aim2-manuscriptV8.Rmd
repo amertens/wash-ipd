@@ -1,0 +1,385 @@
+---
+title: "Associations between detection of enteropathogens and microbial source tracking markers in the environment and child enteric infections and growth: a systematic review and individual participant data meta-analysis"
+author: "Andrew Mertens, Benjamin F. Arnold, Jade Benjamin-Chung, Alexandria Boehm, Joe Brown, Drew Capone, Thomas Clasen, Erica Fuhrmeister, Jessica Grembi, David Holcomb, Jackie Knee, Laura Kwong, Audrie Lin, Stephen P. Luby, Rassul Nala, Kara Nelson, Sammy Njenga, Clair Null, Amy J. Pickering, Mahbubur Rahman, Heather Reese, Lauren Steinbaum, Jill Stewart, Ruwan Thilakaratne, Oliver Cumming, John M. Colford Jr., Ayse Ercumen"
+#output: redoc::redoc
+output: 
+  word_document:
+    reference_docx:  "manuscript_format.docx"
+header-includes:
+  - \setlength{\parindent}{4em}
+  - \setlength{\parskip}{0em}
+indent: true
+bibliography: WASH-IPD.bib
+bib-humanities: FALSE
+csl: the-lancet.csl
+---
+
+
+```{r, include=F}
+
+#Note: Check out this package for integrating any edits from Ayse:
+#https://github.com/noamross/redoc
+
+#CSL styles by journal
+#https://github.com/citation-style-language/styles
+
+
+knitr::opts_chunk$set(echo = FALSE, dpi=300,fig.width=7)
+
+options(warn = -1) 
+library(officedown)
+#library(janitor)
+library(knitr)
+library(here)
+# library(table1)
+# library(rvest)
+library(officer)
+library(flextable)
+library(bibtex)
+library(citr)
+library(redoc)
+library(kableExtra)
+library(ggforce)
+library(RColorBrewer)
+
+textcol = "grey20"
+cols = (brewer.pal(n = 9, name = "Spectral"))
+colours <- c(`<0.01 increase risk` = cols[1], `<0.05 increase risk` = cols[2], 
+             `0.05-0.2 increase risk` = cols[3], `0.2-0.5 increase risk` = cols[4], 
+             `0.5-1` = cols[5], `0.2-0.5 decrease risk` = cols[6], 
+             `0.05-0.2 decrease risk` = cols[7], `<0.05 decrease risk` = cols[8], 
+             `<0.01 decrease risk` = cols[9], `Not estimated` = "gray80")
+
+
+source(here("0-config.R"))
+#citr:::insert_citation(bib_file ="WASH-IPD.bib", use_betterbiblatex =F)
+# 
+# tidy_bib_file(
+#   rmd_file = "Aim1_manuscript.Rmd"
+#   , messy_bibliography = "WASH-IPD.bib"
+#   , file = "tidy_references.bib"
+# )
+
+
+
+op = function(x, d=2) sprintf(paste0("%1.",d,"f"), x) 
+
+Print <- function(x){
+  prettyNum(round(x,2), big.mark = ",", scientific = FALSE)
+}
+
+ library(pander)
+panderOptions('digits', 2)
+panderOptions('round', 2)
+panderOptions('keep.trailing.zeros', TRUE)
+panderOptions('graph.fontsize', 8)
+
+panderOptions('table.alignment.default', function(df)
+    ifelse(sapply(df, is.numeric), 'right', 'left'))
+panderOptions('table.split.table', Inf)
+panderOptions('big.mark', ",")
+
+set_flextable_defaults(big.mark = ",", 
+  font.size = 8, theme_fun = theme_vanilla,
+  padding.bottom = 5, 
+  padding.top = 5,
+  padding.left = 5,
+  padding.right = 5)
+
+
+#Clean results function
+clean_est <- function(res, outcome="binomial"){
+  if(outcome=="binomial"){
+    
+    est = format(round(res$RR, 2), nsmall = 2)
+    ci.lb = format(round(res$ci.lb, 2), nsmall = 2) 
+    ci.ub = format(round(res$ci.ub, 2), nsmall = 2)
+    est.ci = paste0(est," (95% CI: ",ci.lb,", ",ci.ub,")")
+  }else{
+    est = format(round(res$coef, 2), nsmall = 2)
+    ci.lb = format(round(res$ci.lb, 2), nsmall = 2) 
+    ci.ub = format(round(res$ci.ub, 2), nsmall = 2)
+    est.ci = paste0(est," (95% CI: ",ci.lb,", ",ci.ub,")")
+  }
+  return(est.ci)
+}
+
+clean_res  <- function(res, outcome="binomial"){
+  if(outcome=="binomial"){
+    res$est.ci = paste0("RR=",round(as.numeric(res$RR),1)," (95% CI: ",round(res$ci.lb,1),", ",round(res$ci.ub,1),")")
+    res <- res %>% ungroup() %>%
+      select(study, sample_type, target_f, est.ci, pval, a, b, c, d, N) 
+    res$est.ci <- gsub("RR\\=1 \\(95\\% CI\\: NA, NA\\)","Not estimated",res$est.ci)
+    
+    res$pval <- as.character(round(res$pval,3))
+    res$pval[is.na(res$pval)] <- ""
+    res <- res %>% 
+      rename(Study=study,
+             Sample=sample_type,
+             Target=target_f,
+             Estimate=est.ci,
+             `p-value`=pval, 
+             `Positive,\nIntervention`=a,
+             `Negative,\nIntervention`=b,
+             `Positive,\nControl`=c,
+             `Negative,\nControl`=d,
+             `Total\nobservations`=N)
+  }else{
+    res$est.ci = paste0(round(as.numeric(res$coef),1),"Difference= (95% CI: ",round(res$ci.lb,1),", ",round(res$ci.ub,1),")")
+    res <- res %>% ungroup() %>%
+      select(sample_type, target_f, est.ci, pval, a, b, c, d, N) 
+    res$est.ci <- gsub("Difference\\=0 \\(95\\% CI\\: NA, NA\\)","Not estimated",res$est.ci)
+    res$pval <- as.character(round(res$pval,3))
+    res$pval[is.na(res$pval)] <- ""
+    res <- res %>% 
+      rename(Study=study,
+             Sample=sample_type,
+             Target=target_f,
+             Estimate=est.ci,
+             `p-value`=pval, 
+             `Positive,\nIntervention`=a,
+             `Negative,\nIntervention`=b,
+             `Positive,\nControl`=c,
+             `Negative,\nControl`=d,
+             `Total\nobservations`=N)
+  }
+  
+  return(res)
+}
+
+clean_res_tab <- function(unadj_RR, adj_RR){
+  unadj<-clean_res(unadj_RR) %>% select(Study,Sample,Target,Estimate, `p-value`) %>% 
+    rename(`Unadjusted\nEstimate`=Estimate, `Unadjusted\np-value`=`p-value`) 
+  adj<-clean_res(adj_RR)%>% rename(`Adjusted\nEstimate`=Estimate, `Adjusted\np-value`=`p-value`)
+  
+  res <- left_join(unadj, adj, by=c("Study", "Sample", "Target"))
+  res <- res %>% arrange(Study,  Sample,  Target) %>% filter(Study!="Pooled")
+  res$`Adjusted\nEstimate`[res$Study=="Odagiri 2016"] <- ""
+  res$`Adjusted\np-value`[res$Study=="Odagiri 2016"] <- ""
+  return(res)
+}
+
+FitFlextableToPage <- function(ft, pgwidth = 10){
+
+  ft_out <- ft %>% autofit()
+
+  ft_out <- width(ft_out, width = dim(ft_out)$widths*pgwidth /(flextable_dim(ft_out)$widths))
+  return(ft_out)
+}
+
+
+add_footnote_with_rlang <- function(df, col, pattern, symbol){
+  form_ <- sprintf("~ %s == '%s'", col, pattern)
+  colname <- enquo(col)
+  flextable::compose(
+    x = df, j = col, i = as.formula(form_), 
+    value = as_paragraph(
+      as_chunk(!!colname), 
+      as_chunk(symbol, props = fp_text(vertical.align = 'superscript')))
+  ) 
+}
+
+add_footnote <- function(df, col, pattern, symbol){
+  form_ <- sprintf("~ %s == '%s'", col, pattern)
+  flextable::compose(
+    x = df, j = col, i = as.formula(form_), 
+    value = as_paragraph(pattern,
+      as_chunk(symbol, props = fp_text(vertical.align = 'superscript')))
+    ) 
+}
+
+
+
+unadj_RR <- readRDS(file=here("results/unadjusted_aim2_pooled.Rds")) 
+adj_RR <- readRDS(file=here("results/adjusted_aim2_pooled.Rds")) 
+adj_emm <- readRDS(file=here("results/subgroup_aim2_pooled.Rds")) 
+adj_emm_PD <- readRDS(file=here("results/subgroup_PD_aim2_pooled.Rds")) 
+
+adj_RR_bin <- adj_RR %>% filter(Y %in% c("diar7d"), !is.na(pval))
+adj_RR_cont <- adj_RR %>% filter(Y %in% c("haz"), !is.na(pval)) 
+
+
+#Get percents significant
+
+
+#Merge full env. with child health to see percent dropped 
+env <- readRDS(paste0(dropboxDir,"Data/cleaned_ipd_env_data.rds"))
+d <- readRDS(file=paste0(dropboxDir,"Data/merged_env_CH_data.rds"))
+
+tab <- d %>% group_by(study, sample, target) %>%
+  summarize(N=n(), N_pos=sum(pos), N_diar=sum(!is.na(diar7d)), N_pos_diar=sum(diar7d==1, na.rm=T), N_pos_env_diar=sum(pos==1 & diar7d==1, na.rm=T), N_haz=sum(!is.na(haz)))
+
+colnames(tab)[4:9] <- c("N samples","N pos. samples","N diar. meas.", "N diar. pos.","N sample. and diar. pos.", "N haz")
+
+tab1 <- tab %>% filter(sample=="any sample type", target=="Any pathogen")
+tab2 <- tab %>% filter(sample=="any sample type", target=="Any MST")
+
+load(here("figures/all_tables.Rdata"))
+load(here("figures/aim2_figures.Rdata"))
+load(here("figures/aim2_pathogen_specific_figures.Rdata"))
+load(here("figures/aim2_abund_figures.Rdata"))
+load(here("figures/aim2_covar_sig_figures.Rdata"))
+load(here("figures/aim2_tmle_figures.Rdata"))
+load(here("figures/aim2_pathogen_figures.Rdata"))
+load(here("figures/aim2_diar_time_figures.Rdata"))
+load(here("figures/aim2_adjusted_unadjusted_comp_figures.Rdata"))
+load(here("figures/aim2_subgroup_figures.Rdata"))
+load(here("figures/aim2_subgroup_figures_age.Rdata"))
+load(here("figures/aim2_path_heatmap.Rdata"))
+load(here("figures/aim2_abund_heatmap.Rdata"))
+
+
+
+gv_res <- readRDS(file=paste0(here(),"/results/gv_merge_Ns.rds"))
+mapsan_res <- readRDS(file=paste0(here(),"/results/mapsan_merge_Ns.rds"))
+wbk_res <- readRDS(file=paste0(here(),"/results/wbk_merge_Ns.rds"))
+wbb_res <- readRDS(file=paste0(here(),"/results/wbb_merge_Ns.rds"))
+odisha_res <- readRDS(file=paste0(here(),"/results/odisha_merge_Ns.rds"))
+merge_Ns <- bind_rows(
+  gv_res, mapsan_res, wbb_res, wbk_res, odisha_res
+)
+
+
+
+```
+
+```{css, echo=FALSE}
+span.comment-start{
+    background: #e0f3db;
+}
+span.comment-end{
+    background: #e0f3db;
+}
+span.comment-start::after{
+    content: " (" attr(author) ", " attr(date) ") [";
+}
+span.comment-end::before{
+    content: "]"
+}
+span.comment-text{
+    background: #fdbb84;
+}
+
+
+```
+
+```{r, echo=FALSE}
+commentN <- 0
+cmt <- function(txt, cm, author, date = "2021-01-01", comN = commentN){
+  cmt_str <- paste0('<span class="comment-text">[',cm,']{.comment-start id="', comN, '" author="', author, '" date="', date, '"}', txt, '[]{.comment-end id="',commentN,'"}</span>')
+  assign("commentN", commentN + 1, envir =.GlobalEnv)
+  return(cmt_str)
+}
+```
+
+
+## Abstract
+
+
+
+__Background:__ Quantifying the contribution of environmental faecal contamination to child diarrhoea and growth faltering can illuminate causal mechanisms behind the small/null effects on child health in recent water, sanitation and hygiene (WASH) trials. Fecal indicator bacteria (FIB) typically measured in the environment are imperfect proxies for enteropathogens and can come from human or animal faeces, which carry different levels of health risk. Detecting pathogens and host-specific microbial source tracking (MST) markers in the environment may better predict health outcomes.
+Methods: We conducted a systematic review and individual participant data meta-analysis of WASH intervention studies that measured enteropathogens and/or MST markers in environmental samples and subsequently measured child enteric infections, diarrhoea and height-for-age Z-scores (HAZ). We assessed associations between environmental measurements and child health outcomes using covariate-adjusted regressions with robust standard errors and pooled estimates across studies.
+
+__Findings:__ We identified and received data from nine eligible publications within five intervention studies. Pathogen detection in environmental samples was associated with increased prevalence of infection with the same pathogen and lower HAZ ($\Delta$HAZ=`r clean_est(adj_RR %>% filter(target=="Any pathogen", study=="Pooled", sample=="any sample type", Y=="haz"), outcome="gaussian")`) but not with diarrhoea (prevalence ratio [PR]: `r clean_est(adj_RR %>% filter(target=="Any pathogen", study=="Pooled", sample=="any sample type", Y=="diar7d"), outcome="binomial")`). Detection of MST markers was not associated with diarrhoea `r clean_est(adj_RR %>% filter(target=="Any human MST", study=="Pooled", sample=="any sample type", Y=="diar7d"), outcome="binomial")`; animal markers: `r clean_est(adj_RR %>% filter(target=="Any animal MST", study=="Pooled", sample=="any sample type", Y=="diar7d"), outcome="binomial")`) or HAZ (human markers $\Delta$HAZ=`r clean_est(adj_RR %>% filter(target=="Any human MST", study=="Pooled", sample=="any sample type", Y=="haz"), outcome="gaussian")`; animal markers: $\Delta$HAZ=`r clean_est(adj_RR %>% filter(target=="Any animal MST", study=="Pooled", sample=="any sample type", Y=="haz"), outcome="gaussian")`). 
+
+
+__Interpretation:__ Our findings support a causal chain from faecal contamination to infection to growth faltering. Lack of health associations with most human and animal MST markers suggest a need for better faecal markers. Future studies should incorporate longitudinal and spatial environmental sampling using a combination of FIB, enteropathogens and well-performing MST markers and test for pathogens in stool to examine the theories of change between WASH interventions, faecal contamination and child health.
+
+__Funding:__ The Bill & Melinda Gates Foundation.
+
+
+
+## Research in context
+
+
+
+__Evidence before this study.__ Children in areas with poor drinking water, sanitation, and hygiene conditions (WASH) are exposed to enteric pathogens from faecal waste via environmentally mediated pathways such as drinking water, hands, food, soil and flies. These exposures can result in gut colonization with pathogens, which can lead to subclinical infections or diarrhoeal illness, which in turn can contribute to growth faltering. Recent large household- and community-level WASH intervention studies that aimed to interrupt environmental pathogen transmission have had limited effects on children's health and on the detection of faecal indicator bacteria (FIB) in the environment. These findings have generated substantial debate about whether basic WASH interventions do not sufficiently reduce environmental pathogen exposure to prevent disease in high-burden settings, or whether environmental faecal contamination from inadequate WASH was not the primary cause of child diarrhoea or growth failure in these populations. Sensitive molecular methods allow simultaneous detection of multiple enteropathogens in environmental samples, and microbial source tracking (MST) methods can ideally help distinguish between human vs. animal faeces which carry different levels of health risk. Assessments using these methods can help illuminate the hypothesized causal chain between WASH improvements, environmental contamination and child health. We conducted a systematic review and individual participant data meta-analysis of WASH intervention studies that measured enteropathogens or MST markers along with child health outcomes. A previous analysis reported that WASH interventions led to a small reduction in enteropathogen detection in the environment and had no effect on MST markers. Here, we examine to what extent enteropathogens and MST markers along different pathogen transmission routes in the domestic environment are associated with pathogen-specific infections, diarrhoea and growth in children under 5 years old.
+__Added value of this study.__ We obtained data from nine eligible publications reporting findings from five WASH intervention studies. Several pathogens in the environment were strongly associated with subsequently measured infection with the same pathogen in children. There was no overall association between pathogen detection in the environment and subsequent diarrhoea. Pooled across studies, pathogen detection in environmental samples was associated with slightly lower linear growth. Most human or animal MST markers were not associated with diarrhoea or child growth, except for avian markers. Previous meta-analyses have linked FIB presence in environmental samples to increased risk of diarrhoea and reduced linear growth in children. Data on health associations with enteropathogens and MST markers in the environment are scarce and mostly limited to high-income countries. This work is the first synthesis of evidence of the association between advanced environmental measurements and health outcomes in low-income countries to examine causal pathways between WASH interventions and health. 
+__Implications of all the available science.__ Enteropathogen detection in the environment was associated with increased risk of infection with the same pathogen and reduced child growth but not with caregiver-reported diarrhoea. These findings support the causal chain leading from environmental faecal exposure to infection to growth faltering. Our results also highlight the discordance between pathogen detection in the gut and symptomatic illness in settings where pathogen exposure is common, indicating that studies should augment self-reported diarrhoea outcomes with pathogen detection in stool. The reduction in HAZ associated with enteropathogens in the environment in our analysis was small and similar in magnitude to what has been reported for FIB. These findings indicate that environmental faecal contamination measurements with current methods only partially explain growth faltering in children, regardless of choice of analytical target. This could be because cross-sectional grab samples do not adequately characterize environmental contamination or capture the frequency and duration of exposure, which determine the internal dose ultimately ingested by children. Future studies should incorporate longitudinal and spatial environmental sampling using a combination of FIB, enteropathogens and well-performing MST markers. FIB may remain a useful tool as samples across time and space can be inexpensively analyzed to capture variability and predict health risks. Enteropathogen and well-performing MST marker measurements, respectively, can augment FIB measurements to examine transmission pathways for specific pathogens or identify zoonotic risk factors. We note that a small number of studies met our inclusion criteria and only a subset of households were environmentally sampled in each study, leading to data sparsity. Meta-analyses with additional data from future studies may detect associations we missed.
+
+
+
+## Introduction
+In settings with poor water, sanitation and hygiene (WASH) conditions, children are exposed to enteric pathogens through multiple environmentally mediated pathways, such drinking water, food, hands, flies, soil, surfaces and objects. These exposures can lead to gut colonization with pathogens, resulting in asymptomatic carriage, subclinical infection or symptomatic diarrhoeal disease[@prendergastEnteropathiesDevelopingWorld2012] Both subclinical changes to the gut and symptomatic diarrhoea can lead to nutrient loss  and growth failure, [@prendergastEnteropathiesDevelopingWorld2012]  and malnutrition leaves children further vulnerable to diarrhoeal disease through weakened immunity. [@changChildrenSuccessfullyTreated2013; @mcdonaldEffectMultipleAnthropometric2013] Diarrhoea caused an estimated 534,000 deaths among children under 5 years in 2017, [@jamesGlobalRegionalNational2018]and undernutrition is a leading contributor to child mortality and morbidity globally. [@blackEarlyChildhoodDevelopment2017] An estimated 62% of diarrhoea deaths and 16% of growth failure among children under 5 years are attributed to faecal exposure from poor WASH.[@pruss-ustunBurdenDiseaseInadequate2019] However, several large, recent trials of household- and community-level WASH interventions found small or null effects on child diarrhoea and growth, which may be because the interventions failed to reduce environmental faecal contamination, or because environmental faecal contamination from inadequate WASH was not the primary cause of child diarrhoea or growth failure in those populations.[@humphreyIndependentCombinedEffects2019; @lubyEffectsWaterQuality2018; @nullEffectsWaterQuality2018] 
+Faecal contamination in the environment is usually assessed by enumerating faecal indicator bacteria (FIB) such as *E. coli*, which have been associated with increased risk of diarrhoea and reduced growth in children.[@goddardFaecalContaminationEnvironment2020]  However, FIB are imperfect proxies of health risk as they can originate from non-faecal sources,[@hardinaSoilEnvironmentalSource1991] and cannot confirm pathogen presence[@wuAreMicrobialIndicators2011] or differentiate between human and animal faeces which carry different levels of health risk [@gruberColiformBacteriaIndicators2014] Directly measuring enteropathogens in environmental matrices may better capture child exposures to disease-causing organisms and predict health outcomes, and detection of human vs. animal-specific microbial source tracking (MST) markers may indicate health risk of different magnitudes.[@schoenEvaluatingImportanceFaecal2011]Understanding whether and to what extent specific enteropathogens and host-specific MST markers in the environment are associated with child health outcomes can help illuminate the mechanisms behind the modest or null effects in recent WASH intervention trials and guide the development of future interventions. We conducted a systematic review and individual participant data (IPD) meta-analysis to assess associations between enteropathogens and MST markers in different types of household samples and subsequently measured pathogen-specific enteric infections, diarrhoea and growth failure in children. 
+
+
+
+## Methods
+
+We conducted a systematic search of the PubMed, Embase, CAB Direct Global Health, Agricultural & Environmental Science Database, Web Of Science, and Scopus databases to identify studies that (1) implemented a WASH intervention with a prospective design and concurrent control (i.e., randomised controlled trial, matched cohort, controlled before-and-after study), 2) measured pathogens and/or MST markers in environmental samples, and 3) measured at least one of: pathogen-specific infections, diarrhoea or child anthropometry.[@mertensEffectWaterSanitation] We limited the search to intervention studies to allow assessing intervention effects on environmental contamination as an additional objective.[@mertensEffectWaterSanitation] We excluded studies that only measured FIB. We only included studies published after 2000 to capture more recently advanced pathogen detection methods but did not limit the search to any specific method. The systematic review search strategy and analysis plan were pre-registered on Open Science Framework (https://osf.io/8sgzn/). We followed PRISMA guidelines (Table S1) and evaluated bias in studies using an adapted version of the Newcastle-Ottawa scale (Table S2).24 Details on our systematic review have been described elsewhere. [@mertensEffectWaterSanitation]
+
+
+Our two primary exposure variables were the prevalence of any enteropathogen or any MST markers in any type of environmental sample. We also tabulated these outcomes separately by sample type (e.g., drinking water, hands rinses). Secondary exposure variables included the prevalence of pathogen types (any viruses, any bacteria, any protozoa, any helminths), the prevalence of MST markers from specific host types (human or animal), and the prevalence and abundance of individual enteropathogens and MST markers. We excluded general MST markers that are not host-specific. Our primary outcomes were the seven-day prevalence of caregiver-reported diarrhoea and height-for-age Z-scores (HAZ) in children. For specific enteropathogens detected in the environment, primary outcomes also included subsequent child infection with the same pathogen ascertained by stool testing. Secondary outcomes included Z-scores for weight-for-age (WAZ) and weight-for-height (WHZ) and the prevalence of stunting, underweight and wasting, defined as Z-scores <-2 for HAZ, WAZ and WHZ, respectively.[@whomulticentregrowthreferencestudygroupWHOChildGrowth2006] For diarrhoea and pathogen-specific infections, we only used environmental samples collected up to four months before health outcomes were assessed; we selected this window empirically to retain the highest number of time-matched pairs of environmental and health measurements from the available data while maintaining a time-ordering window consistent with previous studies on environmental contamination and diarrhoea.[@lubyMicrobiologicalContaminationDrinking2015] For the growth outcomes, we used data from all environmental samples collected over the child's lifetime prior to the anthropometry measurement; if there were repeated growth measurements after environmental sampling, we used the measurement taken closest to environmental sampling.
+
+
+We examined associations between the environmental exposures and child health outcomes using covariate-adjusted regression models. For binary outcomes, we estimated prevalence ratios (PRs) using modified Poisson regression.[@zouModifiedPoissonRegression2004] For continuous outcomes, we used linear regression to estimate mean differences. We used the Huber Sandwich Estimator to calculate robust standard errors to account for repeated sampling or clustered designs.[@zeileisObjectorientedComputationSandwich2006] We included child age and asset-based household wealth as adjustment covariates in all models. Other covariates were pre-screened using likelihood ratio tests, and variables associated with the outcome with a p-value <0.2 were included in the model for each outcome. We considered the following variables if they were measured within a given study: study arm, child sex, maternal age, household food security, number of people in household, age and education of primary caregiver in household, number of rooms, construction materials (walls, floor, roof), access to electricity, land ownership and if anyone in the household works in agriculture. Within each study, we only estimated associations when there were $\geq$5 cases of the binary outcome in the rarest stratum of the exposure. We reported study-specific estimates due to heterogeneity in study settings. For outcomes where data were available from $\geq$4 studies, we tested for heterogeneity using Cochran's Q-tests.[@cochranCombinationEstimatesDifferent1954a] We pooled estimates with fixed-effects models if there was no evidence of significant heterogeneity (p-value>0.2), and with random-effects models otherwise.
+
+
+We conducted subgroup analyses by child age and sex, animal ownership, season, and study setting. We used the following age groups based on WHO motor milestones: immobile ($\leq$254 days), crawling (>254 days - 1 year), walking pre-school-age (1-5 years) and school-age (>5 years).[@whomulticentregrowthreferencestudygroupWHOMotorDevelopment2006] We defined animal ownership as the reported presence of any domestic animal in the compound. We defined the wet season for each study as the six months of highest average rainfall, obtained from weather records.[@d.o.oWeatherAtlasWeather] We only estimates effects of season on child diarrhoea due to the longer time lag allowed between sampling and anthropometry measurement. We differentiated between rural and urban settings based on descriptions of study location. There was no variation in urbanicity within individual studies; therefore, we separately pooled estimates from urban vs. rural studies and compared estimates with Wald tests. For age, sex, animal presence and season, we assessed additive interactions by calculating prevalence differences (PDs) with linear regression models and evaluating the p-values on interaction terms between indicator variables for the exposures and subgroups.[@vanderweeleTutorialInteraction2014] A p-value <0.2 on the interaction term was considered evidence of effect modification. 
+
+
+As sensitivity analyses, we compared (1) covariate-adjusted vs. unadjusted estimates, and (2) adjusted estimates from parametric regression models vs. flexible machine-learning based targeted maximum likelihood estimation (TMLE) models.[@schulerTargetedMaximumLikelihood2017]  To assess the impact of our chosen interval between environmental and health measurements, we re-estimated associations using environmental data collected (1) within a month prior to diarrhoea measurements, and (2) at any time with respect to diarrhoea measurements. We also estimated the effect of the WASH interventions on child diarrhoea and HAZ measured within the subset of children with time-matched environmental samples. Analyses were conducted in R 4.0.4. Analysis scripts are publicly available (https://github.com/amertens/wash-ipd). 
+
+## Results
+
+### Included studies
+
+The systematic review was conducted on January 19, 2021 and returned 3,376 publications. Nine eligible studies where the authors agreed to share data were included in our analysis. The nine publications reported findings from five intervention studies: the WASH Benefits Bangladesh and Kenya trials,[@nullEffectsWaterQuality2018; @lubyEffectsWaterQuality2018] the Maputo Sanitation (MapSan) trial in Mozambique,[@kneeEffectsUrbanSanitation2021] the Gram Vikas study in India,[@reeseAssessingLongertermEffectiveness2019] and the Total Sanitation Campaign (TSC) trial in India.[@clasenEffectivenessRuralSanitation2014] For the TSC trial, only village-level source water quality data were shared. Individual studies nested within a given trial collected environmental measurements from different subsets of trial participants at different times. Therefore, we report results stratified by publication rather than by parent trial.
+Studies had moderate risk of bias (3-6 out of 9 points) due to unblinded outcome assessments and caregiver recall of diarrhea. The Gram Vikas and MapSan studies had higher risk of bias due to higher loss to follow-up and lack of randomization (Table S2). The WASH interventions in the parent trials did not reduce child diarrhoea or growth faltering, except for the WASH Benefits Bangladesh trial where children receiving sanitation, handwashing and combined WASH interventions had lower diarrhoea prevalence.[@lubyEffectsWaterQuality2018; @kneeEffectsUrbanSanitation2021; @reeseAssessingLongertermEffectiveness2019; @clasenEffectivenessRuralSanitation2014]   Among the subset of children with time-matched environmental data included in our IPD analysis, there was no intervention effects on either child health outcome in any study, except for WASH Benefits Kenya, where HAZ was significantly lower in the intervention arm (Figures S1-2).[@nullEffectsWaterQuality2018]
+The studies reported analysis of various environmental sample types (source and stored drinking water, child and mother hand rinses, soil from the courtyard, household and latrine areas, food, and flies caught in the compound's latrine and kitchen areas). They measured bacterial, viral, protozoan and helminthic pathogens in environmental and child stool samples, including pathogenic *E. coli, Vibrio cholerae, Shigella, Campylobacter jejuni/coli, Salmonella, Yersinia, Clostridium difficile*, rotavirus, norovirus, sapovirus, adenovirus, astrovirus, enterovirus, *Cryptosporidium, Giardia, Entamoeba histolytica, Ascaris lumbricoides and Trichuris trichiura*. The MST markers included human (HumM2, HF183, BacHum, *M. smithii*), animal (BacCan, BacCow), ruminant (BacR) and avian (GFD) fecal markers. The most commonly used method was quantitative polymerase chain reaction (qPCR). Additional details on the study designs, environmental sample collection, and laboratory methods are available elsewhere.[@mertensEffectWaterSanitation]
+The number of observations with time-matched environmental samples ranged from 89 to 1609 for pathogen-specific infections, 210 to 2036 for diarrhea and 103 to 1800 for HAZ across studies (Table 1). Pathogen prevalence in children's stool was 19-87%, and diarrhoea prevalence was 8-26% (Table 1). Mean HAZ ranged from -1.81 to -1.35 (Table 1).
+
+### Associations between environmental contamination and child health outcomes
+
+#### Associations with pathogen-specific infections
+Detection of a specific enteropathogen in the domestic environment was associated with higher prevalence of subsequent infection with the same pathogen in children; trends were consistent across different enteropathogens and sample types (Figure 1).  *Clostridium difficile*, *Giardia*, *Ascaris* and *Trichuris* detected in latrine and courtyard soil were associated with 1.2-6 fold higher prevalence of infection with the same pathogens (Figure 1).
+
+#### Associations with diarrhoea
+
+Presence of any enteropathogen in any type of environmental sample (specifically child hand rinses and soil) was associated with higher diarrhea prevalence in two studies[@boehmOccurrenceHostAssociatedFecal2016; @kwongEffectSanitationImprovements2020] but not when pooled across studies (pooled PR: `r clean_est(adj_RR %>% filter(target=="Any pathogen", study=="Pooled", sample=="any sample type", Y=="diar7d"), outcome="binomial")`, Figure 2). Broken down by pathogen group, viruses on child hands and soil-transmitted helminths (STH) in soil[@kwongEffectSanitationImprovements2020] were associated with higher diarrhoea prevalence while bacteria on child hands[@fuhrmeisterEffectSanitationImprovements2020] and protozoa in soil[@caponeImpactUrbanSanitation2021] were borderline associated with increased diarrhoea; most other associations were null (Figure S3). Most associations between specific pathogens in the environment and diarrhoea were null, but rotavirus on child hands,[@boehmOccurrenceHostAssociatedFecal2016] Ascaris in household soil,[@kwongEffectSanitationImprovements2020] and Giardia in latrine soil31 were significantly associated with 1.5-2.3 times higher diarrhoea prevalence (Figure S4). Detection of astrovirus in soil[@steinbaumEffectSanitationIntervention2019] and pathogenic E. coli on child hands[@fuhrmeisterEffectSanitationImprovements2020] was also borderline associated with increased diarrhoea (Figure S4). Increasing abundance of Ascaris and rotavirus in household soil,[@boehmOccurrenceHostAssociatedFecal2016; @kwongEffectSanitationImprovements2020; @steinbaumEffectSanitationIntervention2019] and rotavirus on child hands[@boehmOccurrenceHostAssociatedFecal2016] was associated with higher diarrhoea prevalence as well (Figure S5).  
+
+There was no significant association with diarrhea for the presence of any MST marker (no pooled estimate, Figure 2) or human-specific MST markers (pooled PR: `r clean_est(adj_RR %>% filter(target=="Any human MST", study=="Pooled", sample=="any sample type", Y=="diar7d"), outcome="binomial")`, Figure S3) in any sample type. Detection of any animal MST markers in any sample type was associated with 4-fold higher diarrhoea prevalence in one study (PR: `r clean_est(adj_RR %>% filter(target=="Any animal MST", study=="Holcomb 2021", sample=="any sample type", Y=="diar7d"), outcome="binomial")`)[@holcombImpactsUrbanSanitation2021] but not pooled across studies (pooled PR: `r clean_est(adj_RR %>% filter(target=="Any animal MST", study=="Pooled", sample=="any sample type", Y=="diar7d"), outcome="binomial")`, Figure S3). Detection of the avian GFD marker in any sample type was associated with >2-fold higher diarrhoea in the same study,[@holcombImpactsUrbanSanitation2021] and the same marker in stored water and on child hands was borderline associated with increased diarrhoea in a different study (Figure S6).[@boehmOccurrenceHostAssociatedFecal2016]
+
+
+#### Associations with child growth
+
+Most studies showed slightly lower HAZ associated with enteropathogen detection in environmental samples but associations could not be distinguished from chance. Pooled across studies, detection of any enteropathogen in any sample type was significantly associated with lower HAZ (pooled mean difference [$\Delta$HAZ]: `r clean_est(adj_RR %>% filter(target=="Any pathogen", study=="Pooled", sample=="any sample type", Y=="haz"), outcome="gaussian")`, Figure 3). Broken down by pathogen groups, presence of protozoa on child hands was associated with lower HAZ ($\Delta$HAZ= `r clean_est(adj_RR %>% filter(target=="Any protozoa", study=="Fuhrmeister 2020", sample=="CH", Y=="haz"), outcome="gaussian")`, Figure S3) in one study.[@fuhrmeisterEffectSanitationImprovements2020] Among individual pathogens, detection of Ascaris in soil, Giardia on child hands and rotavirus in soil was significantly associated with lower HAZ ($\Delta$HAZ from -0.22 to -0.51, Figure S2). Many associations between individual pathogens and HAZ were null, and several pathogens in different sample types were associated with higher HAZ (Figure S4). Associations between the abundance of specific enteropathogens and HAZ, and between the presence/abundance of enteropathogens and WAZ, WHZ, stunting and wasting were inconsistent (Figures S4 and S5). For multiple pathogens, detection in environmental samples was associated with higher prevalence of underweight children (Figure S4).
+
+There was no association with HAZ for the detection of any MST marker (pooled $\Delta$HAZ: `r clean_est(adj_RR %>% filter(target=="Any MST", study=="Pooled", sample=="any sample type", Y=="haz"), outcome="gaussian")`, Figure 1), any human-specific marker (pooled $\Delta$HAZ: `r clean_est(adj_RR %>% filter(target=="Any human MST", study=="Pooled", sample=="any sample type", Y=="haz"), outcome="gaussian")`, Figure S3) or animal-specific marker (pooled $\Delta$HAZ: `r clean_est(adj_RR %>% filter(target=="Any animal MST", study=="Pooled", sample=="any sample type", Y=="haz"), outcome="gaussian")`, Figure S3) in any environmental sample. In one study, detection of any MST marker in stored water was associated with lower HAZ ($\Delta$HAZ: `r clean_est(adj_RR %>% filter(target=="Any animal MST", study=="Boehm 2016", sample=="W", Y=="haz"), outcome="gaussian")`, Figure 3),[@boehmOccurrenceHostAssociatedFecal2016] this was driven by animal markers (Figure S3) and specifically the avian GFD marker (Figure S6). Associations between the presence/abundance of individual MST markers and HAZ were inconsistent; most markers showed no association and several showed associations in both positive and negative directions (Figures S3, S6, S7). Associations with other growth measures were inconsistent with mostly null effects (Figures S3, S6, S7). Within individual studies, some markers were repeatedly associated with reduced growth across multiple metrics ($\Delta$z from -0.24 to -0.40), such as animal markers (BacCow) in soil, and avian (GFD) and ruminant (BacR) markers in stored water (Figures S6, S7). The abundance of MST markers had similar associations with health outcomes as the corresponding prevalences, though the abundance but not presence of BacCow in household soil and stored water was associated with lower HAZ and higher prevalence of stunting, and the abundance but not presence of HumM2 in household soil was associated with higher prevalence of stunting and wasting (Figure S7).
+
+
+#### Subgroup analyses
+
+Associations between enteropathogens/MST markers and diarrhoea/HAZ did not vary consistently with child age (Figures S8, S9). However, most studies did not have children measured in all age categories. Child sex did not modify associations between pathogens/MST markers and diarrhoea, or between MST markers and HAZ (Figure S10). However, pathogen detection in environmental samples was associated with a larger growth deficit in boys ($\Delta$HAZ: `r clean_est(adj_emm %>% filter(target=="Any pathogen", study=="Pooled", sample=="any sample type", Y=="haz", V=="sex", Vlevel==1), outcome="gaussian")`) than in girls ($\Delta$HAZ `r clean_est(adj_emm %>% filter(target=="Any pathogen", study=="Pooled", sample=="any sample type", Y=="haz", V=="sex", Vlevel==0), outcome="gaussian")`, Figure S11). This pattern was supported in individual studies (Figure S11).[@steinbaumEffectSanitationIntervention2019] Animal ownership did not modify associations between pathogens/MST markers and HAZ (Figure S12); diarrhoea data were too sparse to assess effect modification by animal ownership. Pathogen presence in environmental samples was associated with higher diarrhoea prevalence in the wet season (PD: `r clean_est(adj_emm_PD %>% filter(target=="Any pathogen", study=="Pooled", sample=="any sample type", Y=="diar7d", V=="wet_CH", Vlevel==1), outcome="gaussian")`) but not the dry season (Figure S13). MST markers were not associated with diarrhoea in either season. Estimates did not differ between urban and rural studies for any combination of exposures and outcomes.
+
+
+#### Sensitivity analyses 
+
+Most covariates were not strongly associated with enteropathogen/MST marker presence in the environment, suggesting they are not strong confounders of the relationship between these exposures and child health (Figure S14). Covariate adjustment had small effects on the results; adjusted estimates were slightly larger in magnitude than unadjusted estimates, and the effect of adjustment was slightly more pronounced when a larger number of covariates was used for adjustment (Figures S15-S16). Estimates from parametric models vs. TMLE were similar (Figures S17-S18). Results were similar when we used environmental data collected up to four months prior, one month prior or at any time with respect to diarrhoea measurements (Figure S18). 
+
+
+
+
+
+<!-- __Findings:__ We identified and received data from nine eligible publications within five intervention studies. Pathogen detection in environmental samples was associated with increased prevalence of infection with the same pathogen and lower HAZ ($\Delta$HAZ=`r clean_est(adj_RR %>% filter(target=="Any pathogen", study=="Pooled", sample=="any sample type", Y=="haz"), outcome="gaussian")`) but not with diarrhoea (prevalence ratio [PR]: `r clean_est(adj_RR %>% filter(target=="Any pathogen", study=="Pooled", sample=="any sample type", Y=="diar7d"), outcome="binomial")`). Detection of MST markers was not associated with diarrhoea `r clean_est(adj_RR %>% filter(target=="Any human MST", study=="Pooled", sample=="any sample type", Y=="diar7d"), outcome="binomial")`; animal markers: `r clean_est(adj_RR %>% filter(target=="Any animal MST", study=="Pooled", sample=="any sample type", Y=="diar7d"), outcome="binomial")`) or HAZ (human markers $\Delta$HAZ=; animal markers: $\Delta$HAZ=).  -->
+
+`r clean_est(adj_RR %>% filter(target=="Any protozoa", study=="Fuhrmeister 2020", sample=="CH", Y=="haz"), outcome="gaussian")`
+
+adj_RR %>% filter(target=="Any protozoa", sample=="CH", Y=="haz") %>% select(study)
+table(adj_RR$target)
+
+
+
+`r clean_est(adj_RR %>% filter(target=="Any animl MSa
+T", study=="Pooled", sample=="any sample type", Y=="diar7d"), outcome="binomial")`
+
+
+
+28 	Boehm AB, Wang D, Ercumen A, et al. Occurrence of Host-Associated Fecal Markers on Child Hands, Household Soil, and Drinking Water in Rural Bangladeshi Households. Environmental Science & Technology Letters 2016; 3: 393-8.
+29 	Kwong LH, Sen D, Islam S, et al. Effect of sanitation improvements on soil-transmitted helminth eggs in courtyard soil from rural Bangladesh: Evidence from a cluster-randomized controlled trial. bioRxiv 2020; : 2020.09.29.318097.
+30 	Fuhrmeister ER, Ercumen A, Pickering AJ, et al. Effect of Sanitation Improvements on Pathogens and Microbial Source Tracking Markers in the Rural Bangladeshi Household Environment. Environmental Science & Technology 2020; 54: 4316-26.
+31 	Capone D, Berendes D, Cumming O, et al. Impact of an Urban Sanitation Intervention on Enteric Pathogen Detection in Soils. Environmental Science & Technology 2021; 55: 9989-10000.
+32 	Steinbaum L, Mboya J, Mahoney R, Njenga SM, Null C, Pickering AJ. Effect of a sanitation intervention on soil-transmitted helminth prevalence and concentration in household soil: A cluster-randomized controlled trial and risk factor analysis. PLoS neglected tropical diseases 2019; 13: e0007180.
+
+33 	Holcomb DA, Knee J, Sumner T, et al. Human fecal contamination of water, soil, and surfaces in households sharing poor-quality sanitation facilities in Maputo, Mozambique. International Journal of Hygiene and Environmental Health 2020; 226: 113496.

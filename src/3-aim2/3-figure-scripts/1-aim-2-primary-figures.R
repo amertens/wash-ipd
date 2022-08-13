@@ -61,67 +61,18 @@ res$N_W
 res$W
 
 #---------------------------------------------------------------
-# Check number of sig results
+# Print pooled estimates
 #---------------------------------------------------------------
 
-unique(adj_RR$Y)
+adj_RR$est <- paste0(sprintf("%.2f",adj_RR$RR)," (",
+                     sprintf("%.2f",adj_RR$ci.lb),", ",
+                     sprintf("%.2f",adj_RR$ci.ub),")")
+adj_RR$est[adj_RR$study!="Pooled"] <- ""
 
-
-adj_RR_bin <- adj_RR %>% filter(Y %in% c("diar7d"), !is.na(pval))
-adj_RR_cont <- adj_RR %>% filter(Y %in% c("haz"), !is.na(pval)) 
-
-#table(adj_RR_bin$pval < 0.05)
-round(prop.table(table(adj_RR_bin$pval < 0.05))[2] * 100,1)
-
-#table(adj_RR_bin$pval < 0.05 & adj_RR_bin$RR < 1)
-#round(prop.table(table(adj_RR_bin$pval < 0.05 & adj_RR_bin$RR < 1))[2] * 100,1)
-
-#table(adj_RR_bin$pval < 0.05 & adj_RR_bin$RR > 1)
-round(prop.table(table(adj_RR_bin$pval < 0.05 & adj_RR_bin$RR > 1))[2] * 100,1)
-
-#table(adj_RR_cont$pval < 0.05)
-round(prop.table(table(adj_RR_cont$pval < 0.05))[2] * 100,1)
-
-#table(adj_RR_cont$pval < 0.05 & adj_RR_cont$coef < 0)
-round(prop.table(table(adj_RR_cont$pval < 0.05 & adj_RR_cont$coef < 0))[2] * 100,1)
-
-#table(adj_RR_cont$pval < 0.05 & adj_RR_cont$coef > 0)
-#round(prop.table(table(adj_RR_cont$pval < 0.05 & adj_RR_cont$coef > 0))[2] * 100,1)
-
-# unadj_RR_bin <- unadj_RR %>% filter(Y %in% c("diar7d"), !is.na(pval))
-# unadj_RR_cont <- unadj_RR %>% filter(Y %in% c("haz"), !is.na(pval)) 
-# 
-# round(prop.table(table(unadj_RR_bin$pval < 0.05))[2] * 100,1)
-# round(prop.table(table(unadj_RR_bin$pval < 0.05 & unadj_RR_bin$RR < 1))[2] * 100,1)
-# round(prop.table(table(unadj_RR_bin$pval < 0.05 & unadj_RR_bin$RR > 1))[2] * 100,1)
-# 
-# round(prop.table(table(unadj_RR_cont$pval < 0.05))[2] * 100,1)
-# round(prop.table(table(unadj_RR_cont$pval < 0.05 & unadj_RR_cont$coef < 0))[2] * 100,1)
-# round(prop.table(table(unadj_RR_cont$pval < 0.05 & unadj_RR_cont$coef > 0))[2] * 100,1)
-# 
-
-# adj_RR_bin <- adj_RR %>% filter(Y %in% c("diar7d",  "stunt",   "wast",    "underwt" ), !is.na(pval))
-# adj_RR_cont <- adj_RR %>% filter(Y %in% c("haz","waz","whz"), !is.na(pval)) 
-# 
-# round(prop.table(table(adj_RR_bin$pval < 0.05))[2] * 100,1)
-# round(prop.table(table(adj_RR_bin$pval < 0.05 & adj_RR_bin$RR < 1))[2] * 100,1)
-# round(prop.table(table(adj_RR_bin$pval < 0.05 & adj_RR_bin$RR > 1))[2] * 100,1)
-# 
-# round(prop.table(table(adj_RR_cont$pval < 0.05))[2] * 100,1)
-# round(prop.table(table(adj_RR_cont$pval < 0.05 & adj_RR_cont$coef < 0))[2] * 100,1)
-# round(prop.table(table(adj_RR_cont$pval < 0.05 & adj_RR_cont$coef > 0))[2] * 100,1)
-# 
-# unadj_RR_bin <- unadj_RR %>% filter(Y %in% c("diar7d",  "stunt",   "wast",    "underwt" ), !is.na(pval))
-# unadj_RR_cont <- unadj_RR %>% filter(Y %in% c("haz","waz","whz"), !is.na(pval)) 
-# 
-# round(prop.table(table(unadj_RR_bin$pval < 0.05))[2] * 100,1)
-# round(prop.table(table(unadj_RR_bin$pval < 0.05 & unadj_RR_bin$RR < 1))[2] * 100,1)
-# round(prop.table(table(unadj_RR_bin$pval < 0.05 & unadj_RR_bin$RR > 1))[2] * 100,1)
-# 
-# round(prop.table(table(unadj_RR_cont$pval < 0.05))[2] * 100,1)
-# round(prop.table(table(unadj_RR_cont$pval < 0.05 & unadj_RR_cont$coef < 0))[2] * 100,1)
-# round(prop.table(table(unadj_RR_cont$pval < 0.05 & unadj_RR_cont$coef > 0))[2] * 100,1)
-
+unadj_RR$est <- paste0(sprintf("%.2f",unadj_RR$RR)," (",
+                       sprintf("%.2f",unadj_RR$ci.lb),", ",
+                       sprintf("%.2f",unadj_RR$ci.ub),")")
+unadj_RR$est[unadj_RR$study!="Pooled"] <- ""
 
 
 #---------------------------------------------------------------
@@ -194,7 +145,8 @@ base_plot <- function(mydf, legend_labels=sample_cats, drop_full_sparse=F, facet
     geom_point(size=3, position = position_dodge(0.5), alpha=0.75) +
     #geom_text(aes(label=N_W), color="black", position = position_dodge(0.5)) +
     #geom_text(aes(label=minN), color="black", position = position_dodge(0.5)) +
-    geom_text(aes(y=ci.ub, label=sig_cat), color="black", position = position_dodge(0.5), hjust = -0.5, size=4) +
+    geom_text(aes(y=RR, label=est), color="black", vjust = -0.8, hjust = -0.1, size=1.5) +
+    #geom_text(aes(y=ci.ub, label=sig_cat), color="black", position = position_dodge(0.5), hjust = -0.5, size=4) +
     scale_color_manual(breaks = legend_labels,
                        values = colours, drop = FALSE) +
     scale_shape_manual(values=c(16, 13,18), guide=FALSE) + 

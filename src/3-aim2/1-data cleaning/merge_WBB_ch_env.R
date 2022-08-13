@@ -41,6 +41,9 @@ wbb <- readRDS(paste0(dropboxDir, "Data/WBB/Clean/WBB_child_health.RDS")) %>%
          aged=agedays
   )
 
+tab <- table(wbb$tr, wbb$diar7d)
+(tab[2,2]*tab[1,1])/(tab[2,1]*tab[1,2])  
+
 #load clean dataset from the diarhhea-pathogen analysis
 wbb_sth <- readRDS(paste0(dropboxDir, "Data/WBB/clean/clean_wbb_sth_pathogens.rds"))
 

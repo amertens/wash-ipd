@@ -3,6 +3,7 @@ rm(list=ls())
 source(here::here("0-config.R"))
 
 adj_RR <- readRDS(file=here("results/adjusted_aim2_tr_res.Rds")) 
+unadj_RR <- readRDS(file=here("results/unadjusted_aim2_tr_res.Rds")) 
 
 temp<-adj_RR%>%filter(Y=="diar7d", target=="Any MST")
 table(temp$sample_cat)
@@ -10,6 +11,15 @@ table(temp$sample_cat)
 unique(adj_RR$target)
 
 adj_RR <- adj_RR %>% mutate(
+  sig_cat = case_when(
+    pval<0.001 ~"***",
+    pval<0.01 ~"**",
+    pval<0.05 ~"*",
+    pval>=0.05 ~""
+  )
+)
+
+unadj_RR <- unadj_RR %>% mutate(
   sig_cat = case_when(
     pval<0.001 ~"***",
     pval<0.01 ~"**",

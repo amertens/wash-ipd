@@ -265,7 +265,6 @@ df <- df %>%
   subset(., select = -c(ic, wealth_st, mnum4,mnum5,mnum6,mnum7,numcu5))
 
 
-
 #Keep one obs per household
 
 
@@ -286,10 +285,7 @@ df <- df %>%
 
 head(df)
 
-# for(i in colnames(d)[grepl("sh_",colnames(d))]){
-#   cat(i,":\n")
-#   print(table(d[[i]]))
-# }
+
 
 table(is.na(df$env_date))
 saveRDS(df, file=paste0(dropboxDir,"Data/Gram Vikas/GV_env_cleaned.rds"))
@@ -308,4 +304,10 @@ table(df$sample , df$pos, df$round, df$target)
 #We collected samples of the sample water and drinking water for each household four times, once in each study round,
 #and child hand rinse samples two times, in rounds 2 and 4. If a household randomly selected for sampling was absent,
 #field workers collected samples from the nearest enrolled household to the right.
+
+
+diar <- df %>% filter(dia7!=".") %>% distinct(clusterid, tr, round, hhid, hh_mid, hh_st, sex, age, dia7)
+  
+table(diar$tr, diar$dia7)
+  prop.table(table(diar$tr, diar$dia7),1)
 

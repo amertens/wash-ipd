@@ -46,6 +46,7 @@ ch <- ch %>%
   filter(!(is.na(diar7d) & is.na(haz) & is.na(whz))) %>%
   distinct() %>% mutate(ch_data=1)
 
+
 #quartile HH wealth
 ch$hhwealth=factor(quantcut(ch$hhwealth_cont, na.rm=T), labels=c("1","2","3","4"))
 ch$hhwealth <- factor(ch$hhwealth, labels=c("1","2","3","4"))

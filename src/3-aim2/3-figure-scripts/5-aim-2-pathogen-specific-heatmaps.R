@@ -126,6 +126,8 @@ colours <- c(`<0.01 increase risk` = cols[1], `<0.05 increase risk` = cols[2],
 head(adj_RR)
 table(adj_RR$target)
 
+#temp<-adj_RR %>% filter(Y=="HAZ", study=="POOLED", sample=="any sample type", target=="Any pathogen")
+
 d<-adj_RR %>% filter(!is.na(pval), !is.na(target)) %>%
   filter(sparse!="yes",
          grepl("Any ", target),
@@ -157,7 +159,7 @@ d$pval_cat[is.na(d$pval_cat)] <- "Not estimated"
 head(d)
 d <- d %>% group_by(study, Y, target) %>%
   mutate(Nsamp=n()) %>%
-  filter(!(Nsamp==2 & grepl("any",sample)))
+  filter(!(Nsamp==2 & grepl("any",sample) & study!="POOLED"))
 table(d$Nsamp)
 table(d$sample)
 

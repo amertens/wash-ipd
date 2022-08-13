@@ -338,6 +338,12 @@ diar <- read.csv(paste0(dropboxDir,"Data/WBB/washb-bangladesh-diar.csv")) %>% mu
 hhid <- enrol %>% subset(., select =c("dataid","hhid")) %>% arrange(dataid, hhid)
 diar <- left_join(diar, hhid, by=c("dataid"))
 
+#raw intervention effect
+diar_tr <- left_join(diar, tr, by=c("block","clusterid")) %>% filter(tr %in% c("Control","Sanitation"))
+
+tab <- table(diar_tr$tr, diar_tr$diar7d) 
+(tab[2,2]*tab[1,1])/(tab[2,1]*tab[1,2])  
+
 
 #R01 diarrhea
 r01_diar_full <- read.csv(paste0(dropboxDir,"Data/WBB/r01_child_health_all_variables.csv"))
@@ -364,6 +370,10 @@ r01_diar <- r01_diar_full %>%
          diar7d=who_diar7d,
          child_date=date,
          childid=child_id) 
+
+tab <- table(r01_diar$tr, r01_diar$diar7d)
+(tab[2,2]*tab[1,1])/(tab[2,1]*tab[1,2])  
+
 
 #Check duplicates
 dim(r01_diar)
@@ -436,11 +446,11 @@ anthro_diar$child_date[is.na(anthro_diar$child_date)] <- anthro_diar$child_date_
 table(is.na(anthro_diar$child_date))
 
 #----------------------------------------------------------------------------
-#Merge in STH data
+#Merge in child/HH specific covariates
 #----------------------------------------------------------------------------
 
 
-#Merge in child/HH specific covariates
+
 colnames(enrol)
 enrol <- enrol %>% subset(., select=c(dataid, momage, hfiacat))
 dim(anthro_diar)
