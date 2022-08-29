@@ -6,6 +6,8 @@ library(RColorBrewer)
 unadj_RR <- readRDS(file=here("results/unadjusted_aim2_pooled.Rds")) 
 adj_RR <- readRDS(file=here("results/adjusted_aim2_pooled.Rds")) 
 
+table(adj_RR$target)
+adj_RR %>% filter(target=="Pathogenic E. coli", Y=="diar7d", sample=="any sample type")
 
 unique(adj_RR$study)
 

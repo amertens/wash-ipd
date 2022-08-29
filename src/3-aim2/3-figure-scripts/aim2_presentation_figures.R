@@ -55,6 +55,8 @@ res <- adj_RR %>% filter(target %in% c("Any MST"),
 res$N_W
 res$W
 
+#adj_RR <- adj_RR %>% filter(!is.na(ci.lb)) %>% droplevels()
+
 
 #---------------------------------------------------------------
 # Clean results
@@ -106,12 +108,10 @@ base_plot <- function(mydf, legend_labels=sample_cats, drop_full_sparse=F, facet
     geom_errorbar(aes(ymin=ci.lb, ymax=ci.ub), position = position_dodge(0.5),
                   width = 0.3, size = 1) +
     geom_point(size=3, position = position_dodge(0.5), alpha=0.75) +
-    #geom_text(aes(label=N_W), color="black", position = position_dodge(0.5)) +
-    #geom_text(aes(label=minN), color="black", position = position_dodge(0.5)) +
     geom_text(aes(y=ci.ub, label=sig_cat), color="black", position = position_dodge(0.5), hjust = -0.5, size=4) +
     scale_color_manual(breaks = legend_labels,
                        values = colours, drop = FALSE) +
-    scale_shape_manual(values=c(16, 13,18), guide=FALSE) + 
+    scale_shape_manual(values=c(16, 13,18), guide="legend") + 
     geom_hline(yintercept = 1, linetype="dashed") +
     facet_grid(target_f~sample_type,  scales="free_y", space = "free_x") +
     scale_y_continuous(
@@ -119,7 +119,7 @@ base_plot <- function(mydf, legend_labels=sample_cats, drop_full_sparse=F, facet
       trans='log10', 
       labels = axislabels
     ) + coord_flip(ylim=axislims)+
-    labs(color="Sample type") + xlab("") + ylab("Prevalence ratio") + 
+    labs(color="Sample type", shape="Sample type") + xlab("") + ylab("Prevalence ratio") + 
     theme_ki() + 
     theme(axis.ticks.x=element_blank(),
           legend.position = "bottom",
@@ -160,7 +160,7 @@ base_plot_diff <- function(mydf, legend_labels=sample_cats, drop_full_sparse=F, 
     geom_text(aes(y=ci.ub, label=sig_cat), color="black", position = position_dodge(0.5), hjust = -0.5, size=4) +
     scale_color_manual(breaks = legend_labels,
                        values = colours, drop = FALSE) +
-    scale_shape_manual(values=c(16, 13,18), guide=FALSE) + 
+    scale_shape_manual(values=c(16, 13,18), guide="legend") + 
     geom_hline(yintercept = 0, linetype="dashed") +
     facet_grid(target_f~sample_type,  scales="free_y", space = "free_x") +
     coord_flip()+

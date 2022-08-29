@@ -22,7 +22,9 @@ env <- env %>% filter(trial == "Odisha") %>%
 #drop missing covariates and get them from child dataset
 env <- env %>% subset(., select = c(study,trial, sampleid, dataid, clusterid, tr,    sample, env_date,   target,   pos, abund, qual,  round))
 head(env)
+table(env$target, env$pos, env$sample)
 
+temp <- env %>% filter()
 
 #-----------------------------------------------------------
 # clean Odisha
@@ -59,6 +61,7 @@ ch <- ch %>%
          ),         
          diar7d_full=diar7d) %>%
   filter(!is.na(diar7d) | !is.na(waz))  %>% mutate(ch_data=1)
+prop.table(table(ch$diar7d))*100
 
 #quartile HH wealth
 ch$hhwealth=factor(quantcut(ch$hhwealth_cont, na.rm=T), labels=c("1","2","3","4"))
@@ -84,7 +87,19 @@ d <- d %>% filter(!is.na(sample), !is.na(ch_data))
 dim(d)
 
 saveRDS(d, file = paste0(dropboxDir, "Data/WBK/clean-odisha-diar.RDS"))
+unique(d$target)
 
+
+#Try and replicate main paper results to check merge (note we don;t have giardia or crypto data)
+df<-d %>% filter(sample=="SW", target %in% c("Human (BacHum)","Animal (BacCow)",  "Rotavirus","Adenovirus","V. cholerae","Any pathogen"),
+                 child_date -env_date <= 6*7, age_anthro<=5)
+length(unique(df$clusterid))
+
+for(i in unique(df$target)){
+  cat("\n",i,"\n")
+  tab<-table(df$pos[df$target==i], df$diar7d[df$target==i])
+  print((tab[1,1] * tab[2,2])/(tab[1,2] * tab[2,1]))
+}
 
 table(d$hhwealth)
 

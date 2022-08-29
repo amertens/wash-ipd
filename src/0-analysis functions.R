@@ -98,8 +98,6 @@ aim1_glm <- function(d, Ws=NULL, outcome="pos", study="mapsan", sample="ds", tar
     #Get cell counts
     a <- mean(df$Y[df$tr=="Control"], na.rm=T)
     b <- mean(df$Y[df$tr=="Intervention"], na.rm=T)
-    # c <- median(df$Y[df$tr=="Control"], na.rm=T)
-    # d <- median(df$Y[df$tr=="Intervention"], na.rm=T)
     c <- sd(df$Y[df$tr=="Control"], na.rm=T)
     d <- sd(df$Y[df$tr=="Intervention"], na.rm=T)
     
@@ -110,7 +108,7 @@ aim1_glm <- function(d, Ws=NULL, outcome="pos", study="mapsan", sample="ds", tar
   }
   
 
-  #if((minN>=5 & min(table(df$Y, df$tr))>1) | length(unique(df$Y)) > 2){
+  #if((minN>=10 & min(table(df$Y, df$tr))>1) | length(unique(df$Y)) > 2){
   if(minN>=5  | length(unique(df$Y)) > 2){
     
     if(!is.null(Ws)){
