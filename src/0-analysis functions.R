@@ -108,7 +108,6 @@ aim1_glm <- function(d, Ws=NULL, outcome="pos", study="mapsan", sample="ds", tar
   }
   
 
-  #if((minN>=10 & min(table(df$Y, df$tr))>1) | length(unique(df$Y)) > 2){
   if(minN>=5  | length(unique(df$Y)) > 2){
     
     if(!is.null(Ws)){
