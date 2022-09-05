@@ -319,14 +319,14 @@ ROQ: Range of quantification; SD: Standard deviation; CI: Confidence interval; W
 p_adj_s1
 ```
 
-__Figure S1.__ Forest plots of intervention effects on the prevalence of specific pathogens.
+__Figure S2.__ Forest plots of intervention effects on the prevalence of specific pathogens.
 
 
 ```{r, echo=F, warning=F, message=F, fig.width = 7.2, fig.height = 9}
 p_adj_s2
 ```
 
-__Figure S2.__ Forest plots of intervention effects on the prevalence of specific MST markers.
+__Figure S3.__ Forest plots of intervention effects on the prevalence of specific MST markers.
 
 
 
@@ -340,7 +340,7 @@ p_abund_dist_kwong
 p_abund_dist_steinbaum       
 ```
 
-__Figure S3.__ Distributions of abundance outcomes. The X-axes are displayed on the log-10 scale. Black vertical lines mark the means, and dashed lines mark the medians. Values below the limit of detection were imputed with with half the limit of detection and values below the limit of quantification were imputed with the midpoint between the limits of detections and quantification, leading to some bimodal distributions.
+__Figure S4.__ Distributions of abundance outcomes. The X-axes are displayed on the log-10 scale. Black vertical lines mark the means, and dashed lines mark the medians. Values below the limit of detection were imputed with with half the limit of detection and values below the limit of quantification were imputed with the midpoint between the limits of detections and quantification, leading to some bimodal distributions.
 
 
 
@@ -349,7 +349,7 @@ p_wet_1_PD
 ```
 
 
-__Figure S4.__ 
+__Figure S5.__ 
 
 Forest plots of any enteropathogen prevalence differences or any MST prevalence differences between intervention and control arms, stratified by whether the sample was collected during the wet versus dry season (defined by the 6 months of highest average rainfall).  Significant effect modification, as determined by the p-values on the regression model interaction term, is marked above points with asterisks (P < 0.05 = "\*", P < 0.01 = "\*\*", P < 0.001 = "\*\*\*"). Grey crossed points denote data that were too sparse to estimate a prevalence ratio (i.e., <10 positive observations).
 
@@ -359,26 +359,26 @@ Forest plots of any enteropathogen prevalence differences or any MST prevalence 
 p_animals_1_PD
 ```
 
-__Figure S5.__ Forest plots of any enteropathogen prevalence differences or any MST prevalence differences between intervention and control arms, stratified by whether any animals were present in the compound. Significant effect modification, as determined by the p-values on the regression model interaction term, is marked above points with asterisks (P < 0.05 = "\*", P < 0.01 = "\*\*", P < 0.001 = "\*\*\*"). Grey crossed points denote data that were too sparse to estimate a prevalence ratio (i.e., <10 positive observations).
+__Figure S6.__ Forest plots of any enteropathogen prevalence differences or any MST prevalence differences between intervention and control arms, stratified by whether any animals were present in the compound. Significant effect modification, as determined by the p-values on the regression model interaction term, is marked above points with asterisks (P < 0.05 = "\*", P < 0.01 = "\*\*", P < 0.001 = "\*\*\*"). Grey crossed points denote data that were too sparse to estimate a prevalence ratio (i.e., <10 positive observations).
 
 
 ```{r, echo=F, warning=F, message=F, fig.width = 7.2, fig.height = 6}
 p_zoo_PD
 ```
 
-__Figure S6.__ Forest plots of any enteropathogen prevalence differences or any MST prevalence differences between intervention and control arms, stratified by whether the pathogen is zoonotically transmitted. Grey crossed points denote data that were too sparse to estimate a prevalence ratio (i.e., <10 positive observations). Significant effect modification, as determined by the p-values on the regression model interaction term, is marked above points with asterisks (P < 0.05 = "\*", P < 0.01 = "\*\*", P < 0.001 = "\*\*\*"). Grey crossed points denote data that were too sparse to estimate a prevalence ratio (i.e., <10 positive observations).
+__Figure S7.__ Forest plots of any enteropathogen prevalence differences or any MST prevalence differences between intervention and control arms, stratified by whether the pathogen is zoonotically transmitted. Grey crossed points denote data that were too sparse to estimate a prevalence ratio (i.e., <10 positive observations). Significant effect modification, as determined by the p-values on the regression model interaction term, is marked above points with asterisks (P < 0.05 = "\*", P < 0.01 = "\*\*", P < 0.001 = "\*\*\*"). Grey crossed points denote data that were too sparse to estimate a prevalence ratio (i.e., <10 positive observations).
 
 
 ```{r, echo=F, warning=F, message=F, fig.width = 7.2, fig.height = 7}
 p_unadj_1
 ```
 
-__Figure S7.__ Forest plots of unadjusted intervention effects on the prevalence of any enteropathogen or type of enteropathogen (any bacteria, any virus, any protozoa and any STH) in different types of environmental samples. Point estimates and confidence intervals are printed next to pooled estimates. Grey crossed points denote data that were too sparse to estimate a prevalence ratio (i.e., <10 positive observations).
+__Figure S8.__ Forest plots of unadjusted intervention effects on the prevalence of any enteropathogen or type of enteropathogen (any bacteria, any virus, any protozoa and any STH) in different types of environmental samples. Point estimates and confidence intervals are printed next to pooled estimates. Grey crossed points denote data that were too sparse to estimate a prevalence ratio (i.e., <10 positive observations).
 
 
 ```{r, echo=F, warning=F, message=F, fig.width = 7.2, fig.height = 7}
 p_unadj_2
 ```
 
-__Figure S8.__ Forest plots of unadjusted intervention effects on the prevalence of any MST marker or type of MST marker (human or animal MST markers) in different types of environmental samples. Point estimates and confidence intervals are printed next to pooled estimates. Grey crossed points denote data that were too sparse to estimate a prevalence ratio (i.e., <10 positive observations).
+__Figure S9.__ Forest plots of unadjusted intervention effects on the prevalence of any MST marker or type of MST marker (human or animal MST markers) in different types of environmental samples. Point estimates and confidence intervals are printed next to pooled estimates. Grey crossed points denote data that were too sparse to estimate a prevalence ratio (i.e., <10 positive observations).
 

@@ -253,10 +253,12 @@ tab2 <- table1(~. |study, format_number = TRUE, data=df2)
 tab2 <- as.data.frame(read_html(tab2) %>% html_table(fill=TRUE))
 #Drop overall column
 tab2 <- tab2[,!grepl("Overall",colnames(tab2))]
-tab2 <- tab2[-c(1:8),]
+#tab2 <- tab2[-c(1:6),]
 colnames(tab2) <- paste0(str_split(colnames(tab2),"\\.", simplify = T)[,1]," ", str_split(colnames(tab2),"\\.", simplify = T)[,2])
 colnames(tab2)[1] <- "."
-colnames(tab2 )[8] <- "Capone 2022 in prep."      
+colnames(tab2 )[8] <- "Capone 2022 in prep."    
+tab2[2:5,1] <- c("Low","Medium-low","Medium-high","High")
+tab2
 
 #Prevalence and abundance of outcomes by sample sample
 df <- d %>% group_by(study, target, sample) %>% filter(!is.na(pos)) %>%

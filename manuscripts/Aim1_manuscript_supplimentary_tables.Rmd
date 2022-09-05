@@ -224,6 +224,7 @@ clean_res_tab <- function(unadj_RR, adj_RR){
 FitFlextableToPage_landscape <- function(ft, pgwidth = 10){
 
   ft_out <- ft %>% autofit()
+  #ft_out <- set_caption(ft_out, "my caption")
 
   ft_out <- width(ft_out, width = dim(ft_out)$widths*pgwidth /(flextable_dim(ft_out)$widths))
   return(ft_out)
@@ -267,6 +268,8 @@ cmt <- function(txt, cm, author, date = "2021-01-01", comN = commentN){
 }
 ```
 
+\newpage
+   
    
 # Supplementary Tables
 
@@ -277,6 +280,9 @@ Search terms were combined with "OR" within columns and with "AND" across column
 FitFlextableToPage_landscape(flextable(S_tab1), pgwidth=8)
 ```
 
+
+\newpage
+
 ## Table S2. Pubmed search string
 [MH] are mesh headers and [TW] are text words.
 
@@ -284,8 +290,13 @@ FitFlextableToPage_landscape(flextable(S_tab1), pgwidth=8)
 knitr::kable(S_tab2)
 ```
 
+\newpage
+
+
 ## Table S3. PRISMA Checklist
 (See separate attachment)
+
+\newpage
 
 
 ## Table S4. Risk of bias based on modified Newcastle-Ottawa scale
@@ -323,6 +334,8 @@ FitFlextableToPage_landscape(bias_tab, pgwidth=10)
  
 ^g^ Scoring is based on losing stars (max. 2). Individual RCTs with baseline balance on covariates are unlikely to require adjustment (=2 stars). Cluster-RCTs and non-randomised trials may require adjustment for clustering (-1 star if not done). RCTs or cRCTs may require adjustment for covariates, with justification (-1 star if not done). Non-randomised studies require adjustment for covariates (-1 star if not done), but also adequate justification for covariate selection (-1 star if not included), and there can be too few or too many covariates.
 
+\newpage
+
 
 ## Table S5. Prevalence of pathogens by sample type tested in each study 
 
@@ -333,6 +346,7 @@ FitFlextableToPage_landscape(flextable(target_presence_long_P), pgwidth=8)
 
 ```
 
+\newpage
 
 
 ## Table S6. Prevalence of microbial source tracking markers by sample type tested in each study
@@ -346,6 +360,7 @@ FitFlextableToPage_landscape(flextable(target_presence_long_MST), pgwidth=8)
 ```
 
 
+\newpage
 
 
 ## Table S7.
@@ -371,6 +386,9 @@ tabs7_pathogen <- tabs7 %>% filter(!grepl("MST",Target)) %>% droplevels() %>%
 FitFlextableToPage_landscape(flextable(tabs7_pathogen))
 ```
 
+\newpage
+
+
 ## Table S8.
 
 Unadjusted and adjusted results by study, sample type, and aggregated variables for MST targets (any MST, any general MST, any human MST, any animal MST).
@@ -382,6 +400,9 @@ tabs7_MST <- tabs7 %>% filter(grepl("MST",Target)) %>% droplevels() %>%
 
 FitFlextableToPage_landscape(flextable(tabs7_MST))
 ```
+
+\newpage
+
 
 ## Table S9.
 
