@@ -369,8 +369,6 @@ aim2_glm <- function(d, Ws=NULL, forcedW=NULL, outcome="pos", exposure, study="m
   
   #cat(minN,"\n")
   
-  #cat(minN>=10 | length(unique(df$Y)) > 2)
-  #if((minN>=10 & min(table(df$Y, df$X))>1) | (minN>=10 & length(unique(df$Y)) > 2 & length(unique(df$X)) == 2)){
   if((minN>=minN_thres & min(table(df$Y, df$X))>1) | (minN>=minN_thres & length(unique(df$Y)) > 2 & length(unique(df$X)) == 2) | (minN>=minN_thres & length(unique(df$X)) > 2 & length(unique(df$Y)) >= 2)){
     
     if(!is.null(Ws)){
