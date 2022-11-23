@@ -44,11 +44,17 @@ library(redoc)
 
 textcol = "grey20"
 cols = (brewer.pal(n = 9, name = "Spectral"))
-colours <- c(`<0.01 increase risk` = cols[1], `<0.05 increase risk` = cols[2], 
-             `0.05-0.2 increase risk` = cols[3],
+# colours <- c(`<0.01 increase risk` = cols[1], `<0.05 increase risk` = cols[2], 
+#              `0.05-0.2 increase risk` = cols[3],
+#              `0.2-1` = cols[5],  
+#              `0.05-0.2 decrease risk` = cols[7], `<0.05 decrease risk` = cols[8], 
+#              `<0.01 decrease risk` = cols[9], `Not estimated` = "gray80")
+
+colours <- c(`<0.01 (increased risk)` = cols[1], `<0.05 (increased risk)` = cols[2], 
+             `0.05-0.2 (increased risk)` = cols[3],
              `0.2-1` = cols[5],  
-             `0.05-0.2 decrease risk` = cols[7], `<0.05 decrease risk` = cols[8], 
-             `<0.01 decrease risk` = cols[9], `Not estimated` = "gray80")
+             `0.05-0.2 (decreased risk)` = cols[7], `<0.05 (decreased risk)` = cols[8], 
+             `<0.01 (decreased risk)` = cols[9], `Not estimated` = "gray80")
 
 panel_spacing = 0.65
 
@@ -245,7 +251,7 @@ heatmap_plot2 <- function(d, colours, textcol= "grey20"){
           strip.background = element_blank(), panel.background = element_rect(fill = "grey80", colour = "grey80"), panel.grid.major = element_blank(),
           panel.grid.minor = element_blank(), 
           panel.spacing = unit(panel_spacing, "lines")) +
-    guides(fill = guide_legend("P-value strength", nrow = 2)) + labs(x = "", y = "", title = "")
+    guides(fill = guide_legend("P-value strength\n(estimate direction)", nrow = 2)) + labs(x = "", y = "", title = "")
   
   
   
@@ -294,8 +300,8 @@ load(here("figures/aim2_subgroup_figures_age.Rdata"))
 load(here("figures/aim2_path_heatmap.Rdata"))
 load(here("figures/aim2_abund_heatmap.Rdata"))
 load(here("figures/aim2_all_tables.Rdata"))
-load(here("figures/aim2_tr_figures.Rdata"))
 
+load(here("figures/aim2_tr_figures.Rdata"))
 
 
 
@@ -352,13 +358,15 @@ cmt <- function(txt, cm, author, date = "2021-01-01", comN = commentN){
 ```
 
 
+
+
 # Primary figures
 
 ```{r p_pathogen, fig.cap ="",  echo=F, warning=F, message=F, fig.width = 10, fig.height = 6}
 p_pathogen
 ```
 
-__Figure 1.__ Forest plots of associations between specific enteropathogens in environmental samples and child infections with the same enteropathogens. The presented prevalence ratios compare the detection prevalence of a pathogen in stool between children from compounds where the pathogen was detected vs. not detected in environmental samples. Samples of the same type from different locations (source vs. stored water, flies in kitchen vs. latrine, soil from courtyard vs. latrine) or different individuals (child vs. mother's hands) are plotted separately and denoted by different colors. All estimates are adjusted for potential confounders.
+__Figure 1.__ Forest plots of associations between specific enteropathogens in environmental samples and child infections with the same enteropathogens. The presented prevalence ratios compare the detection prevalence of a pathogen in stool between children from compounds where the pathogen was detected vs. not detected in environmental samples. Samples of the same type from different locations (source vs. stored water, flies in kitchen vs. latrine, soil from courtyard vs. latrine) or different individuals (child vs. mother's hands) are plotted separately and denoted by different colors. All estimates are adjusted for potential confounders. Starred points indicate P-values < 0.05. 
 
 ```{r p_diar_1_adj, echo=F, warning=F, message=F, fig.width = 10, fig.height = 5}
 p_diar_1_adj
@@ -372,6 +380,16 @@ p_haz_1_adj
 ```
 
 __Figure 3.__ Forest plots of associations between the prevalence of any enteropathogen or any MST markers in different types of environmental samples and heigh-for-age Z-scores (HAZ). The presented differences compare HAZ between children from compounds where any pathogen/MST marker was detected vs. not detected in environmental samples. Pooled estimates are presented when there are four or more study-specific estimates for a specific sample type and target combination and are denoted with diamond-shaped points. Grey crossed points denote data that were too sparse to estimate a mean difference. Samples of the same type from different locations (source vs. stored water, flies in kitchen vs. latrine, soil from courtyard vs. latrine) or different individuals (child vs. mother's hands) are plotted separately. Asterisks above estimates denote statistical significance (\*= P-value < 0.05, \*\*= P-value < 0.01, \*\*\*= P-value < 0.001). All estimates are adjusted for potential confounders.
+
+
+__Table 1.__ `r cmt("Descriptive", "Add reference to studies and trials, and use full names for trials", "Andrew", date = "2022-011-01")` statistics of child health outcomes by study. Pathogen-specific infection prevalence is the prevalence of at least one pathogen detected in child stool, and the number of pathogen infections is the total number of detected infections, where individual children can have infections from multiple pathogens.
+
+```{r tab_Y, fig.cap = "Descriptive statistics of child health outcomes by study.", echo=FALSE, warning=F, message=F}
+FitFlextableToPage(flextable(tab_Y))
+```
+
+HAZ: Height-for-age Z-score; WAZ: Weight-for-age Z-score; WHZ: Weight-for-height Z-score. 
+
 
 
 # Supplementary figures
@@ -397,11 +415,11 @@ __Figure S3.__ WASH intervention effects on child diarrheal disease within the s
 panel_spacing = 0.75
 textcol = "grey20"
 cols = (brewer.pal(n = 9, name = "Spectral"))
-colours <- c(`<0.01 increase risk` = cols[1], `<0.05 increase risk` = cols[2], 
-             `0.05-0.2 increase risk` = cols[3],
+colours <- c(`<0.01 (increased risk)` = cols[1], `<0.05 (increased risk)` = cols[2], 
+             `0.05-0.2 (increased risk)` = cols[3],
              `0.2-1` = cols[5],  
-             `0.05-0.2 decrease risk` = cols[7], `<0.05 decrease risk` = cols[8], 
-             `<0.01 decrease risk` = cols[9], `Not estimated` = "grey80")
+             `0.05-0.2 (decreased risk)` = cols[7], `<0.05 (decreased risk)` = cols[8], 
+             `<0.01 (decreased risk)` = cols[9], `Not estimated` = "grey80")
 
 
 
@@ -428,7 +446,7 @@ plot(hm_agg)
 
 ```
 
-__Figure S4.__ Heatmap of significance and direction of associations between aggregate measures of environmental contamination and child diarrhea and growth outcomes. Cells are colored by the strength of significance and direction of association, and the point estimate and confidence intervals are printed within cells, with relative risks printed for binary outcomes and mean differences for continuous outcomes. Each row is for a different sample type in a specific study or in a pooled estimate across studies. Estimates aggregated across any sample type are only plotted if there are multiple sample types for a study. All estimates are adjusted for potential confounders.
+__Figure S4.__ Heatmap of significance and direction of associations between aggregate measures of environmental contamination (rows) and child diarrhea and growth outcomes (columns).  Cells are colored by the strength of significance and direction of association, and the point estimate and confidence intervals are printed within cells, with relative risks printed for binary outcomes and mean differences for continuous outcomes. Each row is for a different sample type in a specific study or in a pooled estimate across studies, and axis labels are colored by sample type, matching the primary figure legends. Estimates aggregated across any sample type are only plotted if there are multiple sample types for a study. All estimates are adjusted for potential confounders.
 
 
 ```{r, echo=F, warning=F, message=F, fig.width = 10, fig.height = 6.5}
@@ -456,7 +474,7 @@ plot(hm2)
 ```
 
 
-__Figure S5.__ Heatmap of significance and direction of associations between specific pathogens in environmental samples and child diarrhea and growth outcomes. Cells are colored by the strength of significance and direction of association, and the point estimate and confidence intervals are printed within cells, with relative risks printed for binary outcomes and mean differences for continuous outcomes. Each row is for a different sample type in a specific study or in a pooled estimate across studies. Estimates aggregated across any sample type are only plotted if there are multiple sample types for a study. Grey cells mark missing outcomes or exposure-outcome combinations too sparse to estimate. All estimates are adjusted for potential confounders. 
+__Figure S5.__ Heatmap of significance and direction of associations between specific pathogens in environmental samples (rows) and child diarrhea and growth outcomes (columns). Cells are colored by the strength of significance and direction of association, and the point estimate and confidence intervals are printed within cells, with relative risks printed for binary outcomes and mean differences for continuous outcomes. Each row is for a different sample type in a specific study or in a pooled estimate across studies, and axis labels are colored by sample type, matching the primary figure legends. Estimates aggregated across any sample type are only plotted if there are multiple sample types for a study. Grey cells mark missing outcomes or exposure-outcome combinations too sparse to estimate. All estimates are adjusted for potential confounders. 
 
 
 
@@ -474,7 +492,7 @@ plot(hm1_abund)
 
 
 
-__Figure S6.__ Heatmap of significance and direction of associations between the abundance of specific pathogens in environmental samples and child diarrhea and growth outcomes. Cells are colored by the strength of significance and direction of association, and the point estimate and confidence intervals are printed within cells, with relative risks printed for binary outcomes and mean differences for continuous outcomes. Each row is for a different sample type in a specific study or in a pooled estimate across studies. Estimates aggregated across any sample type are only plotted if there are multiple sample types for a study. Grey cells mark missing outcomes or exposure-outcome combinations too sparse to estimate. All estimates are adjusted for potential confounders. 
+__Figure S6.__ Heatmap of significance and direction of associations between the abundance of specific pathogens in environmental samples (rows) and child diarrhea and growth outcomes (columns). Cells are colored by the strength of significance and direction of association, and the point estimate and confidence intervals are printed within cells, with relative risks printed for binary outcomes and mean differences for continuous outcomes. Each row is for a different sample type in a specific study or in a pooled estimate across studies, and axis labels are colored by sample type, matching the primary figure legends. Estimates aggregated across any sample type are only plotted if there are multiple sample types for a study. Grey cells mark missing outcomes or exposure-outcome combinations too sparse to estimate. All estimates are adjusted for potential confounders. 
 
 
 ```{r hm_mst, echo=F, warning=F, message=F, fig.width = 10, fig.height = 6.5}
@@ -488,7 +506,7 @@ plot(hm_mst)
 ```
 
 
-__Figure S7.__ Heatmap of significance and direction of associations between specific microbial source tracking markers in environmental samples and child diarrhea and growth outcomes. Cells are colored by the strength of significance and direction of association, and the point estimate and confidence intervals are printed within cells, with relative risks printed for binary outcomes and mean differences for continuous outcomes. Each row is for a different sample type in a specific study or in a pooled estimate across studies. Estimates aggregated across any sample type are only plotted if there are multiple sample types for a study. Grey cells mark missing outcomes or exposure-outcome combinations too sparse to estimate. All estimates are adjusted for potential confounders. 
+__Figure S7.__ Heatmap of significance and direction of associations between specific microbial source tracking markers in environmental samples (rows) and child diarrhea and growth outcomes (columns). Cells are colored by the strength of significance and direction of association, and the point estimate and confidence intervals are printed within cells, with relative risks printed for binary outcomes and mean differences for continuous outcomes. Each row is for a different sample type in a specific study or in a pooled estimate across studies, and axis labels are colored by sample type, matching the primary figure legends. Estimates aggregated across any sample type are only plotted if there are multiple sample types for a study. Grey cells mark missing outcomes or exposure-outcome combinations too sparse to estimate. All estimates are adjusted for potential confounders. 
 
 
 
@@ -507,7 +525,7 @@ plot(hm_mst_abund)
 
 ```
 
-__Figure S8.__ Heatmap of significance and direction of associations between the abundance of specific microbial source tracking markers in environmental samples and child diarrhea and growth outcomes. Cells are colored by the strength of significance and direction of association, and the point estimate and confidence intervals are printed within cells, with relative risks printed for binary outcomes and mean differences for continuous outcomes. Each row is for a different sample type in a specific study or in a pooled estimate across studies. Estimates aggregated across any sample type are only plotted if there are multiple sample types for a study. Grey cells mark missing outcomes or exposure-outcome combinations too sparse to estimate. All estimates are adjusted for potential confounders. 
+__Figure S8.__ Heatmap of significance and direction of associations between the abundance of specific microbial source tracking markers in environmental samples (rows) and child diarrhea and growth outcomes (columns). Cells are colored by the strength of significance and direction of association, and the point estimate and confidence intervals are printed within cells, with relative risks printed for binary outcomes and mean differences for continuous outcomes. Each row is for a different sample type in a specific study or in a pooled estimate across studies, and axis labels are colored by sample type, matching the primary figure legends. Estimates aggregated across any sample type are only plotted if there are multiple sample types for a study. Grey cells mark missing outcomes or exposure-outcome combinations too sparse to estimate. All estimates are adjusted for potential confounders. 
 
 
 
@@ -559,13 +577,69 @@ __Figure S14.__ Forest plots of child diarrheal disease prevalence differences b
 
 
 ```{r, echo=F, warning=F, message=F, fig.width = 10, fig.height = 6.5}
-p_cov_all %+% ggforce::facet_wrap_paginate(~study, scales = "free",  ncol=3, nrow = 2, page = 1)
+
+facet_wrap <- function(facets, nrow = NULL, ncol = NULL, scales = "fixed", 
+    shrink = TRUE, labeller = "label_value", as.table = TRUE, 
+    switch = deprecated(), drop = TRUE, dir = "h", strip.position = "top"){
+    scales <- rlang:::arg_match0(scales, c("fixed", "free_x", 
+        "free_y", "free"))
+    dir <- rlang:::arg_match0(dir, c("h", "v"))
+    free <- list(x = any(scales %in% c("free_x", "free")), 
+        y = any(scales %in% c("free_y", "free")))
+    labeller <- ggplot2:::check_labeller(labeller)
+    facets <- ggplot2:::wrap_as_facets_list(facets)
+    # if (lifecycle::is_present(switch)) {
+    #     lifecycle::deprecate_warn("2.2.0", "facet_wrap(switch)", 
+    #         "facet_wrap(strip.position)")
+    #     strip.position <- if (switch == "x") 
+    #         "bottom"
+    #     else "left"
+    # }
+    strip.position <- rlang:::arg_match0(strip.position, c("top", 
+        "bottom", "left", "right"))
+    if (!(is.null(ncol) || (rlang:::is_integerish(ncol, 1) && ncol > 
+        0))) {
+        cli::cli_abort("{.arg ncol} must be a positive scalar integer or {.val NULL}")
+    }
+    if (!(is.null(nrow) || (rlang:::is_integerish(nrow, 1) && nrow > 
+        0))) {
+        cli::cli_abort("{.arg nrow} must be a positive scalar integer or {.val NULL}")
+    }
+    if (identical(dir, "v")) {
+        tmp <- ncol
+        ncol <- nrow
+        nrow <- tmp
+    }
+    ggproto(NULL, FacetWrap, shrink = shrink, params = list(facets = facets, 
+        free = free, as.table = as.table, strip.position = strip.position, 
+        drop = drop, ncol = ncol, nrow = nrow, labeller = labeller, 
+        dir = dir))
+}
+
+facet_wrap_paginate<-function (facets, nrow = NULL, ncol = NULL, scales = "fixed",
+    shrink = TRUE, labeller = "label_value", as.table = TRUE,
+    switch = deprecated(), drop = TRUE, dir = "h", strip.position = "top",
+    page = 1) {
+    facet <- facet_wrap(facets, nrow = nrow, ncol = ncol, scales = scales,
+        shrink = shrink, labeller = labeller, as.table = as.table,
+        switch = switch, drop = drop, dir = dir, strip.position = strip.position)
+    if (is.null(nrow) || is.null(ncol)) {
+        facet
+    }
+    else {
+        ggproto(NULL, ggforce:::FacetWrapPaginate, shrink = shrink, params = c(facet$params,
+            list(page = page)))
+    }
+}
+
+#p_cov_all %+% ggforce::facet_wrap_paginate(~study, scales = "free",  ncol=3, nrow = 2, page = 1, switch="x")
+p_cov_all %+% facet_wrap_paginate(~study, scales = "free",  ncol=3, nrow = 2, page = 1, switch=NULL)
+
 
 ```
 
 ```{r, echo=F, warning=F, message=F, fig.width = 10, fig.height = 6.5}
-p_cov_all %+% ggforce::facet_wrap_paginate(~study, scales = "free",  ncol=3, nrow = 2, page = 2)
-
+p_cov_all %+% facet_wrap_paginate(~study, scales = "free",  ncol=3, nrow = 2, page = 2)
 ```
 
 
@@ -588,7 +662,7 @@ __Figure S16.__ Comparison between associations estimated with and without inclu
 p_diff
 ```
 
-__Figure S17.__ Comparison between associations estimated with and without including potential confounders for the continious growth outcomes. Points mark the differences between mean differences estimated using adjusted and unadjusted generalized linear models. The blue line shows the average difference in differences between adjusted estimates and unadjusted estimates, fitted using a cubic spline.
+__Figure S17.__ Comparison between associations estimated with and without including potential confounders for the continuous growth outcomes. Points mark the differences between mean differences estimated using adjusted and unadjusted generalized linear models. The blue line shows the average difference in differences between adjusted estimates and unadjusted estimates, fitted using a cubic spline.
 
 ```{r, echo=F, warning=F, message=F, fig.width = 10, fig.height = 6}
 p_diar_1_adj_tmle
@@ -596,8 +670,6 @@ p_diar_1_adj_tmle
 
 
 __Figure S18.__ Comparison between associations estimated with generalized linear models (GLM) and machine-learning based targeted likelihood estimation models (TMLE) for the diarrhea outcome.
-
-
 
 
 ```{r, echo=F, warning=F, message=F, fig.width = 10, fig.height = 6}
@@ -610,21 +682,13 @@ __Figure S19.__ Comparison between associations estimated with generalized linea
 p_diar_time
 ```
 
-__Figure S20.__ Comparison between associations estimated in the primary diarrhea analysis (diarrheal disease occurring after environmental sampling, but no more than 4 months later with associations estimated only using diarrheal disease cases within 1 month, or occuring at any time). For the analysis of all diarrhea, it included diarrheal cases, even cases occuring prior to sampling, under the hypothesis that enteropathogen presence at one time is a surrogate variable for general environmental contamination. 
+__Figure S20.__ Comparison between associations estimated in the primary diarrhea analysis (diarrheal disease occurring after environmental sampling, but no more than 4 months later with associations estimated only using diarrheal disease cases within 1 month, or occuring at any time). For the analysis of all diarrhea, it included diarrheal cases, even cases occuring prior to sampling, under the hypothesis that enteropathogen presence at one time is a surrogate variable for general environmental contamination. `r cmt("XXX", "CHECK: where is Capone 4 months?", "Andrew", date = "2022-011-01")`
 
 
 
 
-# Tables
+# Supplementary Tables
 
-
-__Table 1.__ Descriptive statistics of child health outcomes by study. Pathogen-specific infection prevalence is the prevalence of at least one pathogen detected in child stool, and the number of pathogen infections is the total number of detected infections, where individual children can have infections from multiple pathogens.
-
-```{r tab_Y, fig.cap = "Descriptive statistics of child health outcomes by study.", echo=FALSE, warning=F, message=F}
-FitFlextableToPage(flextable(tab_Y))
-```
-
-HAZ: Height-for-age Z-score; WAZ: Weight-for-age Z-score; WHZ: Weight-for-height Z-score. 
 
 
 

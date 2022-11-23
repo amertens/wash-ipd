@@ -33,12 +33,6 @@ unique(df$Y)
 df2 <- df %>% filter(Y %in% c("diar7d","stunt","wast","underwt"))
 df3 <- df %>% filter(Y %in% c("haz","whz","waz"))
 
-temp <- df3 %>% filter(diff>0.5 & N_W==8)
-temp %>% select(study, Y, diff)
-temp %>% distinct(study, Y, diff, .keep_all = T) %>% select(study, Y, diff)
-
-
-
 summary(df2$adj.RR/df2$unadj.RR)
 
 # ggplot(df2, aes(x=RR.ratio)) + geom_density() + geom_vline(xintercept=1, linetype="dashed") 
@@ -84,35 +78,6 @@ mean(abs(df3$adj.diff)-abs(df3$unadj.diff), na.rm=T)
 
 median((df3$diff), na.rm=T)
 
-# #Difference by number of adjustment covariates
-# df3$diff
-# 
-# head(df3)
-# ggplot(df3, aes(x=N_W, y=(diff))) + geom_point() + geom_smooth(method="lm", se=F) + geom_hline(yintercept=0, linetype="dashed") 
-# ggplot(df3, aes(x=N.x, y=(diff))) + geom_point() + geom_smooth(method="lm", se=F) + geom_hline(yintercept=0, linetype="dashed") 
-# ggplot(df3, aes(x=se.x, y=(diff))) + geom_point() + geom_smooth(method="lm", se=F) + geom_hline(yintercept=0, linetype="dashed") 
-# 
-# 
-# ggplot(df3, aes(x=N_W, y=(ci.lb.x-ci.lb.y))) + geom_point() + geom_smooth(method="lm", se=F) + geom_hline(yintercept=0, linetype="dashed") 
-# ggplot(df3, aes(x=N_W, y=(ci.ub.x-ci.ub.y))) + geom_point() + geom_smooth(method="lm", se=F) + geom_hline(yintercept=0, linetype="dashed") 
-# 
-# 
-# ggplot(df3, aes(x=factor(N_W), y=(diff))) + geom_violin() + geom_hline(yintercept=0, linetype="dashed") 
-# 
-# 
-# ggplot(df3, aes(x=N_W, y=abs(diff))) + geom_point() + geom_smooth(method="lm", se=F) + geom_hline(yintercept=0, linetype="dashed") 
-# ggplot(df3, aes(x=N.x, y=abs(diff))) + geom_point() + geom_smooth(method="lm", se=F) + geom_hline(yintercept=0, linetype="dashed") 
-# ggplot(df3, aes(x=se.x, y=abs(diff))) + geom_point() + geom_smooth(method="lm", se=F) + geom_hline(yintercept=0, linetype="dashed") 
-# 
-# 
-# ggplot(df2, aes(x=N_W, y=abs_ratio)) + geom_point() + geom_smooth(method="lm", se=F) + geom_hline(yintercept=1, linetype="dashed") 
-# ggplot(df2, aes(x=N.x, y=abs_ratio)) + geom_point() + geom_smooth(method="lm", se=F) + geom_hline(yintercept=1, linetype="dashed") 
-# ggplot(df2, aes(x=se.x, y=abs_ratio)) + geom_point() + geom_smooth(method="lm", se=F) + geom_hline(yintercept=1, linetype="dashed") 
-
-#Difference goes down because or more extreme adjustment in sparse samples? 
-
-#Color points by study?
-
 
 df3 %>% group_by(N_W) %>% 
   summarise(mean(diff), mean(abs_diff, na.rm=T))
@@ -130,7 +95,7 @@ p_logdiff <-  ggplot(df2, aes(x=N_W , y=diff)) +
   ylab("Difference between unadjusted and adjusted estimates") +
   geom_hline(yintercept = 0) + theme_ki() +
   scale_x_continuous(breaks = pretty(df$N_W, n = 10)) +
-  geom_text(aes(x=6, y=-0.4, label=paste0("Average absolute difference: ",ave_abs_logdiff))) 
+  geom_text(aes(x=6, y=-0.4, label=paste0("Average absolute log-transformed difference: ",ave_abs_logdiff))) 
 p_logdiff
 
 

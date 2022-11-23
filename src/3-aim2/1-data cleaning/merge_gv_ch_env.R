@@ -102,14 +102,6 @@ ch_diar <- ch %>% rename(
 saveRDS(ch_diar, file = paste0(dropboxDir, "Data/WBK/clean-gv-diar.RDS"))
 
 
-# #Concurrent diarrhea
-# ch_diar2 <- ch %>% rename(
-#   child_date = child_date_anthro,
-#   age = age_anthro) %>%
-#   arrange(childid, dataid, hhid, merge_round) %>%
-#   group_by(childid, dataid, hhid) %>%
-#   mutate(merge_round = merge_round) %>%
-#   subset(., select = c(childid, dataid, clusterid, hhid, merge_round, diar7d, child_date, age))
 
 ch <- ch %>% subset(., select = -c(diar7d))
 
@@ -133,31 +125,7 @@ dim(env)
 dim(ch)
 
 d <- full_join(env, ch_diar, by = c("dataid","clusterid","hhid","merge_round"))
-# dim(d1)
-# d1 <- d1 %>% filter(!is.na(sample), !is.na(child_date))
-# dim(d1)
-# 
-# d2 <- full_join(env, ch_diar2, by = c("dataid","clusterid","hhid","merge_round"))
-# dim(d2)
-# d2 <- d2 %>% filter(!is.na(sample), !is.na(child_date))
-# dim(d2)
-# 
-# table(d1$pos, d1$diar7d)
-# table(d2$pos, d2$diar7d)
-# 
-# 
-# d<-bind_rows(d1, d2)
 
-# #Subset to closest observation where CH is after env. sample collection
-# dim(d1)
-# dim(d2)
-# dim(d)
-# d <- d %>% group_by(sample, sampleid, target, dataid, clusterid, round, childid) %>% mutate(samp_diff=as.numeric(child_date-env_date), samp_diff2=ifelse(samp_diff<1, -100000, samp_diff), N=n()) %>%
-#   filter(samp_diff2-1==min(samp_diff2-1)) %>% ungroup() %>% distinct(sample, sampleid, target, dataid, clusterid, round, childid, .keep_all = T)
-# dim(d)
-# table(d$merge_type)
-# summary(d$samp_diff)
-# summary(d$samp_diff2)
 
 #merge in anthro
 d <- full_join(d, ch, by = c("trial","childid","study","dataid","clusterid","hhid","merge_round")) %>% 
@@ -186,13 +154,12 @@ prop.table(table(d$child_date-d$env_date > 124))
 date_diff <- d %>% mutate(date_diff = child_date-env_date) %>% select(study, sampleid, target, dataid, round, hhid, date_diff, diar7d, haz) %>% distinct()
 
 
-d <- d %>% 
-  filter(child_date>=env_date) %>%
+df <- d %>% 
+  filter(child_date>env_date) %>%
   mutate(
     diar7d = ifelse(child_date-env_date > 124, NA, diar7d))
 table(d$pos, d$diar7d)
 table(d$pos, !is.na(d$haz))
-
 
 
 

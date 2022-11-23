@@ -149,7 +149,7 @@ base_plot <- function(mydf, legend_labels=sample_cats, drop_full_sparse=F, facet
     #geom_text(aes(y=ci.ub, label=sig_cat), color="black", position = position_dodge(0.5), hjust = -0.5, size=4) +
     scale_color_manual(breaks = legend_labels,
                        values = colours, drop = FALSE) +
-    scale_shape_manual(values=c(16, 13,18), guide=FALSE) + 
+    scale_shape_manual(values=c(16, 13,18), guide = "none") + 
     geom_hline(yintercept = 1, linetype="dashed") +
     facet_grid(target_f~sample_type,  scales="free_y", space = "free_x") +
     scale_y_continuous(
@@ -198,7 +198,7 @@ base_plot_diff <- function(mydf, legend_labels=sample_cats, drop_full_sparse=F, 
     geom_text(aes(y=ci.ub, label=sig_cat), color="black", position = position_dodge(0.5), hjust = -0.5, size=4) +
     scale_color_manual(breaks = legend_labels,
                        values = colours, drop = FALSE) +
-    scale_shape_manual(values=c(16, 13,18), guide=FALSE) + 
+    scale_shape_manual(values=c(16, 13,18), guide = "none") + 
     geom_hline(yintercept = 0, linetype="dashed") +
     facet_grid(target_f~sample_type,  scales="free_y", space = "free_x") +
     coord_flip()+

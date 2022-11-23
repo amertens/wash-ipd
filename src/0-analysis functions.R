@@ -321,9 +321,9 @@ aim2_glm <- function(d, Ws=NULL, forcedW=NULL, outcome="pos", exposure, study="m
   
   df <- d %>% filter(study=={{study}}, sample=={{sample}}, target=={{target}}) %>% droplevels(.)
   
-  cat(levels(df$study)[1],", ", sample,", ", target,"\n")
-  cat("N before dropping missing: ", nrow(df),"\n")
-  
+  # cat(levels(df$study)[1],", ", sample,", ", target,"\n")
+  # cat("N before dropping missing: ", nrow(df),"\n")
+  # 
   df$Y <- df[[outcome]]
   df <- df %>% filter(!is.na(Y))
   #print(summary(df$Y))
@@ -421,12 +421,12 @@ aim2_glm <- function(d, Ws=NULL, forcedW=NULL, outcome="pos", exposure, study="m
       }
       
       df <- df[complete.cases(df),]
-      cat("N after dropping missing: ", nrow(df),"\n")
+      #cat("N after dropping missing: ", nrow(df),"\n")
     }else{
-      df <- df %>% subset(., select =c("Y","X","clusterid"))
-      cat("N before dropping missing: ", nrow(df),"\n")
-      df <- df[complete.cases(df),]
-      cat("N after dropping missing: ", nrow(df),"\n")
+      #df <- df %>% subset(., select =c("Y","X","clusterid"))
+      #cat("N before dropping missing: ", nrow(df),"\n")
+      #df <- df[complete.cases(df),]
+      #cat("N after dropping missing: ", nrow(df),"\n")
     }
     
     #Get cell counts
@@ -500,6 +500,7 @@ aim2_glm <- function(d, Ws=NULL, forcedW=NULL, outcome="pos", exposure, study="m
     res$sd_int <- d
   }
   
+  res$nX<-sum(df$X, na.rm=T)
   res$N<-nrow(df)
   # if(!is.null(forcedW)){
   #   Wvars <- c(Wvars, colnames(forcedWdf))
@@ -1163,7 +1164,7 @@ SL.forcedW <- function(X,...){
 
 
 
-aim2_tmle <- function(d, Ws=NULL, forcedW=NULL, outcome, exposure="pos", study="mapsan", sample="ds", target="Mnif", family="binomial", overwrite=F){
+aim2_tmle <- function(d, Ws=NULL, forcedW=NULL, outcome, exposure="pos", study="mapsan", sample="ds", target="Mnif", family="binomial", overwrite=F, minN_thres = 5){
   
   res = NULL
   if(overwrite==F){
@@ -1213,9 +1214,7 @@ aim2_tmle <- function(d, Ws=NULL, forcedW=NULL, outcome, exposure="pos", study="
     }
     
     cat(minN,"\n")
-    minN_thres = 5
-    #cat(minN>=10 | length(unique(df$Y)) > 2)
-    #if((minN>=10 & min(table(df$Y, df$X))>1) | (minN>=10 & length(unique(df$Y)) > 2 & length(unique(df$X)) == 2)){
+    
     if((minN>=minN_thres & min(table(df$Y, df$X))>1) | (minN>=minN_thres & length(unique(df$Y)) > 2 & length(unique(df$X)) == 2) | (minN>=minN_thres & length(unique(df$X)) > 2 & length(unique(df$Y)) >= 2)){
       
       if(!is.null(Ws)){

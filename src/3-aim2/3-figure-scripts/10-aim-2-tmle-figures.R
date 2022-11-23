@@ -20,7 +20,7 @@ adj_RR %>% filter(sample=="any sample type", study=="Odagiri 2016", target=="Any
 unique(adj_RR$study)
 adj_RR$study <- factor(adj_RR$study, levels = rev(c(
   "Fuhrmeister 2020", "Boehm 2016","Kwong 2021" ,       
-  "Steinbaum 2019","Holcomb 2020","Capone 2021",
+  "Steinbaum 2019","Holcomb 2021","Capone 2021",
   "Capone 2022 in prep", "Reese 2017","Odagiri 2016",
   "Pooled")))
 
@@ -65,13 +65,16 @@ base_plot <- function(mydf, legend_labels=sample_cats, drop_full_sparse=F){
                   width = 0.3, size = 1) +
     scale_color_manual(breaks = legend_labels,
       values = colours, drop = FALSE, guide=FALSE) +
-    scale_shape_manual(values=c(16, 13,18)) + 
+    scale_shape_manual(values=c(16, 17)) + 
     geom_hline(yintercept = 1, linetype="dashed") +
     facet_grid(target_f~sample_cat,  scales="free_y", space = "free_x", labeller = label_wrap_gen(width = 10, multi_line = TRUE)) +
     scale_y_continuous(
-      breaks=c(0.0625, 0.125,.25, .5,1, 2, 4, 8, 16), 
+      # breaks=c(0.0625, 0.125,.25, .5,1, 2, 4, 8, 16), 
+      # trans='log10', 
+      # labels = c("1/16","1/8","1/4", "1/2","1", "2", "4", "8", "16")
+      breaks=c(0.125,.25, .5,1, 2, 4, 8), 
       trans='log10', 
-      labels = c("1/16","1/8","1/4", "1/2","1", "2", "4", "8", "16")
+      labels = c("1/8","1/4", "1/2","1", "2", "4", "8")
     ) + coord_flip() +
     labs(color="Sample type") + xlab("") + ylab("Prevalence ratio") + 
     theme_ki() + 
@@ -112,7 +115,7 @@ base_plot_diff <- function(mydf, legend_labels=sample_cats, drop_full_sparse=F){
                   width = 0.3, size = 1) +
     scale_color_manual(breaks = legend_labels,
                        values = colours, drop = FALSE, guide=FALSE) +
-    scale_shape_manual(values=c(16, 13,18)) + 
+    scale_shape_manual(values=c(16, 17)) + 
     geom_hline(yintercept = 0, linetype="dashed") +
     facet_grid(target_f~sample_cat,  scales="free_y", space = "free_x", labeller = label_wrap_gen(width = 10, multi_line = TRUE)) +
     coord_flip()+
@@ -141,37 +144,7 @@ p_diar_1_adj_tmle
 p_haz_1_adj_tmle <- adj_RR %>% 
   filter(target %in% c("Any pathogen","Any MST"), Y=="haz") %>%
   base_plot_diff(drop_full_sparse=T)
-p_haz_1_adj_tmle
-
-# #Specific pathogens
-# p_diar_adj_path <- adj_RR %>% 
-#   filter( Y=="diar7d", target %in% any_pathogens, !c(target %in% c("Any STH","any pathogen-improved","any pathogen-unimproved"))) %>%
-#   base_plot(drop_full_sparse=T)
-# p_diar_adj_path
-# 
-# p_haz_adj_path <- adj_RR %>% 
-#   filter( Y=="haz", target %in% any_pathogens, !c(target %in% c("Any STH","any pathogen-improved","any pathogen-unimproved"))) %>%
-#   base_plot_diff(drop_full_sparse=T)
-# p_haz_adj_path
-
-
-# 
-# p_diar_2_adj <- adj_RR %>% 
-#   filter(target %in% c("Any human MST","Any animal MST","Any general MST"), Y=="diar7d") %>%
-#   base_plot(drop_full_sparse=T)
-# 
-# p_diar_s1_adj <- adj_RR %>% 
-#   filter(target %in% c("Any bacteria", "Any protozoa", "Any STH", "Any virus"), Y=="diar7d") %>%
-#   base_plot(drop_full_sparse=T)
-# 
-# p_haz_2_adj <- adj_RR %>% 
-#   filter(target %in% c("Any human MST","Any animal MST","Any general MST"), Y=="haz") %>%
-#   base_plot_diff(drop_full_sparse=T)
-# 
-# p_haz_s1_adj <- adj_RR %>% 
-#   filter(target %in% c("Any bacteria", "Any protozoa", "Any STH", "Any virus"), Y=="haz") %>%
-#   base_plot_diff(drop_full_sparse=T)
-
+#p_haz_1_adj_tmle
 
 
 

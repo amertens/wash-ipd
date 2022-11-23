@@ -16,28 +16,47 @@ res$pval[res$pval==1] <- NA
 res <- res %>% filter(var!="failed", !is.na(pval))
 textcol=tableau11[1]
 
-# dfull <- expand_grid(unique(d$Y), unique(d$X))
-# colnames(dfull) <- c("Y", "X")
-# d <- left_join(dfull, d, by = c("Y", "X"))
-# d <- distinct(d)
-res$pval_cat <- cut(res$pval, breaks = c(-1, 0.001, 0.01, 0.1, 0.05, 0.2, 
-                                     0.5, 2), labels = c("<0.001","<0.01", "<0.05", "0.05-0.1", 
-                                                         "0.1-0.2", "0.2-0.5", "0.5-1"))
+cols = (brewer.pal(n = 9, name = "Spectral"))
+colours <- c(`<0.01 increase risk` = cols[1], `<0.05 increase risk` = cols[2], 
+             `0.05-0.2 increase risk` = cols[3],
+             `0.2-1` = cols[5],  
+             `0.05-0.2 decrease risk` = cols[7], `<0.05 decrease risk` = cols[8], 
+             `<0.01 decrease risk` = cols[9], `Not estimated` = "gray80")
+
+
+
+# res$pval_cat <- cut(res$pval, breaks = c(-1, 0.001, 0.01, 0.1, 0.05, 0.2, 
+#                                      0.5, 2), labels = c("<0.001","<0.01", "<0.05", "0.05-0.1", 
+#                                                          "0.1-0.2", "0.2-0.5", "0.5-1"))
+# 
+# table(res$pval_cat)
+# res$pval_cat <- factor(res$pval_cat, levels = c("<0.001","<0.01", "<0.05", "0.05-0.1", 
+#                                                 "0.1-0.2","0.2-0.5", "0.5-1"))
+# 
+# 
+# cols=rev(viridis::viridis(n=7))
+# colours <- c(`<0.001` = cols[1], `<0.01` = cols[2], `<0.05` = cols[3], 
+#              `0.05-0.1` = cols[4], `0.1-0.2` = cols[5], `0.2-0.5` = cols[6], 
+#              `0.5-1` = cols[7])
+
+res$pval_cat <- cut(res$pval, breaks = c(-1, 0.01, 0.05, 0.2, 
+                                         0.5, 2), labels = c("<0.01", "<0.05", "0.05-0.2", 
+                                                              "0.2-0.5", "0.5-1"))
 
 table(res$pval_cat)
-res$pval_cat <- factor(res$pval_cat, levels = c("<0.001","<0.01", "<0.05", "0.05-0.1", 
-                                                "0.1-0.2","0.2-0.5", "0.5-1"))
-# res$pval_cat <- addNA(res$pval_cat)
-# levels(res$pval_cat) = c(levels(res$pval_cat), "Not available")
-# res$pval_cat[is.na(res$pval_cat)] <- "Not available"
-table(res$pval_cat)
-table(is.na(res$pval_cat))
+res$pval_cat <- factor(res$pval_cat, levels = c("<0.01", "<0.05", "0.05-0.2", 
+                                                "0.2-0.5", "0.5-1"))
 
-#cols = rev(brewer.pal(n = 7, name = "viridis"))
-cols=rev(viridis::viridis(n=7))
-colours <- c(`<0.001` = cols[1], `<0.01` = cols[2], `<0.05` = cols[3], 
-             `0.05-0.1` = cols[4], `0.1-0.2` = cols[5], `0.2-0.5` = cols[6], 
-             `0.5-1` = cols[7])
+#Keep colors consistent with other heatmaps
+cols = (brewer.pal(n = 9, name = "Spectral"))
+colours <- c(`<0.01` = cols[1], `<0.05` = cols[2], 
+             `0.05-0.2` = cols[3],
+             `0.2-0.5` = cols[4],
+             `0.5-1` = cols[5])
+
+
+
+
 res <- droplevels(res)
 res <- res %>% group_by(var) %>%
   mutate(aveP=mean(pval)) %>% ungroup() %>%
@@ -110,7 +129,7 @@ p_cov_all <-  ggplot(plot_df, aes(x=var, y=target, fill=pval_cat)) +
         legend.title = element_text(color = textcol, size = 8), legend.margin = margin(grid::unit(0.1,"cm")), 
         legend.text = element_text(colour = textcol, size = 7, face = "bold"),
         legend.key.height = grid::unit(0.2, "cm"), legend.key.width = grid::unit(1, "cm"), 
-        legend.position = "bottom", legend.direction="horizontal", 
+        legend.position = "top", legend.direction="horizontal", 
         axis.text.y = element_text(size = 7,  vjust = 0.2, colour = textcol), axis.ticks = element_line(size = 0.4), 
         plot.title = element_text(colour = textcol, hjust = 0,  size = 12, face = "bold"), 
         strip.text.x = element_text(size = 8), 

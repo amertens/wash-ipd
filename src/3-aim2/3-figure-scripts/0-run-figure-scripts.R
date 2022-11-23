@@ -4,7 +4,6 @@
 source(paste0(here::here(),"/src/3-aim2/3-figure-scripts/0-tables-aim2.R"))
 source(paste0(here::here(),"/src/3-aim2/3-figure-scripts/1-aim-2-primary-figures.R"))
 source(paste0(here::here(),"/src/3-aim2/3-figure-scripts/2-aim-2-figures-diff.R"))
-source(paste0(here::here(),"/src/3-aim2/3-figure-scripts/3-aim-2-env-pathogen-figures.R"))
 source(paste0(here::here(),"/src/3-aim2/3-figure-scripts/4-aim-2-pathogen-infection-figures.R"))
 source(paste0(here::here(),"/src/3-aim2/3-figure-scripts/5-aim-2-pathogen-specific-heatmaps.R"))
 source(paste0(here::here(),"/src/3-aim2/3-figure-scripts/5-aim-2-abundance-heatmaps.R"))

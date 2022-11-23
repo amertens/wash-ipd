@@ -118,7 +118,7 @@ summary(as.numeric(d$child_date- d$env_date))
 date_diff <- d %>% mutate(date_diff = child_date-env_date) %>% select(study, sampleid, target, dataid, round, hhid, date_diff, diar7d, waz) %>% distinct()
 
 d <- d %>% 
-  filter(child_date>=env_date) %>%
+  filter(child_date>env_date) %>%
   mutate(
     diar7d = ifelse(child_date-env_date > 124, NA, diar7d))
 table(d$pos, d$diar7d)

@@ -15,12 +15,12 @@ adj_diff <- readRDS(file=here("results/adjusted_aim2_abund_res.Rds"))
 unadj_diff <- clean_res(unadj_diff) 
 adj_diff <- clean_res(adj_diff) 
 
-adj_RR$sample_cat[adj_RR$sample=="Fly" & adj_RR$study=="Capone 2022 in prep" & adj_RR$target=="Any virus" ] <- "Sparse data"
-adj_RR$RR[adj_RR$sample=="Fly" & adj_RR$study=="Capone 2022 in prep" & adj_RR$target=="Any virus" ] <-  1
-adj_RR$ci.lb[adj_RR$sample=="Fly" & adj_RR$study=="Capone 2022 in prep" & adj_RR$target=="Any virus" ] <- NA
-adj_RR$ci.ub[adj_RR$sample=="Fly" & adj_RR$study=="Capone 2022 in prep" & adj_RR$target=="Any virus" ] <- NA
-adj_RR$sparse[adj_RR$sample=="Fly" & adj_RR$study=="Capone 2022 in prep" & adj_RR$target=="Any virus" ] <- "yes"
-
+# adj_RR$sample_cat[adj_RR$sample=="Fly" & adj_RR$study=="Capone 2022 in prep" & adj_RR$target=="Any virus" ] <- "Sparse data"
+# adj_RR$RR[adj_RR$sample=="Fly" & adj_RR$study=="Capone 2022 in prep" & adj_RR$target=="Any virus" ] <-  1
+# adj_RR$ci.lb[adj_RR$sample=="Fly" & adj_RR$study=="Capone 2022 in prep" & adj_RR$target=="Any virus" ] <- NA
+# adj_RR$ci.ub[adj_RR$sample=="Fly" & adj_RR$study=="Capone 2022 in prep" & adj_RR$target=="Any virus" ] <- NA
+# adj_RR$sparse[adj_RR$sample=="Fly" & adj_RR$study=="Capone 2022 in prep" & adj_RR$target=="Any virus" ] <- "yes"
+# 
 
 #---------------------------------------------------------------
 #function to clean results/order factors
@@ -70,7 +70,7 @@ unadj_RR$est[unadj_RR$study!="Pooled"] <- ""
 unadj_diff$est <- paste0(sprintf("%.2f",unadj_diff$coef)," (",
                          sprintf("%.2f",unadj_diff$ci.lb),", ",
                          sprintf("%.2f",unadj_diff$ci.ub),")")
-unadj_diff$est[adj_diff$study!="Pooled"] <- ""
+#unadj_diff$est[adj_diff$study!="Pooled"] <- ""
 
 
 adj_RR$target_f
@@ -119,7 +119,7 @@ base_plot <- function(mydf, legend_labels=sample_cats, drop_full_sparse=F,
                   width = 0.2, size = 0.75) +
     scale_color_manual(breaks = legend_labels,
                        values = colours, drop = FALSE) +
-    scale_shape_manual(values=c(16, 13,18), guide=FALSE) + 
+    scale_shape_manual(values=c(16, 13,18), guide="none") + 
     #geom_text(aes(y=RR, label=est), color="black", vjust = -0.8, hjust = -0.2, size=2.5) +
     geom_hline(yintercept = 1, linetype="dashed") +
     #facet_grid(target_f~sample_type,  scales="free_y", space = "free_x", labeller = label_wrap_gen(width = lab_width, multi_line = TRUE)) +
@@ -150,7 +150,7 @@ base_plot <- function(mydf, legend_labels=sample_cats, drop_full_sparse=F,
 p_adj_1_pres_main <- adj_RR %>% 
   filter(target %in% c("Any pathogen"), sample=="any sample type") %>%
   base_plot(lab_width=20, drop_full_sparse=T, Y_range=c(0.5,2.5), legend.pos="none", facet=F)
-ggsave(p_adj_1_pres_main, file=here("figures/pngs/p1_path_presentation_main.png"), width=4, height=2)
+ggsave(p_adj_1_pres_main, file=here("figures/pngs/p1_path_presentation_main.png"), width=16, height=8)
 
 
 p_adj_1_pres_all <- adj_RR %>% 

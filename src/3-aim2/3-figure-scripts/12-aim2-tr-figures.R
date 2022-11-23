@@ -40,7 +40,7 @@ p_diar_tr <- ggplot(data = adj_RR %>% filter(Y=="diar7d"), (aes(x=trial, y=RR, s
                 width = 0.3, size = 1, color="black") +
   geom_point(size=3, position = position_dodge(0.5), alpha=0.75, color="black") +
   geom_text(aes(y=ci.ub, label=sig_cat), color="black", position = position_dodge(0.5), hjust = -0.5, size=4) +
-  scale_shape_manual(values=c(16, 13,18), guide=FALSE) + 
+  scale_shape_manual(values=c(16, 13,18), guide="none") + 
   geom_hline(yintercept = 1, linetype="dashed") +
   scale_y_continuous(
     trans='log10', 
@@ -60,7 +60,7 @@ p_haz_tr <- ggplot(data = adj_RR %>% filter(Y=="haz"), (aes(x=trial, y=coef, sha
                 width = 0.3, size = 1, color="black") +
   geom_point(size=3, position = position_dodge(0.5), alpha=0.75, color="black") +
   geom_text(aes(y=ci.ub, label=sig_cat), color="black", position = position_dodge(0.5), hjust = -0.5, size=4) +
-  scale_shape_manual(values=c(16, 13,18), guide=FALSE) + 
+  scale_shape_manual(values=c(16, 13,18), guide="none") + 
   geom_hline(yintercept = 0, linetype="dashed") +
   coord_flip()+
   xlab("") + ylab("Adjusted mean difference:\nTreatment effects on HAZ") + 

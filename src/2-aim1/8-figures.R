@@ -112,6 +112,7 @@ base_plot <- function(mydf, legend_labels=sample_cats, drop_full_sparse=F,
   mydf <- mydf %>% mutate(sparse=factor(sparse, levels=c("no","yes","pooled"))) %>%
     droplevels(.)
   
+
   shapes <- c("no" = 16,
                "yes" = 13,
                "pooled"  = 18)
@@ -124,9 +125,12 @@ base_plot <- function(mydf, legend_labels=sample_cats, drop_full_sparse=F,
   geom_point(size=2, position = position_dodge(0.5)) +
     geom_errorbar(aes(ymin=ci.lb, ymax=ci.ub), position = position_dodge(0.5),
                   width = 0.2, size = 0.75) +
-    scale_color_manual(breaks = legend_labels,
+    scale_color_manual(breaks = legend_labels, guide = guide_legend(),
       values = colours, drop = FALSE) +
-    scale_shape_manual(values=shapes, guide="none",  drop = TRUE) + 
+    scale_shape_manual(values=shapes, 
+                       guide = guide_legend(),
+                       #guide="none", 
+                       drop = FALSE) + 
     geom_text(aes(y=RR, label=est), color="black", vjust = -0.8, hjust = -0.1, size=1.5) +
     geom_hline(yintercept = 1, linetype="dashed") +
     facet_grid(target_f~sample_type,  scales="free_y", space = "free_x", labeller = label_wrap_gen(width = lab_width, multi_line = TRUE)) +
@@ -135,14 +139,15 @@ base_plot <- function(mydf, legend_labels=sample_cats, drop_full_sparse=F,
                        trans='log10', 
                        labels = c("1/16","1/8","1/4", "1/2","1", "2", "4", "8", "16")
                        ) + coord_flip(ylim=axis_range)+
-    labs(color="Sample type") + xlab("") + ylab("Prevalence ratio (Intervention vs. control)") + 
+    guides(color=guide_legend(title="Sample type", nrow=2,byrow=TRUE), 
+           shape=guide_legend(title="Sample type", nrow=2,byrow=TRUE)) +
+    xlab("") + ylab("Prevalence ratio (Intervention vs. control)") + 
     theme_ki() + 
     theme(axis.ticks.x=element_blank(),
           legend.position = "bottom",
           strip.placement = "outside",
           panel.spacing = unit(0, "lines")) 
 }
-
 
 
 #---------------------------------------------------------------

@@ -21,7 +21,6 @@ temp <- ddiar%>% filter(trial=="Gram Vikas")
 Wvars = c("sex","age","hfiacat","momage","hhwealth", "Nhh","nrooms","walls", "roof", "floor","elec","dadagri","landacre","landown", "momedu")         
 Wvars_anthro = c("sex","age_anthro","hfiacat","momage","hhwealth", "Nhh","nrooms","walls", "roof", "floor","elec","dadagri","landacre","landown", "momedu")         
 
-table(d$tr)
 ddiar$tr <- ifelse(ddiar$tr=="Intervention",1,0)
 dhaz$tr <- ifelse(dhaz$tr=="Intervention",1,0)
 
@@ -32,10 +31,10 @@ res_diar_unadj <- ddiar %>% group_by(trial) %>%
 res_diar_unadj$sparse <- ifelse(is.na(res_diar_unadj$RR), "yes", "no")
 res_diar_unadj$RR[is.na(res_diar_unadj$RR)] <- 1
 
-res_diar_unadj_sens <- ddiar_sens %>% group_by(trial) %>%
-  do(aim2_glm(., Ws = NULL,  outcome="diar7d_full", exposure="tr", study=.$study[1], sample=.$sample[1], target=.$target[1], family="binomial", minN_thres=1)) 
-res_diar_unadj_sens$sparse <- ifelse(is.na(res_diar_unadj_sens$RR), "yes", "no")
-res_diar_unadj_sens$RR[is.na(res_diar_unadj_sens$RR)] <- 1
+# res_diar_unadj_sens <- ddiar_sens %>% group_by(trial) %>%
+#   do(aim2_glm(., Ws = NULL,  outcome="diar7d_full", exposure="tr", study=.$study[1], sample=.$sample[1], target=.$target[1], family="binomial", minN_thres=1)) 
+# res_diar_unadj_sens$sparse <- ifelse(is.na(res_diar_unadj_sens$RR), "yes", "no")
+# res_diar_unadj_sens$RR[is.na(res_diar_unadj_sens$RR)] <- 1
 
 
 res_haz_unadj <- dhaz %>% group_by(trial) %>% filter(study!="Odagiri 2016") %>% droplevels() %>%

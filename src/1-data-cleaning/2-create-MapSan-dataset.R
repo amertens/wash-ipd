@@ -5,14 +5,19 @@ rm(list=ls())
 source(here::here("0-config.R"))
 
 #Load env. data
-env <- read.csv(paste0(dropboxDir,"Data/MapSan/mapsan_child_envr_data_forIPD.csv"))
+env <- read.csv(paste0(dropboxDir,"Data/MapSan/mapsan_child_envr_data_forIPD.csv")) %>% rename(samp_id=ï..samp_id, samp_date_coarse=samp_date)
+dates <- read.csv(paste0(dropboxDir,"Data/MapSan/mapsan_child_envr_dates_full.csv"))
+head(dates)
+env <- left_join(env, dates, by=c("samp_id"))
+table(is.na(env$samp_date))
+env %>% select(samp_date, samp_date_coarse)
 
 head(env)
 #compID is the clustering ID
 table(env$hh)
 
 #rename variables. Original study clustered on compound
-env <- env %>% rename(sampleid=ï..samp_id, clusterid=comp, env_date=samp_date) %>%
+env <- env %>% rename(sampleid=samp_id,clusterid=comp, env_date=samp_date) %>%
   mutate(hh=ifelse(is.na(hh),52,hh),
     hhid=clusterid*100+hh)
 summary(env$env_date)
@@ -38,7 +43,7 @@ env <- env %>% select(env_date, sampleid, clusterid, hhid, hh, survey, season, t
 env <- env %>% mutate(
   round=case_when(survey=="0m"~"bl",
                    survey=="12m"~"ml"),
-  env_date=paste0(env_date,"-15"),
+  #env_date=paste0(env_date,"-15"),
   env_date=ymd(env_date),
   censquant = censquant^10 #untransform abundance estimates
 ) %>% 
@@ -129,11 +134,18 @@ table(is.na(env$clusterid))
 # merge in fly pathogen data
 #----------------------------------------
 
-# For the presence/absence dataset I used a Cq cutoff of 35. For the quantitative dataset I set all non-detects to the theoretical LOD (250 gc/fly) and for all detects I used a standard curve to determine the gene copy density.
+# For the presence/absence dataset I used a Cq cutoff of 35. For the quantitative dataset I set all non-detects to the theoretical 
+#LOD (250 gc/fly) and for all detects I used a standard curve to determine the gene copy density.
 # 
-# These flies are from MapSan pre-intervention (baseline) and post-intervention (referred to as midline / 12-month). Due to a limited number of compounds where we caught flies at the 12-month phase, I tried to analyze 2 flies per compound, and to differentiate samples you will see a "_2" in the first column.
+# These flies are from MapSan pre-intervention (baseline) and post-intervention (referred to as midline / 12-month). Due to a limited 
+#number of compounds where we caught flies at the 12-month phase, 
+#I tried to analyze 2 flies per compound, and to differentiate samples you will see a "_2" in the first column.
 # 
-# I've also included the fly mass (in grams), species (house or bottle), and where we caught the fly (latrine entrance or food prep area) that can be included as potential confounders. I prioritized analyzing house flies over bottle flies, and flies caught in the food prep area over the latrine entrance. However, we didn't always catch houseflies and sometimes we only caught flies from the latrine entrance.
+# I've also included the fly mass (in grams), species (house or bottle), and where we caught the fly (latrine entrance or food prep area) 
+#that can be included as potential confounders. I prioritized analyzing house flies over bottle flies, and flies caught in the food prep 
+#area 
+#over the latrine entrance. 
+#However, we didn't always catch houseflies and sometimes we only caught flies from the latrine entrance.
 
 flypos <- read.csv(paste0(dropboxDir,"Data/MapSan/MapSan_flies_presence_absence_for AM.csv"))
 flyabund <- read.csv(paste0(dropboxDir,"Data/MapSan/MapSan_flies_quantitative_for AM.csv"))
@@ -254,27 +266,29 @@ table(is.na(env$pos))
 #----------------------------------------
 
 #Load child data
-child <- read.csv(paste0(dropboxDir,"Data/MapSan/triPhase_database_20200824 1412_IPD.csv"))
+child <- read.csv(paste0(dropboxDir,"Data/MapSan/triPhase_database_20200824 1412_IPD_fulldates.csv"))
 colnames(child)
 head(child)
 child$ch_surveydate_coarsed
+child$ch_surveydate
 
 #rename variables
-child <- child %>% rename(childid=ï..totchildID, clusterid=compID, hhid=totHHid)
+child <- child %>% rename(childid=totchildID, clusterid=compID, hhid=totHHid)
   
 #Replace missingness code (99999999) with NA
 child <- child %>% mutate_all(~na_if(., 99999999))
 
 #Create child sample date
-child <- child %>% mutate(child_date= ymd(paste0(ch_surveydate_coarsed,"-15")), child_date_pathogen=child_date)
+child <- child %>% mutate(child_date= dmy(ch_surveydate), 
+                          child_date_pathogen=dmy(ch_surveydate)
+                          # child_date= ymd(paste0(ch_surveydate_coarsed,"-15")), 
+                          # child_date_pathogen=ymd(paste0(sampDate_coarsed,"-15"))
+                          )
 table(is.na(child$child_date_pathogen))
-child %>% select(diarrhea, child_date, ch_surveydate_coarsed, sampDate_coarsed)
+df <- child %>% select(diarrhea, anthro_hfa_2, gpp_Num_inf, child_date, child_date_pathogen, ch_surveydate, ch_surveydate_coarsed, sampDate_coarsed)
+table(df$child_date > df$child_date_pathogen)
 
-child$child_date[child$actualPhase==0]
-child$child_date[child$actualPhase==1]
-child$child_date[child$actualPhase==2]
 
-table(child$ch_careEDUorig)
 
 child <- child %>% select(childid, actualPhase, clusterid, hhid,
                           child_date, child_date_pathogen,

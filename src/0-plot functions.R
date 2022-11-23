@@ -110,7 +110,7 @@ heatmap_plot <- function(d, colours, textcol= "grey20"){
           strip.background = element_blank(), panel.background = element_rect(fill = "grey80", colour = "grey80"), panel.grid.major = element_blank(),
           panel.grid.minor = element_blank(), 
           panel.spacing = unit(panel_spacing, "lines")) +
-    guides(fill = guide_legend("P-value strength", nrow = 2)) + labs(x = "", y = "", title = "")
+    guides(fill = guide_legend("P-value strength\n(estimate direction)", nrow = 2)) + labs(x = "", y = "", title = "")
   
   
   

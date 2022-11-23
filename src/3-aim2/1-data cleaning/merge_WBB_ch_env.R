@@ -67,12 +67,7 @@ wbb_sth <- wbb_sth %>% subset(., select = c(
         !is.na(posmult) | !is.na(qpcr.positive.Ac) | !is.na(qpcr.positive.Ad) |
           !is.na(qpcr.positive.Al) | !is.na(qpcr.positive.IAC) | !is.na(qpcr.positive.Na) |   
           !is.na(qpcr.positive.Ss) | !is.na(qpcr.positive.Tt) | !is.na(qpcr.positive.Sth))  %>%
-  rename(#ch_ascaris=ascaris_yn, 
-         # ch_trichuris=trichuris_yn, 
-         # ch_hook=hook_yn, 
-         # ch_sth=sth_yn, 
-         # ch_giardia=posgi, 
-         # ch_sth_giar_coinf=posmult,
+  rename(
          aged_pathogen = agedays) %>%
   mutate(month=ceiling(svyweek/52*12),
          #child_date_pathogen= dmy(paste0("15-",month, "-", svyyear)) #Fix year- it was 2 years after intervention?
@@ -226,13 +221,6 @@ diar_fuhr <- wbb %>% filter(round %in% c(4,5),  !is.na(diar7d)) %>%
 
 prop.table(table(diar_fuhr$diar7d))*100
 
-# #get full diarrhea disease
-# diar_fuhr_full <- wbb %>% filter(!is.na(diar7d)) %>% 
-#   mutate(merge_round=as.numeric(round)-1, study="Fuhrmeister 2020") %>%
-#   rename(diar7d_full=diar7d) %>%
-#   select(study, clusterid, dataid, hhid, 
-#          merge_round, child_date, agedays, sex,             
-#          childid, diar7d_full)
 
 #Get endline anthropometry
 # Erica's R3 and R4 sampling definitely preceded the main trial endline anthro measurements so there should not be missings there either.
@@ -491,9 +479,7 @@ head(env_kwong)
 kwong_res <- data.frame(
   study = "kwong",
   env_samples_before_merge = nrow(env_kwong %>% do(drop_agg(.)) %>% distinct(sampleid, dataid,  hhid, clusterid,sample, round)),
-  env_HH_before_merge = nrow(env_kwong %>% do(drop_agg(.)) %>% distinct(dataid,  hhid, clusterid))#,
-  #diar_samples_before_merge = nrow(WBB_main_diar %>% filter(!is.na(diar7d)) %>% ungroup() %>% distinct(dataid, hhid, child_date, agedays, childid, diar7d)),
-  #haz_samples_before_merge = nrow(WBB_main_anthro %>% filter(!is.na(haz)) %>% ungroup() %>% distinct(dataid, hhid, child_date_anthro, agedays_anthro,    sex, haz))
+  env_HH_before_merge = nrow(env_kwong %>% do(drop_agg(.)) %>% distinct(dataid,  hhid, clusterid))
 )
 
 
@@ -515,9 +501,6 @@ diar_env_kwong %>% group_by(sampleid,sample,target,childid) %>% summarise(N=n())
 dim(diar_env_kwong)
 
 
-# diar <- read.csv(paste0(dropboxDir,"Data/WBB/washb-bangladesh-diar.csv")) %>% filter(svy==2)
-# summary(dmy(diar$svydate))
-# summary(env_kwong$env_date)
 
 
 #get endline WBB health data
@@ -531,7 +514,8 @@ WBB_main_anthro <- WBB_main_health %>% filter(!is.na(laz)|!is.na(whz)|!is.na(waz
   rename(haz_main=laz, whz_main=whz, waz_main=waz, agedays_anthro=agedays)
 
 
-EE <- read.csv("C:/Users/andre/Downloads/BD-EE-anthro.csv") %>% rename(haz=laz3,  waz=waz3,  whz=whz3, child_date_anthro=date3,age_anthro= aged3) %>% mutate(child_date_anthro=as.Date(child_date_anthro, origin=csv_origin)) %>% filter(!is.na(haz)|!is.na(waz)|!is.na(whz)) %>%
+EE <- read.csv("C:/Users/andre/Downloads/BD-EE-anthro.csv") %>% filter(date3!="") %>%
+  rename(haz=laz3,  waz=waz3,  whz=whz3, child_date_anthro=date3,age_anthro= aged3) %>% mutate(child_date_anthro=as.Date(child_date_anthro, origin=csv_origin)) %>% filter(!is.na(haz)|!is.na(waz)|!is.na(whz)) %>%
   subset(., select = c(dataid, childNo,haz, waz, whz, child_date_anthro, age_anthro))
 summary(EE$child_date_anthro)
 
@@ -560,7 +544,6 @@ anthro_env_kwong <- anthro_env_kwong  %>% mutate(flag = ifelse(diff_main>=diff_E
                                                  waz=ifelse(is.na(waz)|flag, waz_main, waz),
                                                  diff_EE=ifelse(is.na(diff_EE), diff_main, diff_EE)) %>% distinct()
  summary(anthro_env_kwong$child_date_anthro)
-# table(is.na(anthro_env_kwong$diff_EE))
 
 
 anthro_env_kwong$haz[anthro_env_kwong$diff_EE< 1 ] <- NA
@@ -585,23 +568,7 @@ EE[EE$dataid=="13807",]
 ch_env_kwong$sex[ch_env_kwong$dataid=="13807"] <- "male"
 ch_env_kwong$sex[ch_env_kwong$dataid=="42606"] <- "male"
 
-# colnames(env_kwong)
-# dim(env_kwong)
-# dim(ch_kwong)
-# env_kwong<- left_join(env_kwong, ch_kwong, by=c("dataid",  "hhid", "clusterid")) %>% filter(!(is.na(diar7d) & is.na(haz) & is.na(waz) & is.na(whz)))
-# colnames(ch_env_kwong)
-# dim(ch_env_kwong)
-# 
-# table(is.na(ch_env_kwong$child_date_anthro))
-# table(is.na(ch_env_kwong$env_date))
 
-
-# diar_r01_kwong <- wbb %>% filter(round %in% c(7),  !is.na(diar7d))
-# table(diar_r01_kwong$diar7d)
-# ch_env_kwong<- left_join(env_kwong, diar_r01_kwong, by=c("dataid",  "hhid", "clusterid")) %>% filter(!(is.na(diar7d) & is.na(haz) & is.na(waz) & is.na(whz)))
-# table(ch_env_kwong$diar7d)
-# date_diff <- ch_env_kwong %>% mutate(date_diff = child_date-env_date) %>% select(study, sampleid, target, dataid, hhid, date_diff, diar7d, haz) %>% distinct()
-# summary(as.numeric(date_diff$date_diff))
 
 table(ch_env_kwong$pos, is.na(ch_env_kwong$haz))
 table(ch_env_kwong$pos, is.na(ch_env_kwong$haz))
@@ -625,9 +592,14 @@ kwong_res$samples_with_ch_after_merge <- nrow(ch_env_kwong %>% filter(!is.na(haz
 # table(as.numeric(ch_env_kwong$child_date_anthro-ch_env_kwong$env_date) > -1)
 # table(as.numeric(ch_env_kwong$child_date_anthro-ch_env_kwong$env_date))
 
+ch_env_kwong2 <- ch_env_kwong %>% filter(!is.na(diar7d))
+table(ch_env_kwong2$child_date==ch_env_kwong2$env_date)
+
 ch_env_kwong <- ch_env_kwong %>%
   mutate(diar7d_full=diar7d,
-         diar7d = ifelse(child_date<env_date, NA, diar7d),
+         #XXXXXXXXXXXX TEMP XXXXXXXXXXXXXX
+         diar7d = ifelse(child_date<=env_date, NA, diar7d),
+         #XXXXXXXXXXXX TEMP XXXXXXXXXXXXXX
          diar7d = ifelse(child_date-env_date > 124, NA, diar7d),
          diar7d = ifelse(is.na(child_date)|is.na(env_date), NA, diar7d))
 table(ch_env_kwong$diar7d)

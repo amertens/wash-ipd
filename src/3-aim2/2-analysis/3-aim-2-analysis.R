@@ -3,48 +3,89 @@ rm(list=ls())
 source(here::here("0-config.R"))
 
 
-d <- readRDS(paste0(dropboxDir,"Data/merged_env_CH_data_clean.rds"))
-head(d)
-d <- droplevels(d)
-table(d$study, d$pos)
-table(d$study)
-table(d$study, d$hhwealth)
-for(i in unique(d$study)){
-  print(summary(d$hhwealth_cont[d$study==i]))
-}
-table(d$study, d$sample, d$pos)
-unique(d$target)
-
-d <- d %>% filter(sample!="FP") %>% droplevels()
-
-table(d$target)
-df <- d %>% filter(target=="Animal (BacCow)" & sample=="any sample type")
-prop.table(table(df$study, df$pos),1)
-
-df <- d %>% filter(target=="Human (HumM2)" & sample=="S")
-prop.table(table(df$study, df$pos),1)
-
-df <- d %>% filter(target=="Rotavirus", study=="Boehm 2016", sample=="W", !is.na(haz))
-table(df$pos)
- 
-#clean pathogen dates/child ages
-
-
-
-# 1.	Child birth order/parity 
-# 2.	Asset-based wealth index 
-# 3.	Number of individuals and children in household
-# 4.	Household food security 
-# 5.	Household electrification and construction, including wall/roof material 
-# 6.	Parental age 
-# 7.	Parental education 
-# 8.	Parental employment 
-# a.	Indicator for works in agriculture 
-# 9.	Land ownership 
+d <- readRDS(paste0(dropboxDir,"Data/merged_env_CH_data_clean.rds")) %>% filter(sample!="FP") %>% droplevels()
 
 Wvars = c("sex","age","hfiacat","momage","hhwealth", "Nhh","nrooms","walls", "roof", "floor","elec","dadagri","landacre","landown", "momedu", "tr")         
 Wvars_anthro = c("sex","age_anthro","hfiacat","momage","hhwealth", "Nhh","nrooms","walls", "roof", "floor","elec","dadagri","landacre","landown", "momedu", "tr")         
 
+temp <- d %>% filter(study=="Holcomb 2021",target=="Avian (GFD)", !is.na(diar7d), child_date-env_date>0,  child_date-env_date< 125)
+table(temp$pos, temp$diar7d, temp$sample)
+
+# 
+# res_haz_adj <- d %>% group_by(study, sample, target) %>% filter(sample=="any sample type", target=="Any pathogen") %>%
+#   do(aim2_glm(., Ws = Wvars_anthro, forcedW=c("age_anthro", "hhwealth"), outcome="haz", exposure="pos", study=.$study[1], sample=.$sample[1], target=.$target[1], family="gaussian")) 
+#   #do(aim2_glm(., Ws = NULL, forcedW=NULL, outcome="haz", exposure="pos", study=.$study[1], sample=.$sample[1], target=.$target[1], family="gaussian")) 
+# res_haz_adj$sparse <- ifelse(is.na(res_haz_adj$coef), "yes", "no")
+# res_haz_adj$coef[is.na(res_haz_adj$coef)] <- 0
+# res_haz_adj
+# #res_haz_adj  %>% filter(target=="Any pathogen", study!="Capone 2021", study!="Capone 2022 in prep") %>%
+# res_haz_adj  %>% filter(target=="Any pathogen") %>%
+# #res_haz_adj  %>% filter(target=="Any pathogen", study!="Capone 2021") %>%
+#   group_by(Y, sample, target) %>% 
+#   filter(!is.na(se)) %>% mutate(N=n()) %>%
+#   filter(N>=4) %>% 
+#   do(try(pool.cont(.))) 
+# 
+# 
+# res_haz_adj <- d %>% group_by(study, sample, target) %>% filter(sample=="W", target=="Any MST") %>%
+#   do(aim2_glm(., Ws = Wvars_anthro, forcedW=c("age_anthro", "hhwealth"), outcome="haz", exposure="pos", study=.$study[1], sample=.$sample[1], target=.$target[1], family="gaussian")) 
+# #do(aim2_glm(., Ws = NULL, forcedW=NULL, outcome="haz", exposure="pos", study=.$study[1], sample=.$sample[1], target=.$target[1], family="gaussian")) 
+# res_haz_adj$sparse <- ifelse(is.na(res_haz_adj$coef), "yes", "no")
+# res_haz_adj$coef[is.na(res_haz_adj$coef)] <- 0
+# res_haz_adj
+
+
+
+# old_res<-readRDS("C:/Users/andre/Downloads/adjusted_aim2_res.Rds") %>% filter(sample=="any sample type", target=="Any pathogen", Y=="haz")
+# old_res
+# res_haz_adj
+
+# 
+# # unique(d$target)
+# df <- d %>% filter(study=="Holcomb 2021")
+# res_mst_adj <- df %>% group_by(study, sample, target) %>% #filter(sample=="any sample type", target=="Any animal MST") %>%
+#   do(aim2_glm(., Ws = Wvars, forcedW=c("age_anthro", "hhwealth"), outcome="diar7d", exposure="pos", study=.$study[1], sample=.$sample[1], target=.$target[1], family="binomial", minN_thres = 1))
+# #do(aim2_glm(., Ws = NULL, forcedW=NULL, outcome="haz", exposure="pos", study=.$study[1], sample=.$sample[1], target=.$target[1], family="gaussian"))
+# res_mst_adj$sparse <- ifelse(is.na(res_mst_adj$coef), "yes", "no")
+# res_mst_adj$coef[is.na(res_mst_adj$coef)] <- 0
+# res_mst_adj <- res_mst_adj %>% filter(!is.na(RR))
+# res_mst_adj
+# 
+# res_mst_adj  %>% filter(target=="Any pathogen") %>%
+#   #res_mst_adj  %>% filter(target=="Any pathogen", study!="Capone 2021") %>%
+#   group_by(Y, sample, target) %>%
+#   filter(!is.na(se)) %>% mutate(N=n()) %>%
+#   filter(N>=4) %>%
+#   do(try(pool.cont(.)))
+# 
+# table(d$study)
+
+
+# res_diar_adj <- d %>% group_by(study, sample, target) %>% filter(sample=="any sample type", target=="Any animal MST", study=="Holcomb 2021", !is.na(diar7d)) %>%
+#   do(aim2_glm(., Ws = Wvars, forcedW=c("age", "hhwealth"), outcome="diar7d", exposure="pos", study=.$study[1], sample=.$sample[1], target=.$target[1], family="binomial", minN_thres = 0)) 
+# res_diar_adj$sparse <- ifelse(is.na(res_diar_adj$RR), "yes", "no")
+# res_diar_adj$RR[is.na(res_diar_adj$RR)] <- 1
+# res_diar_adj 
+# 
+# 
+# res_diar_adj <- d %>% group_by(study, sample, target) %>% filter(sample=="any sample type", target=="Any human MST", study=="Holcomb 2021", !is.na(diar7d)) %>%
+#   do(aim2_glm(., Ws = Wvars, forcedW=c("age", "hhwealth"), outcome="diar7d", exposure="pos", study=.$study[1], sample=.$sample[1], target=.$target[1], family="binomial", minN_thres = 0)) 
+# res_diar_adj$sparse <- ifelse(is.na(res_diar_adj$RR), "yes", "no")
+# res_diar_adj$RR[is.na(res_diar_adj$RR)] <- 1
+# res_diar_adj 
+
+# res_diar_adj <- d %>% group_by(study, sample, target) %>% filter(sample=="any sample type", target=="Giardia") %>%
+#   do(aim2_glm(., Ws = Wvars, forcedW=c("age", "hhwealth"), outcome="diar7d", exposure="pos", study=.$study[1], sample=.$sample[1], target=.$target[1], family="binomial", minN_thres = 0)) 
+# res_diar_adj$sparse <- ifelse(is.na(res_diar_adj$RR), "yes", "no")
+# res_diar_adj$RR[is.na(res_diar_adj$RR)] <- 1
+# res_diar_adj 
+# 
+# 
+# res_diar_adj <- d %>% group_by(study, sample, target) %>% filter(sample=="any sample type", target=="V. cholerae") %>%
+#   do(aim2_glm(., Ws = Wvars, forcedW=c("age", "hhwealth"), outcome="diar7d", exposure="pos", study=.$study[1], sample=.$sample[1], target=.$target[1], family="binomial", minN_thres = 0)) 
+# res_diar_adj$sparse <- ifelse(is.na(res_diar_adj$RR), "yes", "no")
+# res_diar_adj$RR[is.na(res_diar_adj$RR)] <- 1
+# res_diar_adj 
 
 
 #-----------------------------------
@@ -58,6 +99,9 @@ res_diar <- d %>% group_by(study, sample, target) %>%
 res_diar$sparse <- ifelse(is.na(res_diar$RR), "yes", "no")
 res_diar$RR[is.na(res_diar$RR)] <- 1
 fullres <- bind_rows(fullres, res_diar)
+
+temp <- res_diar %>% filter(study=="Holcomb 2021")
+temp
 
 res_stunt<- d %>% group_by(study, sample, target) %>%
   do(aim2_glm(., outcome="stunt", exposure="pos", study=.$study[1], sample=.$sample[1], target=.$target[1], family="binomial")) 
@@ -101,14 +145,14 @@ fullres <- bind_rows(fullres, res_waz)
 
 
 
-
+set.seed(12345)
 fullres_adj <- NULL
 res_diar_adj <- d %>% group_by(study, sample, target) %>%
   do(aim2_glm(., Ws = Wvars, forcedW=c("age", "hhwealth"), outcome="diar7d", exposure="pos", study=.$study[1], sample=.$sample[1], target=.$target[1], family="binomial")) 
 res_diar_adj$sparse <- ifelse(is.na(res_diar_adj$RR), "yes", "no")
 res_diar_adj$RR[is.na(res_diar_adj$RR)] <- 1
 fullres_adj <- bind_rows(fullres_adj, res_diar_adj)
-temp <- res_diar_adj %>% filter(target=="Any pathogen")
+temp <- res_diar_adj %>% filter(target=="V. cholerae")
 
 res_stunt_adj <- d %>% group_by(study, sample, target) %>%
   do(aim2_glm(., Ws = Wvars_anthro, forcedW=c("age", "hhwealth"), outcome="stunt", exposure="pos", study=.$study[1], sample=.$sample[1], target=.$target[1], family="binomial")) 

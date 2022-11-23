@@ -98,14 +98,14 @@ table(adj_diff$sign)
 
 adj_diff$pval_cat <- cut(adj_diff$pval, breaks = c(-1, 0.01, 0.05, 0.2, 2), 
                   labels = c("<0.01", "<0.05", "0.05-0.2", "0.2-1"))
-adj_diff$pval_cat <- ifelse(adj_diff$sign == -1, paste0(adj_diff$pval_cat, " increase risk"), 
-                     paste0(adj_diff$pval_cat, " decrease risk"))
-adj_diff$pval_cat[adj_diff$pval_cat %in% c("0.2-1 decrease risk", "0.2-1 increase risk")] <- "0.2-1"
+adj_diff$pval_cat <- ifelse(adj_diff$sign == -1, paste0(adj_diff$pval_cat, " (increased risk)"), 
+                     paste0(adj_diff$pval_cat, " (decreased risk)"))
+adj_diff$pval_cat[adj_diff$pval_cat %in% c("0.2-1 (decreased risk)", "0.2-1 (increased risk)")] <- "0.2-1"
 table(adj_diff$pval_cat)
-adj_diff$pval_cat <- factor(adj_diff$pval_cat, levels = c("<0.01 decrease risk", 
-                                            "<0.05 decrease risk", "0.05-0.2 decrease risk", 
-                                            "0.2-1", "0.05-0.2 increase risk", 
-                                            "<0.05 increase risk", "<0.01 increase risk"))
+adj_diff$pval_cat <- factor(adj_diff$pval_cat, levels = c("<0.01 (decreased risk)", 
+                                            "<0.05 (decreased risk)", "0.05-0.2 (decreased risk)", 
+                                            "0.2-1", "0.05-0.2 (increased risk)", 
+                                            "<0.05 (increased risk)", "<0.01 (increased risk)"))
 
 adj_diff$pval_cat <- addNA(adj_diff$pval_cat)
 levels(adj_diff$pval_cat) = c(levels(adj_diff$pval_cat), "Sparse")
@@ -114,6 +114,7 @@ table(adj_diff$pval_cat)
 table(is.na(adj_diff$pval_cat))
 adj_diff$est = ""
 adj_diff$est = paste0(round(adj_diff$point.diff, 2), " (", round(adj_diff$ci.lb, 2), ", ", round(adj_diff$ci.ub, 2), ")")
+#adj_diff$est = paste0(format(round(adj_diff$point.diff, 2), nsmall = 2), " (", format(round(adj_diff$ci.lb, 2), nsmall = 2), ", ", format(round(adj_diff$ci.ub, 2), nsmall = 2), ")")
 
 
 #only keep aggregate if it is different than main
@@ -127,11 +128,11 @@ adj_diff <- adj_diff %>% group_by(study, Y, target) %>%
 adj_diff$est = gsub("NA \\(NA, NA\\)", "", adj_diff$est)
 textcol = "grey20"
 cols = (brewer.pal(n = 9, name = "Spectral"))
-colours <- c(`<0.01 increase risk` = cols[1], `<0.05 increase risk` = cols[2], 
-             `0.05-0.2 increase risk` = cols[3],
+colours <- c(`<0.01 (increased risk)` = cols[1], `<0.05 (increased risk)` = cols[2], 
+             `0.05-0.2 (increased risk)` = cols[3],
              `0.2-1` = cols[5],  
-             `0.05-0.2 decrease risk` = cols[7], `<0.05 decrease risk` = cols[8], 
-             `<0.01 decrease risk` = cols[9], `Not estimated` = "gray80")
+             `0.05-0.2 (decreased risk)` = cols[7], `<0.05 (decreased risk)` = cols[8], 
+             `<0.01 (decreased risk)` = cols[9], `Not estimated` = "gray80")
 
 panel_spacing = 0.75
 

@@ -259,14 +259,11 @@ p_sex_haz_1 <- adj_RR %>%
 ggsave(p_sex_haz_1, file = paste0(here::here(),"/figures/pngs/subgroup_aim2_p_sex_haz.png"), width = 10, height = 6)
 
 
-#To do:
-#-mark sparse with different shapes in HAZ plots
-#add to report
-#add interpretations
 
 
 #save figures
 save(list=ls(pattern="p_"), file=here("figures/aim2_subgroup_figures.Rdata"))
 
 
-
+adj_RR %>% filter(target %in% c("Any pathogen"), Y=="haz", V=="sex", study=="Pooled")
+adj_PD %>% filter(target %in% c("Any pathogen"), Y=="diar7d", V=="wet_CH", study=="Pooled")

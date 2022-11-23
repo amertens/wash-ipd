@@ -5,17 +5,13 @@ source(here::here("0-config.R"))
 unadj_RR <- readRDS(file=here("results/unadjusted_aim2_pooled.Rds")) 
 adj_RR <- readRDS(file=here("results/adjusted_aim2_pooled.Rds")) 
 
-temp<-adj_RR%>%filter(Y=="diar7d", target=="Any MST")
-table(temp$sample_cat)
 
-unique(adj_RR$target)
 
 #count number of covariates
 unadj_RR$N_W <- ""
 adj_RR$N_W <- str_count(adj_RR$W,",") + 1
 adj_RR$N_W[adj_RR$W=="unadjusted"] <- 0
 
-temp <- adj_RR %>% filter(study=="Holcomb 2021", target=="Any MST", !is.na(coef), Y %in% c("diar7d","haz"))
 
 
 table(adj_RR$minN)
@@ -90,6 +86,8 @@ base_plot <- function(mydf, legend_labels=sample_cats, drop_full_sparse=F, facet
   if(drop_full_sparse){
     mydf <- mydf %>% group_by(target) %>%
       filter(n()!=sum(sparse=="yes")) %>% ungroup()
+    mydf <- mydf %>% group_by(study, target) %>%
+      filter(n()!=sum(sparse=="yes")) %>% ungroup()
   }
   
   minCI <- min(mydf$ci.lb, na.rm=T)-0.001
@@ -122,7 +120,7 @@ base_plot <- function(mydf, legend_labels=sample_cats, drop_full_sparse=F, facet
     labs(color="Sample type", shape="Sample type") + xlab("") + ylab("Prevalence ratio") + 
     theme_ki() + 
     theme(axis.ticks.x=element_blank(),
-          legend.position = "bottom",
+          legend.position = "none",
           strip.placement = "outside",
           strip.text.x = element_text(size=10, face = "bold"),
           strip.text.y = element_text(size=facet_lab_size, angle = 270, face = "bold"),          plot.title = element_text(hjust = 0.5, face = "plain", size=9),
@@ -149,6 +147,8 @@ base_plot_diff <- function(mydf, legend_labels=sample_cats, drop_full_sparse=F, 
   if(drop_full_sparse){
     mydf <- mydf %>% group_by(target) %>%
       filter(n()!=sum(sparse=="yes")) %>% ungroup()
+    mydf <- mydf %>% group_by(study, target) %>%
+      filter(n()!=sum(sparse=="yes")) %>% ungroup()
   }
   mydf <- mydf %>% droplevels(.)
   
@@ -167,7 +167,7 @@ base_plot_diff <- function(mydf, legend_labels=sample_cats, drop_full_sparse=F, 
     labs(color="Sample type") + xlab("") + ylab("Mean difference") + 
     theme_ki() + 
     theme(axis.ticks.x=element_blank(),
-          legend.position = "bottom",
+          legend.position = "none",
           strip.placement = "outside",
           strip.text.x = element_text(size=10, face = "bold"),
           strip.text.y = element_text(size=facet_lab_size, angle = 270, face = "bold"),          plot.title = element_text(hjust = 0.5, face = "plain", size=9),
