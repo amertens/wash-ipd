@@ -190,12 +190,9 @@ hol_anthro <- hol_anthro %>% mutate(date_diff = as.numeric(child_date-env_date))
 summary(hol_anthro$date_diff)
 hol_df <- bind_rows( hol_anthro, hol_diar_bl, hol_diar_ml)
 
-unique(hol_df$target)
-temp <- hol_df %>% filter(study=="Holcomb 2021",target=="Avian (GFD)", !is.na(diar7d), child_date-env_date>0,  child_date-env_date< 125)
-table(temp$pos, temp$diar7d)
-
 
 d <- bind_rows(cp_df, hol_df)
+
 
 d <-  d %>% mutate(date_diff = as.numeric(child_date-env_date)) %>% filter(date_diff>0)
 table(d$date_diff)
@@ -228,6 +225,7 @@ summary(d$env_date)
 
 prop.table(table(d$child_date==d$env_date))
 prop.table(table(d$child_date<d$env_date))
+prop.table(table(d$child_date>d$env_date+125))
 
 
 

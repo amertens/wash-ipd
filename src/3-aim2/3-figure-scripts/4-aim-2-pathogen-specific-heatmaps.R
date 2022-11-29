@@ -169,14 +169,15 @@ table(d$sample)
 d$est = gsub("NA \\(NA, NA\\)", "", d$est)
 
 d <- d %>% filter(!is.na(target)) %>% droplevels()
-hm_df_agg <- d
 
 
 unique(d$target)
+d$target[d$target=="Any MST"] <- "Any human\nor animal MST"
+hm_df_agg <- d
 hm_df_agg <- hm_df_agg %>% mutate(target = factor(target,  
                   levels = c(
                     "Any pathogen","Any bacteria","Any virus","Any protozoa",
-                    "Any STH","Any MST", "Any human MST","Any animal MST")))
+                    "Any STH","Any human\nor animal MST", "Any human MST","Any animal MST")))
 
 hm_agg <- heatmap_plot(hm_df_agg, colours=colours)
 hm_agg

@@ -98,7 +98,7 @@ ch_diar <- ch %>% rename(
             group_by(childid, dataid, hhid) %>%
             mutate(merge_round = merge_round
                    ) %>%
-            subset(., select = c(childid, dataid, clusterid, hhid, merge_round, diar7d, child_date, age))
+            subset(., select = c(childid, dataid, clusterid, hhid, merge_round, diar7d, child_date, age, sex))
 saveRDS(ch_diar, file = paste0(dropboxDir, "Data/WBK/clean-gv-diar.RDS"))
 
 

@@ -2,21 +2,8 @@
 rm(list=ls())
 source(here::here("0-config.R"))
 
-d <- readRDS(paste0(dropboxDir,"Data/merged_env_CH_data_clean.rds"))
-head(d)
-d <- droplevels(d)
-table(d$study, d$pos)
-table(d$study)
-table(d$study, d$sample)
-table(d$study, d$sample, d$pos)
+d <- readRDS(paste0(dropboxDir,"Data/merged_env_CH_data_clean.rds"))  %>% filter(sample!="FP", sample!="any sample type") %>% droplevels()
 
-d <- d %>% filter(sample!="FP", sample!="any sample type") %>% droplevels()
-table(d$pos, !is.na(d$abund), d$study)
-table(d$pos, d$abund>0, d$study)
-
-df <- d %>% filter(study=="Steinbaum 2019")
-summary(df$abund)
-table(df$pos, df$abund)
 
 #check abundance presence
 d <- d %>% filter(!is.na(abund)) %>% droplevels(.)
@@ -26,14 +13,6 @@ table(d$target, is.na(d$abund))
 table(d$target, d$diar7d, d$sample, d$study)
 
 
-table(d$qual)
-summary(d$abund)
-
-df <- d %>% filter(study=="Capone 2022 in prep", sample=="Fly", target=="Adenovirus")
-summary(df$abund)
-summary(log10(df$abund))
-length(unique(df$abund))
-length(unique(df$abund[df$diar7d==1]))
 
 #Separate STH from MST abundances and add 0.5 to zero counts to allow for log-transformation
 table(d$sample, d$target)
@@ -50,6 +29,13 @@ sth$abund[sth$abund==0] <- 0.01
 
 #combine back together
 d <- bind_rows(d, sth)
+
+
+
+#ensure time ordering of diarrhea (anthro has been set in individual studies)
+table(d$diar7d)
+d$diar7d[d$child_date <= d$env_date | d$child_date > d$env_date+124] <- NA
+table(d$diar7d)
 
 # 1.	Child birth order/parity 
 # 2.	Asset-based wealth index 
@@ -171,7 +157,7 @@ res_diar$RR[res_diar$RR >32 | 1/res_diar$RR > 32] <- 1
 
 res_diar_adj$sparse[res_diar_adj$RR >32 | 1/res_diar_adj$RR > 32] <- "yes"
 res_diar_adj$coef[res_diar_adj$RR >32 | 1/res_diar_adj$RR > 32] <- 0
-res_diar_adj$RR[res_diar_adj$RR >32 | 1/res_diar_adj$RR > 32] <- 1=
+res_diar_adj$RR[res_diar_adj$RR >32 | 1/res_diar_adj$RR > 32] <- 1
 
 res_diar_roq_adj$sparse[res_diar_roq_adj$RR >32 | 1/res_diar_roq_adj$RR > 32] <- "yes"
 res_diar_roq_adj$coef[res_diar_roq_adj$RR >32 | 1/res_diar_roq_adj$RR > 32] <- 0
