@@ -83,6 +83,12 @@ table(d$diar7d)
 d$diar7d[d$child_date <= d$env_date | d$child_date > d$env_date+124] <- NA
 table(d$diar7d)
 
+res_diar_adj <- d %>% group_by(study, sample, target) %>% filter(target=="Ascaris") %>%
+  do(aim2_glm(., Ws = Wvars[Wvars!="tr"], forcedW=c("age", "hhwealth"), outcome="diar7d", exposure="pos", study=.$study[1], sample=.$sample[1], target=.$target[1], family="binomial")) 
+res_diar_adj$sparse <- ifelse(is.na(res_diar_adj$RR), "yes", "no")
+res_diar_adj$RR[is.na(res_diar_adj$RR)] <- 1
+res_diar_adj
+
 
 
 

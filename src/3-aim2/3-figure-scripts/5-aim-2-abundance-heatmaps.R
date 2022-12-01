@@ -164,6 +164,10 @@ d$est = gsub("NA \\(NA, NA\\)", "", d$est)
 d <- d %>% filter(!is.na(target)) %>% droplevels()
 hm_df_path_abund <- d
 
+#Drop empty "any sample: POOLED"
+hm_df_path_abund <- hm_df_path_abund %>%  group_by(X,target) %>% filter(!(X=="Any sample: POOLED"& n()==sum(is.na(pval))))
+
+#plot:
 hm <- heatmap_plot(hm_df_path_abund, colours=colours)
 hm
 
@@ -192,6 +196,10 @@ d$pval_cat[is.na(d$pval_cat)] <- "Not estimated"
 d <- d %>% filter(!is.na(target)) %>% droplevels()
 hm_df_mst_abund <- d
 
+#Drop empty "any sample: POOLED"
+hm_df_mst_abund <- hm_df_mst_abund %>%  group_by(X,target) %>% filter(!(X=="Any sample: POOLED"& n()==sum(is.na(pval))))
+
+#plot:
 hm_mst <- heatmap_plot(hm_df_mst_abund, colours=colours)
 hm_mst
 

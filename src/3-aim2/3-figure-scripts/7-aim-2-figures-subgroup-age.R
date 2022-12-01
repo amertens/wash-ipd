@@ -1,6 +1,4 @@
 
-
-
 rm(list=ls())
 source(here::here("0-config.R"))
 library(scales)
@@ -213,9 +211,10 @@ p_age_diar_1
 
 ggsave(p_age_diar_1, file = paste0(here::here(),"/figures/pngs/subgroup_aim2_p_age_diar.png"), width = 10, height = 6)
 
+
 p_age_haz_1 <- adj_RR %>% 
   filter(target %in% c("Any pathogen","Any MST"), Y=="haz") %>%
-  base_plot_diff(drop_full_sparse=T, ylimits=c(-4,4))
+  base_plot_diff(drop_full_sparse=T, ylimits=c(-2,2))
 ggsave(p_age_haz_1, file = paste0(here::here(),"/figures/pngs/subgroup_aim2_p_age_haz.png"), width = 10, height = 6)
 
 

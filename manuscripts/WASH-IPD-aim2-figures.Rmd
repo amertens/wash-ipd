@@ -372,7 +372,7 @@ __Figure 1.__ Forest plots of associations between specific enteropathogens in e
 p_diar_1_adj
 ```
 
-__Figure 2.__ Forest plots of associations between the prevalence of any enteropathogen or any MST markers in different types of environmental samples and child diarrheal disease. The presented prevalence ratios compare diarrhea prevalence between children from compounds where any pathogen/MST marker was detected vs. not detected in environmental samples. Pooled estimates are presented when there are four or more study-specific estimates for a specific sample type and target combination and are denoted with diamond-shaped points. Grey crossed points denote data that were too sparse to estimate a prevalence ratio (i.e., <10 positive or negative observations). Samples of the same type from different locations (source vs. stored water, flies in kitchen vs. latrine, soil from courtyard vs. latrine) or different individuals (child vs. mother's hands) are plotted separately. Asterisks above estimates denote statistical significance (\*= P-value < 0.05, \*\*= P-value < 0.01, \*\*\*= P-value < 0.001). All estimates are adjusted for potential confounders.
+__Figure 2.__ Forest plots of associations between the prevalence of any enteropathogen or any MST markers in different types of environmental samples and child diarrhoeal disease. The presented prevalence ratios compare diarrhoea prevalence between children from compounds where any pathogen/MST marker was detected vs. not detected in environmental samples. Pooled estimates are presented when there are four or more study-specific estimates for a specific sample type and target combination and are denoted with diamond-shaped points. Grey crossed points denote data that were too sparse to estimate a prevalence ratio (i.e., <10 positive or negative observations). Samples of the same type from different locations (source vs. stored water, flies in kitchen vs. latrine, soil from courtyard vs. latrine) or different individuals (child vs. mother's hands) are plotted separately. Asterisks above estimates denote statistical significance (\*= P-value < 0.05, \*\*= P-value < 0.01, \*\*\*= P-value < 0.001). All estimates are adjusted for potential confounders.
 
 
 ```{r p_haz_1_adj, fig.cap ="", echo=F, warning=F, message=F, fig.width = 10, fig.height = 5}
@@ -405,7 +405,7 @@ __Figure S2.__  WASH intervention effects on child height-for-age Z-scores withi
 p_diar_tr
 ```
 
-__Figure S3.__ WASH intervention effects on child diarrheal disease within the subset of children used in the primary analysis who had time-matched diarrhea observations and environmental samples.
+__Figure S3.__ WASH intervention effects on child diarrhoeal disease within the subset of children used in the primary analysis who had time-matched diarrhoea observations and environmental samples.
 
 
 
@@ -446,7 +446,7 @@ plot(hm_agg)
 
 ```
 
-__Figure S4.__ Heatmap of significance and direction of associations between aggregate measures of environmental contamination (rows) and child diarrhea and growth outcomes (columns).  Cells are colored by the strength of significance and direction of association, and the point estimate and confidence intervals are printed within cells, with relative risks printed for binary outcomes and mean differences for continuous outcomes. Each row is for a different sample type in a specific study or in a pooled estimate across studies, and axis labels are colored by sample type, matching the primary figure legends. Estimates aggregated across any sample type are only plotted if there are multiple sample types for a study. All estimates are adjusted for potential confounders.
+__Figure S4.__ Heatmap of significance and direction of associations between aggregate measures of environmental contamination (rows) and child diarrhoea and growth outcomes (columns).  Cells are colored by the strength of significance and direction of association, and the point estimate and confidence intervals are printed within cells, with relative risks printed for binary outcomes and mean differences for continuous outcomes. Each row is for a different sample type in a specific study or in a pooled estimate across studies, and axis labels are colored by sample type, matching the primary figure legends. Estimates aggregated across any sample type are only plotted if there are multiple sample types for a study. All estimates are adjusted for potential confounders.
 
 
 ```{r, echo=F, warning=F, message=F, fig.width = 10, fig.height = 6.5}
@@ -474,8 +474,7 @@ plot(hm2)
 ```
 
 
-__Figure S5.__ Heatmap of significance and direction of associations between specific pathogens in environmental samples (rows) and child diarrhea and growth outcomes (columns). Cells are colored by the strength of significance and direction of association, and the point estimate and confidence intervals are printed within cells, with relative risks printed for binary outcomes and mean differences for continuous outcomes. Each row is for a different sample type in a specific study or in a pooled estimate across studies, and axis labels are colored by sample type, matching the primary figure legends. Estimates aggregated across any sample type are only plotted if there are multiple sample types for a study. Grey cells mark missing outcomes or exposure-outcome combinations too sparse to estimate. All estimates are adjusted for potential confounders.  `r cmt("XXX", "Drop pooled rows without any estimates", "Andrew", date = "2022-011-01")`
-
+__Figure S5.__ Heatmap of significance and direction of associations between specific pathogens in environmental samples (rows) and child diarrhoea and growth outcomes (columns). Cells are colored by the strength of significance and direction of association, and the point estimate and confidence intervals are printed within cells, with relative risks printed for binary outcomes and mean differences for continuous outcomes. Each row is for a different sample type in a specific study or in a pooled estimate across studies, and axis labels are colored by sample type, matching the primary figure legends. Estimates aggregated across any sample type are only plotted if there are multiple sample types for a study. Grey cells mark missing outcomes or exposure-outcome combinations too sparse to estimate. All estimates are adjusted for potential confounders. 
 
 
 
@@ -492,7 +491,7 @@ plot(hm1_abund)
 
 
 
-__Figure S6.__ Heatmap of significance and direction of associations between the abundance of specific pathogens in environmental samples (rows) and child diarrhea and growth outcomes (columns). Cells are colored by the strength of significance and direction of association, and the point estimate and confidence intervals are printed within cells, with relative risks printed for binary outcomes and mean differences for continuous outcomes. Each row is for a different sample type in a specific study or in a pooled estimate across studies, and axis labels are colored by sample type, matching the primary figure legends. Estimates aggregated across any sample type are only plotted if there are multiple sample types for a study. Grey cells mark missing outcomes or exposure-outcome combinations too sparse to estimate. All estimates are adjusted for potential confounders. 
+__Figure S6.__ Heatmap of significance and direction of associations between the abundance of specific pathogens in environmental samples (rows) and child diarrhoea and growth outcomes (columns). Cells are colored by the strength of significance and direction of association, and the point estimate and confidence intervals are printed within cells, with relative risks printed for binary outcomes and mean differences for continuous outcomes. Each row is for a different sample type in a specific study or in a pooled estimate across studies, and axis labels are colored by sample type, matching the primary figure legends. Estimates aggregated across any sample type are only plotted if there are multiple sample types for a study. Grey cells mark missing outcomes or exposure-outcome combinations too sparse to estimate. All estimates are adjusted for potential confounders. 
 
 
 ```{r hm_mst, echo=F, warning=F, message=F, fig.width = 10, fig.height = 6.5}
@@ -506,7 +505,7 @@ plot(hm_mst)
 ```
 
 
-__Figure S7.__ Heatmap of significance and direction of associations between specific microbial source tracking markers in environmental samples (rows) and child diarrhea and growth outcomes (columns). Cells are colored by the strength of significance and direction of association, and the point estimate and confidence intervals are printed within cells, with relative risks printed for binary outcomes and mean differences for continuous outcomes. Each row is for a different sample type in a specific study or in a pooled estimate across studies, and axis labels are colored by sample type, matching the primary figure legends. Estimates aggregated across any sample type are only plotted if there are multiple sample types for a study. Grey cells mark missing outcomes or exposure-outcome combinations too sparse to estimate. All estimates are adjusted for potential confounders. 
+__Figure S7.__ Heatmap of significance and direction of associations between specific microbial source tracking markers in environmental samples (rows) and child diarrhoea and growth outcomes (columns). Cells are colored by the strength of significance and direction of association, and the point estimate and confidence intervals are printed within cells, with relative risks printed for binary outcomes and mean differences for continuous outcomes. Each row is for a different sample type in a specific study or in a pooled estimate across studies, and axis labels are colored by sample type, matching the primary figure legends. Estimates aggregated across any sample type are only plotted if there are multiple sample types for a study. Grey cells mark missing outcomes or exposure-outcome combinations too sparse to estimate. All estimates are adjusted for potential confounders. 
 
 
 
@@ -525,7 +524,7 @@ plot(hm_mst_abund)
 
 ```
 
-__Figure S8.__ Heatmap of significance and direction of associations between the abundance of specific microbial source tracking markers in environmental samples (rows) and child diarrhea and growth outcomes (columns). Cells are colored by the strength of significance and direction of association, and the point estimate and confidence intervals are printed within cells, with relative risks printed for binary outcomes and mean differences for continuous outcomes. Each row is for a different sample type in a specific study or in a pooled estimate across studies, and axis labels are colored by sample type, matching the primary figure legends. Estimates aggregated across any sample type are only plotted if there are multiple sample types for a study. Grey cells mark missing outcomes or exposure-outcome combinations too sparse to estimate. All estimates are adjusted for potential confounders. 
+__Figure S8.__ Heatmap of significance and direction of associations between the abundance of specific microbial source tracking markers in environmental samples (rows) and child diarrhoea and growth outcomes (columns). Cells are colored by the strength of significance and direction of association, and the point estimate and confidence intervals are printed within cells, with relative risks printed for binary outcomes and mean differences for continuous outcomes. Each row is for a different sample type in a specific study or in a pooled estimate across studies, and axis labels are colored by sample type, matching the primary figure legends. Estimates aggregated across any sample type are only plotted if there are multiple sample types for a study. Grey cells mark missing outcomes or exposure-outcome combinations too sparse to estimate. All estimates are adjusted for potential confounders. 
 
 
 
@@ -533,7 +532,7 @@ __Figure S8.__ Heatmap of significance and direction of associations between the
 p_age_diar_1_PD
 ```
 
-__Figure S9.__ Forest plots of child diarrheal disease prevalence differences between environmental samples with and without any enteropathogen or any MST marker detected, stratified by child age. Grey points mark sparse age strata without estimated relative risks. Significant effect modification, as determined by the p-values on the regression model interaction term, is marked above points with asterisks (P < 0.05 = \*, P < 0.01 = \*\*, P < 0.001 = \*\*\*).
+__Figure S9.__ Forest plots of child diarrhoeal disease prevalence differences between environmental samples with and without any enteropathogen or any MST marker detected, stratified by child age. Grey points mark sparse age strata without estimated relative risks. Significant effect modification, as determined by the p-values on the regression model interaction term, is marked above points with asterisks (P < 0.05 = \*, P < 0.01 = \*\*, P < 0.001 = \*\*\*).
 
 
 ```{r p_age_haz_1, echo=F, warning=F, message=F, fig.width = 10, fig.height = 6.5}
@@ -546,7 +545,7 @@ __Figure S10.__ Forest plots of associations between any enteropathogen/any MST 
 p_sex_diar_1_PD
 ```
 
-__Figure S11.__ Forest plots of child diarrheal disease prevalence differences between environmental samples with and without any enteropathogen or any MST marker detected, stratified by child sex. Significant effect modification, as determined by the p-values on the regression model interaction term, is marked above points with asterisks (P < 0.05 = \*, P < 0.01 = \*\*, P < 0.001 = \*\*\*).
+__Figure S11.__ Forest plots of child diarrhoeal disease prevalence differences between environmental samples with and without any enteropathogen or any MST marker detected, stratified by child sex. Significant effect modification, as determined by the p-values on the regression model interaction term, is marked above points with asterisks (P < 0.05 = \*, P < 0.01 = \*\*, P < 0.001 = \*\*\*).
 
 
 
@@ -570,7 +569,7 @@ __Figure S13.__ Forest plots of associations between any enteropathogen/any MST 
 p_wet_diar_2_PD
 ```
 
-__Figure S14.__ Forest plots of child diarrheal disease prevalence differences between environmental samples with and without any enteropathogen or any MST marker detected, stratified by whether the diarrheal disease occurred during the wet versus dry season (defined by the 6 months of highest average rainfall). Significant effect modification, as determined by the p-values on the regression model interaction term, is marked above points with asterisks (P < 0.05 = \*, P < 0.01 = \*\*, P < 0.001 = \*\*\*).
+__Figure S14.__ Forest plots of child diarrhoeal disease prevalence differences between environmental samples with and without any enteropathogen or any MST marker detected, stratified by whether the diarrhoeal disease occurred during the wet versus dry season (defined by the 6 months of highest average rainfall). Significant effect modification, as determined by the p-values on the regression model interaction term, is marked above points with asterisks (P < 0.05 = \*, P < 0.01 = \*\*, P < 0.001 = \*\*\*).
 
 
 
@@ -656,7 +655,7 @@ p_RR
 ```
 
 
-__Figure S16.__ Comparison between associations estimated with and without including potential confounders for the binary diarrhea and growth outcomes. Points mark the ratio of relative risks estimated using adjusted and unadjusted generalized linear models. The blue line shows the average ratio between adjusted estimates and unadjusted estimates, fitted using a cubic spline.
+__Figure S16.__ Comparison between associations estimated with and without including potential confounders for the binary diarrhoea and growth outcomes. Points mark the ratio of relative risks estimated using adjusted and unadjusted generalized linear models. The blue line shows the average ratio between adjusted estimates and unadjusted estimates, fitted using a cubic spline.
 
 ```{r, echo=F, warning=F, message=F, fig.width = 10, fig.height = 6}
 p_diff
@@ -669,7 +668,7 @@ p_diar_1_adj_tmle
 ```
 
 
-__Figure S18.__ Comparison between associations estimated with generalized linear models (GLM) and machine-learning based targeted likelihood estimation models (TMLE) for the diarrhea outcome.
+__Figure S18.__ Comparison between associations estimated with generalized linear models (GLM) and machine-learning based targeted likelihood estimation models (TMLE) for the diarrhoea outcome.
 
 
 ```{r, echo=F, warning=F, message=F, fig.width = 10, fig.height = 6}
@@ -682,7 +681,7 @@ __Figure S19.__ Comparison between associations estimated with generalized linea
 p_diar_time
 ```
 
-__Figure S20.__ Comparison between associations estimated in the primary diarrhea analysis (diarrheal disease occurring after environmental sampling, but no more than 4 months later with associations estimated only using diarrheal disease cases within 1 month, or occuring at any time). For the analysis of all diarrhea, it included diarrheal cases, even cases occuring prior to sampling, under the hypothesis that enteropathogen presence at one time is a surrogate variable for general environmental contamination. `r cmt("XXX", "CHECK: where is Capone 4 months?", "Andrew", date = "2022-011-01")`
+__Figure S20.__ Comparison between associations estimated in the primary diarrhoea analysis (diarrhoeal disease occurring after environmental sampling, but no more than 4 months later with associations estimated only using diarrhoeal disease cases within 1 month, or occurring at any time). For the analysis of all diarrhoea, it included diarrhoeal cases, even cases occurring prior to sampling, under the hypothesis that enteropathogen presence at one time is a surrogate variable for general environmental contamination. 
 
 
 

@@ -179,6 +179,10 @@ hm_df_agg <- hm_df_agg %>% mutate(target = factor(target,
                     "Any pathogen","Any bacteria","Any virus","Any protozoa",
                     "Any STH","Any human\nor animal MST", "Any human MST","Any animal MST")))
 
+#Drop empty "any sample: POOLED"
+hm_df_agg <- hm_df_agg %>%  group_by(X,target) %>% filter(!(X=="Any sample: POOLED"& n()==sum(is.na(pval))))
+
+#plot:
 hm_agg <- heatmap_plot(hm_df_agg, colours=colours)
 hm_agg
 
@@ -221,7 +225,10 @@ d$est = gsub("NA \\(NA, NA\\)", "", d$est)
 d <- d %>% filter(!is.na(target)) %>% droplevels()
 hm_df_path <- d
 
+#Drop empty "any sample: POOLED"
+hm_df_path <- hm_df_path %>%  group_by(X,target) %>% filter(!(X=="Any sample: POOLED"& n()==sum(is.na(pval))))
 
+#plot:
 hm <- heatmap_plot(hm_df_path, colours=colours)
 
 ggsave(hm, file = paste0(here::here(),"/figures/pngs/p_path_heatmap.png"), width = 10, height = 26)
@@ -262,10 +269,10 @@ d <- d %>% filter(!is.na(target)) %>% droplevels()
 hm_df_mst <- d
 
 
+#Drop empty "any sample: POOLED"
+hm_df_mst <- hm_df_mst %>%  group_by(X,target) %>% filter(!(X=="Any sample: POOLED"& n()==sum(is.na(pval))))
 
-
-
-
+#plot:
 hm_mst <- heatmap_plot(hm_df_mst, colours=colours)
 
 ggsave(hm_mst, file = paste0(here::here(),"/figures/pngs/p_MST_heatmap.png"), width = 10, height = 26)
