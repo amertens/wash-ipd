@@ -180,13 +180,14 @@ hol_diar_ml <- merge_ch(hol_ml, ch_ml %>% select( -c(haz, whz, waz, round))) %>%
 
 cp_anthro <- bind_rows(cp_anthro_bl, cp_anthro_ml, cp_anthro_el,cp_anthro_bl_ml,cp_anthro_ml_el)
 dim(cp_anthro)
-cp_anthro <- cp_anthro %>% mutate(date_diff = as.numeric(child_date-env_date)) %>% group_by(study, sampleid, target, sample, sex,dataid, round, hhid, childid) %>% filter(date_diff==max(date_diff))
+cp_anthro <- cp_anthro %>% mutate(date_diff = as.numeric(child_date-env_date)) %>% group_by(study, sampleid, target, sample, sex,dataid, round, hhid, childid) %>% filter(date_diff==min(date_diff))
 dim(cp_anthro)
+summary(cp_anthro$date_diff)
 
 cp_df <- bind_rows(cp_anthro, cp_diar_bl, cp_diar_ml, cp_diar_el, cp_path_bl, cp_path_ml, cp_path_el)
 
 hol_anthro <- bind_rows(hol_anthro_bl_ml, hol_anthro_ml_el,hol_anthro_bl,hol_anthro_ml)
-hol_anthro <- hol_anthro %>% mutate(date_diff = as.numeric(child_date-env_date)) %>% group_by(study, sampleid, target, sample, sex,dataid, round, hhid, childid) %>% filter(date_diff==max(date_diff))
+hol_anthro <- hol_anthro %>% mutate(date_diff = as.numeric(child_date-env_date)) %>% group_by(study, sampleid, target, sample, sex,dataid, round, hhid, childid) %>% filter(date_diff==min(date_diff))
 summary(hol_anthro$date_diff)
 hol_df <- bind_rows( hol_anthro, hol_diar_bl, hol_diar_ml)
 
@@ -218,14 +219,6 @@ table(d$date_diff)
 # hol_res$samples_with_haz_after_merge <- nrow(hol_df %>% filter(!is.na(haz)) %>% do(drop_agg(.)) %>% distinct(sampleid, dataid,  hhid, clusterid,sample, round))
 # hol_res$samples_with_ch_after_merge <- nrow(hol_df %>% filter(!is.na(haz)|!is.na(diar7d)) %>% do(drop_agg(.)) %>% distinct(sampleid, dataid,  hhid, clusterid,sample, round))
 # 
-
-
-summary(d$child_date)
-summary(d$env_date)
-
-prop.table(table(d$child_date==d$env_date))
-prop.table(table(d$child_date<d$env_date))
-prop.table(table(d$child_date>d$env_date+125))
 
 
 
@@ -283,13 +276,3 @@ d <- d %>%
 
 saveRDS(d, file=paste0(dropboxDir,"Data/mapsan_env_CH_data.rds"))
 
-temp <- d %>% filter(study=="Holcomb 2021",target=="Avian (GFD)",sample=="any sample type", !is.na(diar7d), child_date-env_date>=0,  child_date-env_date< 125)
-table(temp$pos, temp$diar7d)
-
-#tabulate any MST- diarrhea sparsity
-table(d$target)
-
-df <- d %>% filter(sample=="any sample type",!is.na(diar7d), target=="Any MST", child_date>env_date, study=="Holcomb 2021") 
-table(df$pos, df$diar7d, df$study)
-res <- aim2_glm(df, Ws = NULL, forcedW=NULL, outcome="diar7d", exposure="pos", study=df$study[1], sample=df$sample[1], target=df$target[1], family="binomial", minN_thres = 0)
-res

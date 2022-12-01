@@ -157,8 +157,12 @@ res_haz_wet_adj <- d_wet %>% group_by(study, sample, target) %>%
 Wvars_anthro_sex = c("age_anthro","hfiacat","momage","hhwealth", "tr","Nhh","nrooms","walls","roof", "floor","elec","dadagri","landown","momedu")         
 res_haz_sex_adj <- d_sex %>% group_by(study, sample, target) %>%
   do(aim2_subgroup(., Ws = Wvars_anthro_sex, Vvar="sex", forcedW=c("age", "hhwealth"), outcome="haz", exposure="pos", study=.$study[1], sample=.$sample[1], target=.$target[1], family="gaussian", minN_thres = minN))
-# res_waz_sex_adj <- d_sex %>% group_by(study, sample, target) %>%
-#   do(aim2_subgroup(., Ws = Wvars_anthro_sex, Vvar="sex", forcedW=c("age", "hhwealth"), outcome="waz", exposure="pos", study=.$study[1], sample=.$sample[1], target=.$target[1], family="gaussian", minN_thres = minN))
+
+# res_haz_sex_adj %>%
+#   group_by(Y, sample, target, V, Vlevel) %>% 
+#   filter(!is.na(se)) %>% mutate(N=n()) %>%
+#   filter(N>=4)%>% group_by(Y, sample, target, V, Vlevel) %>%
+#   do(try(pool.cont(.)))  %>% filter(target=="Any pathogen")
 
 res_diar_wet_CH_adj <- d_wet_ch %>% group_by(study, sample, target) %>%
   do(aim2_subgroup(., Ws = Wvars, Vvar="wet_CH", forcedW=c("age", "hhwealth"), outcome="diar7d", exposure="pos", study=.$study[1], sample=.$sample[1], target=.$target[1], family="binomial", minN_thres = minN))

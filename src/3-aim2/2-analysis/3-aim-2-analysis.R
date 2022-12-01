@@ -9,20 +9,31 @@ Wvars = c("sex","age","hfiacat","momage","hhwealth", "Nhh","nrooms","walls", "ro
 Wvars_anthro = c("sex","age_anthro","hfiacat","momage","hhwealth", "Nhh","nrooms","walls", "roof", "floor","elec","dadagri","landacre","landown", "momedu", "tr")         
 
 
-# 
-# res_haz_adj <- d %>% group_by(study, sample, target) %>% filter(sample=="any sample type", target=="Any pathogen") %>%
-#   do(aim2_glm(., Ws = Wvars_anthro, forcedW=c("age_anthro", "hhwealth"), outcome="haz", exposure="pos", study=.$study[1], sample=.$sample[1], target=.$target[1], family="gaussian")) 
-#   #do(aim2_glm(., Ws = NULL, forcedW=NULL, outcome="haz", exposure="pos", study=.$study[1], sample=.$sample[1], target=.$target[1], family="gaussian")) 
-# res_haz_adj$sparse <- ifelse(is.na(res_haz_adj$coef), "yes", "no")
-# res_haz_adj$coef[is.na(res_haz_adj$coef)] <- 0
-# res_haz_adj
+
+res_haz_adj <- d %>% group_by(study, sample, target) %>% filter(target=="Rotavirus") %>%
+  do(aim2_glm(., Ws = Wvars_anthro, forcedW=c("age_anthro", "hhwealth"), outcome="haz", exposure="pos", study=.$study[1], sample=.$sample[1], target=.$target[1], family="gaussian"))
+  #do(aim2_glm(., Ws = NULL, forcedW=NULL, outcome="haz", exposure="pos", study=.$study[1], sample=.$sample[1], target=.$target[1], family="gaussian"))
+res_haz_adj$sparse <- ifelse(is.na(res_haz_adj$coef), "yes", "no")
+res_haz_adj$coef[is.na(res_haz_adj$coef)] <- 0
+res_haz_adj
+
+res_old <- readRDS("C:/Users/andre/Downloads/adjusted_aim2_res.Rds")
+res_old %>% filter(target=="Rotavirus", grepl("Capone",study), Y=="haz")
 # #res_haz_adj  %>% filter(target=="Any pathogen", study!="Capone 2021", study!="Capone 2022 in prep") %>%
 # res_haz_adj  %>% filter(target=="Any pathogen") %>%
-# #res_haz_adj  %>% filter(target=="Any pathogen", study!="Capone 2021") %>%
-#   group_by(Y, sample, target) %>% 
-#   filter(!is.na(se)) %>% mutate(N=n()) %>%
-#   filter(N>=4) %>% 
-#   do(try(pool.cont(.))) 
+
+res_haz_adj <- d %>% group_by(study, sample, target) %>% filter(target=="Any pathogen", sample=="any sample type") %>%
+  do(aim2_glm(., Ws = Wvars_anthro, forcedW=c("age_anthro", "hhwealth"), outcome="haz", exposure="pos", study=.$study[1], sample=.$sample[1], target=.$target[1], family="gaussian"))
+#do(aim2_glm(., Ws = NULL, forcedW=NULL, outcome="haz", exposure="pos", study=.$study[1], sample=.$sample[1], target=.$target[1], family="gaussian"))
+res_haz_adj$sparse <- ifelse(is.na(res_haz_adj$coef), "yes", "no")
+res_haz_adj$coef[is.na(res_haz_adj$coef)] <- 0
+res_haz_adj
+
+res_haz_adj  %>% filter(target=="Any pathogen") %>%
+  group_by(Y, sample, target) %>%
+  filter(!is.na(se)) %>% mutate(N=n()) %>%
+  filter(N>=4) %>%
+  do(try(pool.cont(.)))
 # 
 # 
 # res_haz_adj <- d %>% group_by(study, sample, target) %>% filter(sample=="W", target=="Any MST") %>%
