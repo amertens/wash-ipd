@@ -20,23 +20,14 @@ d <- d %>% filter(round!="bl", sample!="FP") %>% droplevels()
 d <- aim1_clean_covariates(d)
 
 
-table(d$study)
-table(d$target)
-table(is.na(d$tr))
-table(is.na(d$sample))
-table(d$study, is.na(d$sample))
-table(is.na(d$target))
-table(d$study,d$sample)
-table(d$study, d$round)
-table(d$study, d$target)
-table(d$study, d$sample)
-table(d$sample, d$target, d$study)
+#look at number of duplicate obs by study
+df <- d %>% filter(target=="Any pathogen", sample=="any sample type")
+df %>% group_by(study, dataid, hhid, clusterid) %>% summarise(N=n()) %>%
+  group_by(study) %>% summarise(mean(N))
 
-df <- d %>% filter(!is.na(pos)) %>% distinct(study, sampleid)
-dim(df)
-table(df$study)
-
-df2 <- df %>% filter(study=="Fuhrmeister 2020")
+df <- d %>% filter(target=="Any MST", sample=="any sample type")
+df %>% group_by(study, dataid, hhid, clusterid) %>% summarise(N=n()) %>%
+  group_by(study) %>% summarise(mean(N))
 
 
 # 1.	Child birth order/parity -aim2 only

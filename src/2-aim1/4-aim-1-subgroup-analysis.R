@@ -9,6 +9,9 @@ table(d$study, !is.na(d$animals))
 table(d$study, d$animals)
 table(d$study, d$wet)
 
+df <- d %>% filter(sample=="FP")
+table(df$target, df$pos, df$tr)
+prop.table(table(df$target, df$pos),1)
 #drop baseline observations and food because only in one study and no estimates, and odigari as it has no variation
 table(is.na(d$round))
 d <- d %>% filter(round!="bl", sample!="FP", trial!="Odisha") %>% droplevels()

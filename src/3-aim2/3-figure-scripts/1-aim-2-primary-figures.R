@@ -69,11 +69,20 @@ adj_RR$est <- paste0(sprintf("%.2f",adj_RR$RR)," (",
                      sprintf("%.2f",adj_RR$ci.ub),")")
 adj_RR$est[adj_RR$study!="Pooled"] <- ""
 
+adj_RR$est_diff <- paste0(sprintf("%.2f",adj_RR$coef)," (",
+                     sprintf("%.2f",adj_RR$ci.lb),", ",
+                     sprintf("%.2f",adj_RR$ci.ub),")")
+adj_RR$est_diff[adj_RR$study!="Pooled"] <- ""
+
 unadj_RR$est <- paste0(sprintf("%.2f",unadj_RR$RR)," (",
                        sprintf("%.2f",unadj_RR$ci.lb),", ",
                        sprintf("%.2f",unadj_RR$ci.ub),")")
 unadj_RR$est[unadj_RR$study!="Pooled"] <- ""
 
+unadj_RR$est_diff <- paste0(sprintf("%.2f",unadj_RR$coef)," (",
+                          sprintf("%.2f",unadj_RR$ci.lb),", ",
+                          sprintf("%.2f",unadj_RR$ci.ub),")")
+unadj_RR$est_diff[unadj_RR$study!="Pooled"] <- ""
 
 #---------------------------------------------------------------
 # Clean results
@@ -117,8 +126,6 @@ base_plot <- function(mydf, legend_labels=sample_cats, drop_full_sparse=F, facet
                "Mother hand rinse" = my_colors[8],
                "Latrine soil" = my_colors[5],
                "House soil" = my_colors[6],
-               # "Flies in kitchen" = my_colors[9],
-               # "Flies in latrine" = my_colors[10],
                "Flies" = my_colors[9],
                "Sparse data" = "grey50")
   
@@ -143,10 +150,8 @@ base_plot <- function(mydf, legend_labels=sample_cats, drop_full_sparse=F, facet
     geom_errorbar(aes(ymin=ci.lb, ymax=ci.ub), position = position_dodge(0.5),
                   width = 0.3, size = 1) +
     geom_point(size=3, position = position_dodge(0.5), alpha=0.75) +
-    #geom_text(aes(label=N_W), color="black", position = position_dodge(0.5)) +
-    #geom_text(aes(label=minN), color="black", position = position_dodge(0.5)) +
     geom_text(aes(y=RR, label=est), color="black", vjust = -0.8, hjust = -0.1, size=1.5) +
-    #geom_text(aes(y=ci.ub, label=sig_cat), color="black", position = position_dodge(0.5), hjust = -0.5, size=4) +
+    geom_text(aes(y=ci.ub, label=sig_cat), color="black", position = position_dodge(0.5), hjust = -0.5, size=4) +
     scale_color_manual(breaks = legend_labels,
                        values = colours, drop = FALSE) +
     scale_shape_manual(values=c(16, 13,18), guide = "none") + 
@@ -179,8 +184,6 @@ base_plot_diff <- function(mydf, legend_labels=sample_cats, drop_full_sparse=F, 
                "Mother hand rinse" = my_colors[8],
                "Latrine soil" = my_colors[5],
                "House soil" = my_colors[6],
-               # "Flies in kitchen" = my_colors[9],
-               # "Flies in latrine" = my_colors[10],
                "Flies" = my_colors[9],
                "Sparse data" = "grey50")
   
@@ -195,7 +198,8 @@ base_plot_diff <- function(mydf, legend_labels=sample_cats, drop_full_sparse=F, 
                   width = 0.3, size = 1) +
     geom_point(size=3, position = position_dodge(0.5), alpha=0.75) +
     #geom_text(aes(label=N_W), color="black", position = position_dodge(0.5)) +
-    geom_text(aes(y=ci.ub, label=sig_cat), color="black", position = position_dodge(0.5), hjust = -0.5, size=4) +
+    geom_text(aes(y=ci.ub, label=sig_cat), color="black", position = position_dodge(0.5), vjust =0.75, hjust = -0.5, size=4) +
+    geom_text(aes(y=coef, label=est_diff), color="black", vjust = -1.1, hjust = -0.1, size=1.5) +
     scale_color_manual(breaks = legend_labels,
                        values = colours, drop = FALSE) +
     scale_shape_manual(values=c(16, 13,18), guide = "none") + 
@@ -357,5 +361,5 @@ p_whz_s1_adj <- adj_RR %>%
 save(list=ls(pattern="p_"), file=here("figures/aim2_figures.Rdata"))
 ls(pattern="p_")
 
-
+p_haz_1_adj
 

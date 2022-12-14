@@ -80,6 +80,11 @@ panderOptions('round', 2)
 panderOptions('keep.trailing.zeros', TRUE)
 panderOptions('graph.fontsize', 8)
 
+
+
+
+
+
 panderOptions('table.alignment.default', function(df)
     ifelse(sapply(df, is.numeric), 'right', 'left'))
 panderOptions('table.split.table', Inf)
