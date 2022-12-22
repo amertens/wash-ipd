@@ -7,6 +7,7 @@ head(d)
 
 table(d$study, !is.na(d$animals))
 table(d$study, d$animals)
+prop.table(table(d$study, d$animals),1) *100
 table(d$study, d$wet)
 
 df <- d %>% filter(sample=="FP")

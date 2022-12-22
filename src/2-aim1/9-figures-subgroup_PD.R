@@ -138,7 +138,7 @@ p_wet_1_PD
 
 p_animals_1_PD <- adj_RD %>% 
   filter(target %in% c("Any pathogen","Any MST"), V=="animals") %>%
-  base_plot(drop_full_sparse=T,  ylimits=c(-0.75,0.75))
+  base_plot(drop_full_sparse=T,  ylimits=c(-0.5,0.5))
 p_animals_1_PD
 
 p_wet_2_PD <- adj_RD %>% 

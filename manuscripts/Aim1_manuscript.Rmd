@@ -147,8 +147,8 @@ n_estimated <- paste0(sum(!is.na(adj_RR$coef)),"/",nrow(adj_RR))
 
 #order prevalences and seperate by MST vs. pathogens
 sample_target_prevs <- adj_RR %>% filter(!is.na(coef), !grepl("Any ",target), !grepl("any ",sample)) %>%
-                      mutate(prev=round(((a+c)/N)*100,1)) %>% arrange(prev) %>%
-                      select(study, sample, target, prev)
+                      mutate(prev=round(((a+c)/N)*100,1), n=a+c) %>% arrange(prev) %>%
+                      select(study, sample, target, prev, n, N)
 pathogen_sample_target_prevs <- sample_target_prevs %>% filter(!grepl("\\(",target))
 MST_sample_target_prevs <- sample_target_prevs %>% filter(grepl("\\(",target))
 
@@ -235,6 +235,18 @@ clean_res_tab <- function(unadj_RR, adj_RR){
   res$`Adjusted\np-value`[res$Study=="Odagiri 2016"] <- ""
   return(res)
 }
+
+
+print_perc_N <- function(d, var="any sample type"){
+  perc=round(prop.table(table(is.na(d$abund[d$sample!=var])))*100,0)[1]
+  n=table(is.na(d$abund[d$sample!=var]))[1]
+  N=sum(is.na(d$abund[d$sample!=var]))
+
+  res=paste0(perc, "% (",n,"/",N,")")
+  print(res)
+}
+
+
 
 FitFlextableToPage <- function(ft, pgwidth = 6){
 
@@ -407,7 +419,7 @@ Across specific types of MST markers, interventions effects were inconsistent an
 ### Effects on the abundance of specific pathogens and MST markers
 
 
-Of all observations, `r round(prop.table(table(is.na(d$abund[d$sample!="any sample type"])))*100,0)[1]`% had abundances quantified, including STH egg counts in Steinbaum et al. 2019 and Kwong et al. 2021 and gene copies of enteropathogens and MST targets in Boehm et al. 2016, Fuhrmeister et al. 2020, and Capone et al. 2022 (Figure S3). Of these, `r round(prop.table(table(d$qual[d$qual!="DNQ"]))*100,0)[1]`% were below the specific study-reported LOD, `r round(prop.table(table(d$qual[d$qual!="DNQ"]))*100,0)[2]`% below the study-reported LOQ, and `r round(prop.table(table(d$qual[d$qual!="DNQ"]))*100,0)[3]`% within the study-reported ROQ. Of targets enumerated within specific sample types, only `r round(prop.table(table(adj_diff$perc_ROQ>=50))[2] * 100,0)`% had >50% of samples within the ROQ and were therefore included in our analysis.
+Of all observations, `r round(prop.table(table(is.na(d$abund[d$sample!="any sample type"])))*100,0)[1]`%  `paste0("(", table(is.na(d$abund[d$sample!="any sample type"]))[1],"/",length(d$abund[d$sample!="any sample type"]),")")` had abundances quantified, including STH egg counts in Steinbaum et al. 2019 and Kwong et al. 2021 and gene copies of enteropathogens and MST targets in Boehm et al. 2016, Fuhrmeister et al. 2020, and Capone et al. 2022 (Figure S3). Of these, `r round(prop.table(table(d$qual[d$qual!="DNQ"]))*100,0)[1]`% were below the specific study-reported LOD, `r round(prop.table(table(d$qual[d$qual!="DNQ"]))*100,0)[2]`% below the study-reported LOQ, and `r round(prop.table(table(d$qual[d$qual!="DNQ"]))*100,0)[3]`% within the study-reported ROQ. Of targets enumerated within specific sample types, only `r round(prop.table(table(adj_diff$perc_ROQ>=50))[2] * 100,0)`% had >50% of samples within the ROQ and were therefore included in our analysis.
 
 The abundance of the BacCow animal marker was lower in mothers' hand rinses in the sanitation intervention arm in Fuhrmeister et al. 2020, with an adjusted log10-transformed difference of `r clean_est(sig_diff %>% filter(study=="Fuhrmeister 2020", sample=="MH", target=="Animal (BacCow)"), outcome="diff")` per pair of hands. The interventions did not have significant effects on the abundance of any other MST target, nor STH egg counts (Table 2).
 

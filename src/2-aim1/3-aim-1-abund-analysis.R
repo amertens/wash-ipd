@@ -7,13 +7,24 @@ d <- readRDS(paste0(dropboxDir,"Data/cleaned_ipd_env_data.rds"))
 head(d)
 d <- droplevels(d)
 
+#drop aggregate groups
+d <- d %>% filter(sample!="any sample type", !grepl("Any ",target))
+
+#Tabulate numbers for manuscript
+table(is.na(d$abund))[1]
+dim(d)
+prop.table(table(!is.na(d$abund)))
+
+#types of abundance measures
+d$qual[is.na(d$qual) & !is.na(d$abund)] <- "DNQ"
+
+sum(!is.na(d$qual))
 table(d$qual)
 round(prop.table(table(d$qual))*100,1)
 
-Wvars = c("hhwealth", "Nhh","nrooms","walls", "floor","roof","elec","dadagri","landown","landacre", "momedu", "momage")         
 
-#drop aggregate groups
-d <- d %>% filter(sample!="any sample type", !grepl("Any ",target))
+
+Wvars = c("hhwealth", "Nhh","nrooms","walls", "floor","roof","elec","dadagri","landown","landacre", "momedu", "momage")         
 
 
 
@@ -111,3 +122,6 @@ res_sth$model <- "neg. binomial"
 res <- bind_rows(res, res_sth)
 
 saveRDS(res, file=here("results/adjusted_aim1_diff.Rds"))
+
+table(res$perc_ROQ > 50)
+prop.table(table(res$perc_ROQ > 50))

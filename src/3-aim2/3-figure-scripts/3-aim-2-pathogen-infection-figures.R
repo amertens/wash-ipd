@@ -104,7 +104,7 @@ pathogen_plot <- function(mydf, legend_labels=sample_cats, drop_full_sparse=F){
     geom_text(aes(y=RR, label=sig_cat), color="black", position = position_dodge(0.5), hjust = -0.5, vjust=-0.05, size=4) +
     scale_shape_manual(values=c(16, 13,18), guide="none") + 
     geom_hline(yintercept = 1, linetype="dashed") +
-    facet_wrap(~target_f,  nrow=2) +
+    facet_wrap(~target_f,  nrow=2, scales="free") +
         scale_y_continuous(
           breaks=c(0.25, .5,1, 2, 4, 8),
           trans='log10',
