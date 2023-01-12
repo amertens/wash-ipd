@@ -26,14 +26,31 @@ adj_RR <- adj_RR %>% filter(!(target %in% c("Any zoonotic","Any non-zoonotic")))
 adj_RR <- bind_rows(adj_RR, zoo_RR)
 
 
-# d <- unadj_RR %>% filter(sample=="any sample type", target=="Any animal MST")
-# method="REML"
-# d <- d %>% rename(untransformed_estimate=coef, untransformed_se=se)  
-# fit1<-rma(yi=untransformed_estimate, sei=untransformed_se, data=d, method=method, measure="RR")
-# fit2<-rma(yi=untransformed_estimate, sei=untransformed_se, data=d, method="fe", measure="RR")
-# 
-# summary(fit1)
-# summary(fit2)
+# Check lack of heterogeneity in a non-models (unadjusted) example
+d  <- unadj_RR %>% group_by(sample, target) %>% 
+  filter(!is.na(se)) %>% mutate(N=n()) %>%
+  filter(N>=4) %>% filter(sample=="any sample type", target=="Any pathogen")
+method="REML"
+
+### calculate log risk ratios and corresponding sampling variances
+dat <- escalc(measure="RR", ai=a, bi=b, ci=c, di=d, data=d) 
+
+### meta-analysis of the log risk ratios using a random-effects model 
+res <- rma(yi, vi, data=dat) 
+
+### BLUPs of the true risk ratios for each study blup(res, transf=exp)
+### illustrate shrinkage of BLUPs towards the (estimated) population average 
+
+res <- rma(yi, vi, data=dat) 
+blup(res)
+plot(NA, NA, xlim=c(.8,2.4), ylim=c(-2,0.5), pch=19, xaxt="n", bty="n", xlab="", ylab="Log Risk Ratio") 
+segments(rep(1,13), dat$yi, rep(2,13), blups, col="darkgray") 
+points(rep(1,13), dat$yi, pch=19) 
+points(rep(2,13), blups, pch=19) 
+axis(side=1, at=c(1,2), labels=c("Observed\nValues", "BLUPs"), lwd=0) 
+segments(0, res$beta, 2.15, res$beta, lty="dotted") text(2.3, res$beta, substitute(hat(mu)==muhat, list(muhat=round(res$beta[[1]], 2))), cex=1)
+
+
 
 #pooling function
 poolRR<-function(d, method="REML"){
@@ -47,6 +64,10 @@ poolRR<-function(d, method="REML"){
       if(is.null(fit)){try(fit<-rma(yi=untransformed_estimate, sei=untransformed_se, data=d, method="DL", measure="RR"))}
       if(is.null(fit)){try(fit<-rma(yi=untransformed_estimate, sei=untransformed_se, data=d, method="HE", measure="RR"))}
     }
+    
+    #get BLUPS
+    ranef(fit)
+    blups <- blup(fit)
     
     #confint(fit)
  
@@ -65,12 +86,12 @@ poolRR<-function(d, method="REML"){
 #pool primary estimates by study
 res_unadj <- unadj_RR %>% group_by(sample, target) %>% 
   filter(!is.na(se)) %>% mutate(N=n()) %>%
-  filter(N>=4)%>% group_by(sample, target) %>%
+  filter(N>=4) %>% group_by(sample, target) %>%
   do(poolRR(.)) 
 
 res_adj <- adj_RR %>% group_by(sample, target) %>% 
   filter(!is.na(se)) %>% mutate(N=n()) %>%
-  filter(N>=4)%>% group_by(sample, target) %>%
+  filter(N>=4) %>% group_by(sample, target) %>%
   do(poolRR(.)) 
 
 res_emm <- emm_RR %>% group_by(sample, target, V, Vlevel) %>% 

@@ -181,6 +181,9 @@ p_adj_s1 <- adj_RR %>%
 p_adj_s1
 
 
+d <- adj_RR %>% filter(target %in% any_MST, sample=="S")
+d  
+
 
 # -	Fig S4. Prevalence of specific MST markers 
 p_adj_s2 <- adj_RR %>% 

@@ -208,7 +208,7 @@ df <- d %>%
   filter(!grepl("Any ",target), sample!="Any sample") %>%
   group_by(study, dataid, hhid) %>%
   slice(1) %>% ungroup() %>%
-  subset(., select = c("study", Wvars)) %>% filter(study!="Odagiri 2016")
+  subset(., select = c("study", Wvars, "animals")) %>% filter(study!="Odagiri 2016")
 
 
 #Clean/harmonize covariates 
@@ -244,6 +244,7 @@ df2 <- df %>%
   `Improved roof`=roof,
   `Electricity`=elec2,
   `Father in\nagriculture`=dadagri,
+  `Animal ownership`=animals, 
   `Land owned`=landown, 
   `Acres of\nland owned`=landacre, 
   `Maternal\neducation`=momedu, 
