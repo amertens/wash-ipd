@@ -125,6 +125,18 @@ table(unadj_pool$QEp<0.05)
 table(adj_pool$QEp<0.05)
 table(emm_pool$QEp<0.05)
 
+unadj_pool$study <- recode_factor(unadj_pool$study, `Capone 2022 in prep` = "Capone 2022")
+adj_pool$study <- recode_factor(adj_pool$study, `Capone 2022 in prep` = "Capone 2022")
+emm_pool$study <- recode_factor(emm_pool$study, `Capone 2022 in prep` = "Capone 2022")
+emm_pool_RD$study <- recode_factor(emm_pool_RD$study, `Capone 2022 in prep` = "Capone 2022")
+
+unadj_pool$study <- factor(unadj_pool$study, levels=c("Pooled",  "Odagiri 2016", "Reese 2017","Holcomb 2021","Capone 2022", "Capone 2021" , "Steinbaum 2019", "Kwong 2021","Fuhrmeister 2020", "Boehm 2016"))
+adj_pool$study <- factor(adj_pool$study, levels=c("Pooled",  "Odagiri 2016", "Reese 2017","Holcomb 2021","Capone 2022", "Capone 2021" , "Steinbaum 2019", "Kwong 2021","Fuhrmeister 2020", "Boehm 2016"))
+emm_pool$study <- factor(emm_pool$study, levels=c("Pooled",  "Odagiri 2016", "Reese 2017","Holcomb 2021","Capone 2022", "Capone 2021" , "Steinbaum 2019", "Kwong 2021","Fuhrmeister 2020", "Boehm 2016"))
+emm_pool_RD$study <- factor(emm_pool_RD$study, levels=c("Pooled",  "Odagiri 2016", "Reese 2017","Holcomb 2021","Capone 2022", "Capone 2021" , "Steinbaum 2019", "Kwong 2021","Fuhrmeister 2020", "Boehm 2016"))
+
+
+
 saveRDS(unadj_pool, file=here("results/unadjusted_aim1_RR_pooled.Rds"))
 saveRDS(adj_pool, file=here("results/adjusted_aim1_RR_pooled.Rds"))
 saveRDS(emm_pool, file=here("results/adjusted_aim1_emm_pooled.Rds"))

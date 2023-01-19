@@ -75,7 +75,7 @@ mydf <- adj_zoo
 drop_full_sparse=F
 
 
-base_plot <- function(mydf, legend_labels=sample_cats, drop_full_sparse=F, ylimits=c(-1,1)){
+base_plot <- function(mydf, legend_labels=sample_cats, drop_full_sparse=F, ylimits=c(-1,1), Nbreaks=3){
   
   my_colors = c("grey20",carto_pal(12, "Prism"))
   
@@ -87,8 +87,9 @@ base_plot <- function(mydf, legend_labels=sample_cats, drop_full_sparse=F, ylimi
                "Latrine soil" = my_colors[5],
                "House soil" = my_colors[6],
                "Flies in kitchen" = my_colors[9],
-               "Flies in latrine" = my_colors[10],
-               "Sparse data" = "grey50")
+               "Flies in latrine" = my_colors[10]#,
+               #"Sparse data" = "grey50"
+                 )
   
   if(drop_full_sparse){
     mydf <- mydf %>% group_by(target) %>%
@@ -97,8 +98,9 @@ base_plot <- function(mydf, legend_labels=sample_cats, drop_full_sparse=F, ylimi
       filter(n()!=sum(sparse=="yes")) %>% ungroup()
   }
   
-  mydf <- mydf %>% droplevels(.)
-   Y_breaks=c(-1,-0.8, -0.6 -0.4, -0.2, 0, 0.2, 0.4, 0.6, 0.8, 1)
+  mydf <- mydf %>% filter(!is.na(coef)) %>% droplevels(.)
+  #Y_breaks=c(-1,-0.8, -0.6 -0.4, -0.2, 0, 0.2, 0.4, 0.6, 0.8, 1)
+  Y_breaks=c( -0.3, 0, 0.3)
   # Y_breaks2=c("1/4", "1/2","1", "2", "4", "8")
   
   ggplot(data = mydf, (aes(x=study, y=coef, group=Vlevel, color=Vlevel, shape=Vlevel))) + 
@@ -113,8 +115,8 @@ base_plot <- function(mydf, legend_labels=sample_cats, drop_full_sparse=F, ylimi
     geom_hline(yintercept = 0, linetype="dashed") +
     facet_grid(target_f~sample_cat,  scales="free_y", space = "free_x", labeller = label_wrap_gen(width = 10, multi_line = TRUE)) +
      scale_y_continuous(#breaks=scales::breaks_pretty(c(-1, -0.5, 0, 0.5, 1)),
-       breaks=pretty_breaks()
-       #breaks=Y_breaks#,
+       #breaks=pretty_breaks(n=Nbreaks)
+       breaks=Y_breaks#,
        #labels = Y_breaks2
        ) + 
     coord_flip(ylim=ylimits) +

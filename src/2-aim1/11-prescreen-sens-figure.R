@@ -11,6 +11,10 @@ unique(main_res$study)
 main_res <- main_res %>% filter( target=="Any pathogen"|target=="Any MST") %>% mutate(analysis="Main")
 glmnet_res <- glmnet_res %>% filter(!is.na(coef), RR< 129)  %>% mutate(analysis="Sensitivity")
 
+glmnet_res$study <- recode_factor(glmnet_res$study, `Capone 2022 in prep` = "Capone 2022")
+glmnet_res$study <- factor(glmnet_res$study, levels=c("Pooled",  "Odagiri 2016", "Reese 2017","Holcomb 2021","Capone 2022", "Capone 2021" , "Steinbaum 2019", "Kwong 2021","Fuhrmeister 2020", "Boehm 2016"))
+
+
 poolRR<-function(d, method="REML"){
   
   d <- d %>% rename(untransformed_estimate=coef, untransformed_se=se)  

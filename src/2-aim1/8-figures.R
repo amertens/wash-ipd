@@ -15,11 +15,11 @@ adj_diff <- readRDS(file=here("results/adjusted_aim2_abund_res.Rds"))
 unadj_diff <- clean_res(unadj_diff) 
 adj_diff <- clean_res(adj_diff) 
 
-adj_RR$sample_cat[adj_RR$sample=="Fly" & adj_RR$study=="Capone 2022 in prep" & adj_RR$target=="Any virus" ] <- "Sparse data"
-adj_RR$RR[adj_RR$sample=="Fly" & adj_RR$study=="Capone 2022 in prep" & adj_RR$target=="Any virus" ] <-  1
-adj_RR$ci.lb[adj_RR$sample=="Fly" & adj_RR$study=="Capone 2022 in prep" & adj_RR$target=="Any virus" ] <- NA
-adj_RR$ci.ub[adj_RR$sample=="Fly" & adj_RR$study=="Capone 2022 in prep" & adj_RR$target=="Any virus" ] <- NA
-adj_RR$sparse[adj_RR$sample=="Fly" & adj_RR$study=="Capone 2022 in prep" & adj_RR$target=="Any virus" ] <- "yes"
+adj_RR$sample_cat[adj_RR$sample=="Fly" & adj_RR$study=="Capone 2022" & adj_RR$target=="Any virus" ] <- "Sparse data"
+adj_RR$RR[adj_RR$sample=="Fly" & adj_RR$study=="Capone 2022" & adj_RR$target=="Any virus" ] <-  1
+adj_RR$ci.lb[adj_RR$sample=="Fly" & adj_RR$study=="Capone 2022" & adj_RR$target=="Any virus" ] <- NA
+adj_RR$ci.ub[adj_RR$sample=="Fly" & adj_RR$study=="Capone 2022" & adj_RR$target=="Any virus" ] <- NA
+adj_RR$sparse[adj_RR$sample=="Fly" & adj_RR$study=="Capone 2022" & adj_RR$target=="Any virus" ] <- "yes"
 
 
 #---------------------------------------------------------------
@@ -128,8 +128,8 @@ base_plot <- function(mydf, legend_labels=sample_cats, drop_full_sparse=F,
     scale_color_manual(breaks = legend_labels, guide = guide_legend(),
       values = colours, drop = FALSE) +
     scale_shape_manual(values=shapes, 
-                       guide = guide_legend(),
-                       #guide="none", 
+                       #guide = guide_legend(),
+                       guide="none", 
                        drop = FALSE) + 
     geom_text(aes(y=RR, label=est), color="black", vjust = -0.8, hjust = -0.1, size=1.5) +
     geom_hline(yintercept = 1, linetype="dashed") +
@@ -139,8 +139,9 @@ base_plot <- function(mydf, legend_labels=sample_cats, drop_full_sparse=F,
                        trans='log10', 
                        labels = c("1/16","1/8","1/4", "1/2","1", "2", "4", "8", "16")
                        ) + coord_flip(ylim=axis_range)+
-    guides(color=guide_legend(title="Sample type", nrow=2,byrow=TRUE), 
-           shape=guide_legend(title="Sample type", nrow=2,byrow=TRUE)) +
+    guides(color=guide_legend(title="Sample type", nrow=2,byrow=TRUE)#, 
+           #shape=guide_legend(title="Sample type", nrow=2,byrow=TRUE)
+           ) +
     xlab("") + ylab("Prevalence ratio (Intervention vs. control)") + 
     theme_ki() + 
     theme(axis.ticks.x=element_blank(),
