@@ -1,6 +1,6 @@
 ---
 title: "Effects of water, sanitation, and hygiene interventions on detection of enteropathogens and host-specific faecal markers in the environment: an individual-participant data meta-analysis"
-author: "Andrew Mertens, Benjamin F. Arnold, Jade Benjamin-Chung, Alexandria Boehm, Joe Brown, Drew Capone, Thomas Clasen, Erica Fuhrmeister, Jessica Grembi, David Holcomb, Jackie Knee, Laura H Kwong, Audrie Lin, Stephen P. Luby, Rassul Nala, Kara Nelson, Sammy Njenga, Clair Null, Amy J. Pickering, Mahbubur Rahman, Heather Reese, Lauren Steinbaum, Jill Stewart, Ruwan Thilakaratne, Oliver Cumming, John M. Colford Jr., Ayse Ercumen"
+author: "Andrew Mertens PhD, Benjamin F. Arnold PhD, Jade Benjamin-Chung PhD, Prof Alexandria B. Boehm PhD, Joe Brown PhD, Drew Capone PhD, Prof Thomas Clasen PhD, Erica Fuhrmeister PhD, Jessica A. Grembi PhD, David Holcomb PhD, Jackie Knee PhD, Laura H Kwong PhD, Audrie Lin PhD, Prof Stephen P. Luby MD, Rassul Nala MPH, Prof Kara Nelson PhD, Sammy M. Njenga PhD, Clair Null PhD, Amy J. Pickering PhD, Mahbubur Rahman MBBS, Heather E. Reese PhD, Lauren Steinbaum PhD, Prof Jill Stewart PhD, Ruwan Thilakaratne MPH, Oliver Cumming PhD, Prof John M. Colford Jr., Ayse Ercumen PhD"
 #output: redoc::redoc
 output: 
   officedown::rdocx_document:
