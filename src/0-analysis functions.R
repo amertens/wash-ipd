@@ -104,6 +104,11 @@ aim1_glm <- function(d, Ws=NULL, outcome="pos", study="mapsan", sample="ds", tar
     med.cont <- median(df$Y[df$tr=="Control"], na.rm=T)
     med.int <- median(df$Y[df$tr=="Intervention"], na.rm=T)
     
+    iqr.cont1 <- fivenum(df$Y[df$tr=="Control"], na.rm=T)[2]
+    iqr.int1 <- fivenum(df$Y[df$tr=="Intervention"], na.rm=T)[2]
+    iqr.cont2 <- fivenum(df$Y[df$tr=="Control"], na.rm=T)[4]
+    iqr.int2 <- fivenum(df$Y[df$tr=="Intervention"], na.rm=T)[4]
+    
     perc_ROQ <- round(mean(df$qual=="ROQ", na.rm=T)*100,1)
   }
   
@@ -226,8 +231,13 @@ aim1_glm <- function(d, Ws=NULL, outcome="pos", study="mapsan", sample="ds", tar
     res$sd_int <- d
     res$perc_ROQ <- perc_ROQ
     
-    res$med.cont <-med.cont 
-    res$med.int <-med.int 
+    res$med.cont <- med.cont 
+    res$med.int <- med.int 
+    
+    res$iqr1.cont <- iqr.cont1
+    res$iqr1.int <- iqr.int1 
+    res$iqr2.cont <- iqr.cont2
+    res$iqr2.int <- iqr.int2
     
     res$wilcox.p <- wilcox.test(df$Y[df$tr=="Intervention"], df$Y[df$tr=="Control"], alternative = "two.sided")$p.value
   }

@@ -4,6 +4,7 @@ author: "Andrew Mertens PhD, Benjamin F. Arnold PhD, Jade Benjamin-Chung PhD, Pr
 #output: redoc::redoc
 output: 
   officedown::rdocx_document:
+      toc: true
       reference_docx: "manuscript_format.docx"
 header-includes:
   - \setlength{\parindent}{4em}

@@ -40,8 +40,8 @@ clean_tab = function(df){
       est=ifelse(model=="",
                  paste0(coef, " (",ci.lb," ",ci.ub,")"),
                  paste0(RR, " (",ci.lb," ",ci.ub,")",model)),
-      mean_control=paste0(round(mean_control,1),", ",round(med.cont,1), " (",round(sd_control,1),")"), 
-      mean_int=paste0(round(mean_int,1),", ",round(med.int,1), " (",round(sd_int,1),")"), 
+      mean_control=paste0(round(mean_control,2), " (",round(sd_control,2),"), ",round(med.cont,2), " (", round(iqr1.cont,2), "-", round(iqr2.cont,2),")"), 
+      mean_int=paste0(round(mean_int,2), " (",round(sd_int,2),"), ",round(med.int,2), " (", round(iqr1.int,2), "-", round(iqr2.int,2),")"), 
       sample =case_when(
         sample == "SW" ~ "Source water",
         sample == "W" ~ "Stored water",
@@ -60,7 +60,7 @@ clean_tab = function(df){
     group_by(study, sample) %>% mutate(sample = ifelse(row_number() == 1, as.character(sample), "-")) %>%
     group_by(study) %>% mutate(study = ifelse(row_number() == 1, as.character(study), "-"))
   
-  colnames(df)  <- c("Study",   "Sample", "Target", "N", "Control mean, median (SD)", "Intervention mean, median (SD)", "Difference or ratio (95% CI)", "P value","Wilcoxon P value", "% in ROQ")
+  colnames(df)  <- c("Study",   "Sample", "Target", "N", "Control mean (SD), median (IQR)", "Intervention mean (SD), median (IQR)", "Difference or ratio (95% CI)", "P value","Wilcoxon P value", "% in ROQ")
   return(df)
 }
 
@@ -68,6 +68,7 @@ tab_unadj_diff <- clean_tab(unadj_diff)
 tab_adj_diff <- clean_tab(adj_diff)
 
 save(tab_unadj_diff, tab_adj_diff, file=here("figures/abundance_tables.Rdata"))
+
 
 
 #Old abundance checking tables
