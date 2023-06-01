@@ -63,7 +63,7 @@ Wvars_anthro = c("sex","hfiacat","momage","hhwealth", "Nhh","nrooms","walls", "r
 
 
 #-----------------------------------
-# Unadjusted RR
+# Adjusted RR
 #-----------------------------------
 # 
 # outcome="haz"
@@ -76,45 +76,43 @@ Wvars_anthro = c("sex","hfiacat","momage","hhwealth", "Nhh","nrooms","walls", "r
 # Ws=Wvars
 # Vvar="agecat_anthro"
 # minN_thres = 1
-# temp <- aim2_subgroup_age_lrtest(d, Ws = Wvars, Vvar="agecat_anthro", forcedW=c("age", "hhwealth"), outcome="haz", exposure="pos", study=study, sample=sample, target=target, family="gaussian") 
+# temp <- aim2_subgroup_age_lrtest(d, Ws = Wvars, Vvar="agecat_anthro",  outcome="haz", exposure="pos", study=study, sample=sample, target=target, family="gaussian") 
 
 
-fullres_adj <- NULL
-res_diar_adj <- d %>% group_by(study, sample, target, agecat) %>%
-  do(aim2_glm(., Ws = Wvars, forcedW=c("age", "hhwealth"), outcome="diar7d", exposure="pos", study=.$study[1], sample=.$sample[1], target=.$target[1], family="binomial")) 
-res_diar_adj$sparse <- ifelse(is.na(res_diar_adj$RR), "yes", "no")
-res_diar_adj$RR[is.na(res_diar_adj$RR)] <- 1
-fullres_adj <- bind_rows(fullres_adj, res_diar_adj)
-
-#get interaction P-value
-res_diar_adj_lrtest <- d %>% group_by(study, sample, target) %>%
-  do(aim2_subgroup_age_lrtest(., Ws = Wvars, Vvar="agecat", forcedW=c("age", "hhwealth"), outcome="diar7d", exposure="pos", study=.$study[1], sample=.$sample[1], target=.$target[1], family="binomial")) 
-fullres_adj <- left_join(fullres_adj, res_diar_adj_lrtest, by=c("study","sample","target"))
+# fullres_adj <- NULL
+# res_diar_adj <- d %>% group_by(study, sample, target, agecat) %>%
+#   do(aim2_glm(., Ws = Wvars,  outcome="diar7d", exposure="pos", study=.$study[1], sample=.$sample[1], target=.$target[1], family="binomial")) 
+# res_diar_adj$sparse <- ifelse(is.na(res_diar_adj$RR), "yes", "no")
+# res_diar_adj$RR[is.na(res_diar_adj$RR)] <- 1
+# fullres_adj <- bind_rows(fullres_adj, res_diar_adj)
+# 
+# #get interaction P-value
+# res_diar_adj_lrtest <- d %>% group_by(study, sample, target) %>%
+#   do(aim2_subgroup_age_lrtest(., Ws = Wvars, Vvar="agecat",  outcome="diar7d", exposure="pos", study=.$study[1], sample=.$sample[1], target=.$target[1], family="binomial")) 
+# fullres_adj <- left_join(fullres_adj, res_diar_adj_lrtest, by=c("study","sample","target"))
 
 
 res_haz_adj <- d %>% group_by(study, sample, target, agecat_anthro) %>%
-  do(aim2_glm(., Ws = Wvars_anthro, forcedW=c("age", "hhwealth"), outcome="haz", exposure="pos", study=.$study[1], sample=.$sample[1], target=.$target[1], family="gaussian")) 
+  do(aim2_glm(., Ws = Wvars_anthro,  outcome="haz", exposure="pos", study=.$study[1], sample=.$sample[1], target=.$target[1], family="gaussian")) 
 res_haz_adj$sparse <- ifelse(is.na(res_haz_adj$coef), "yes", "no")
 res_haz_adj$coef[is.na(res_haz_adj$coef)] <- 0
 
 res_haz_adj_lrtest <- d %>% group_by(study, sample, target) %>%
-  do(aim2_subgroup_age_lrtest(., Ws = Wvars, Vvar="agecat_anthro", forcedW=c("age", "hhwealth"), outcome="haz", exposure="pos", study=.$study[1], sample=.$sample[1], target=.$target[1], family="gaussian")) 
+  do(aim2_subgroup_age_lrtest(., Ws = Wvars, Vvar="agecat_anthro",  outcome="haz", exposure="pos", study=.$study[1], sample=.$sample[1], target=.$target[1], family="gaussian")) 
 res_haz_adj <- left_join(res_haz_adj, res_haz_adj_lrtest, by=c("study","sample","target"))
-fullres_adj <- bind_rows(fullres_adj, res_haz_adj)
-
-
-temp <- aim2_subgroup_age_lrtest(d, Ws = Wvars, Vvar="agecat_anthro", forcedW=c("age", "hhwealth"), outcome="haz", exposure="pos", study=d$study[1], sample=d$sample[1], target=d$target[1], family="gaussian") 
+#fullres_adj <- bind_rows(fullres_adj, res_haz_adj)
+fullres_adj <- res_haz_adj
 
 
 fullres_adj_PD <- NULL
 res_diar_adj_PD <- d %>% group_by(study, sample, target, agecat) %>%
-  do(aim2_glm(., Ws = Wvars, forcedW=c("age", "hhwealth"), outcome="diar7d", exposure="pos", study=.$study[1], sample=.$sample[1], target=.$target[1], family="gaussian")) 
+  do(aim2_glm(., Ws = Wvars,  outcome="diar7d", exposure="pos", study=.$study[1], sample=.$sample[1], target=.$target[1], family="gaussian")) 
 res_diar_adj_PD$sparse <- ifelse(is.na(res_diar_adj_PD$coef), "yes", "no")
 res_diar_adj_PD$coef[is.na(res_diar_adj_PD$coef)] <- 0
 fullres_adj_PD <- bind_rows(fullres_adj_PD, res_diar_adj_PD)
 
 res_diar_adj_lrtest_PD <- d %>% group_by(study, sample, target) %>%
-  do(aim2_subgroup_age_lrtest(., Ws = Wvars, Vvar="agecat", forcedW=c("age", "hhwealth"), outcome="diar7d", exposure="pos", study=.$study[1], sample=.$sample[1], target=.$target[1], family="gaussian")) 
+  do(aim2_subgroup_age_lrtest(., Ws = Wvars, Vvar="agecat",  outcome="diar7d", exposure="pos", study=.$study[1], sample=.$sample[1], target=.$target[1], family="gaussian")) 
 fullres_adj_PD <- left_join(fullres_adj_PD, res_diar_adj_lrtest_PD, by=c("study","sample","target"))
 
 

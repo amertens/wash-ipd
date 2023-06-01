@@ -46,9 +46,29 @@ d <- d %>% mutate(
             droplevels()
 
 
+#Add sex breakdown to table 1 per journal guidelines
+d <- d %>%
+  rename(sex_factor=sex) %>%
+  mutate(
+    sex = case_when(
+      sex_factor=="female" ~0,
+      sex_factor=="male" ~1,
+      sex_factor=="Female" ~0,
+      sex_factor=="Male" ~1,
+      sex_factor=="1" & study %in% c("Holcomb 2021","Capone 2022 in prep","Capone 2021") ~0,
+      sex_factor=="0" & study %in% c("Holcomb 2021","Capone 2022 in prep","Capone 2021") ~1,
+      sex_factor=="1" & study %in% c("Reese 2017","Odagiri 2016") ~1,
+      sex_factor=="2" & study %in% c("Reese 2017","Odagiri 2016") ~0)
+  )
 
-
-
+head(d)
+df_sex <- d %>% 
+  filter(!is.na(haz)|!is.na(waz)|!is.na(diar7d)|
+        !is.na(child_date_pathogen)) %>%
+  distinct(study, dataid, childid, sex)
+table(df_sex$study)
+table(df_sex$study, df_sex$sex)
+round(prop.table(table(df_sex$study, df_sex$sex),1) *100,1)
 
 
 #table1

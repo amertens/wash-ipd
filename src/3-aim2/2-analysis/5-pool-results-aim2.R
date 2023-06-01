@@ -25,6 +25,8 @@ adj_RR %>% filter(sample=="any sample type", target=="Any pathogen", Y=="diar7d"
 binary_Y =c("diar7d","stunt","wast","underwt")
 cont_Y =c("haz","waz","whz")
 
+unadj_RR %>% filter(sample=="any sample type", target=="Any human MST", Y=="stunt", !is.na(se))
+
 #pool primary estimates by study
 res_RR_unadj <- res_RR_adj <- NULL
 res_RR_unadj <- unadj_RR %>% filter(Y%in%binary_Y, sample_cat!="Sparse data") %>%
@@ -32,6 +34,15 @@ res_RR_unadj <- unadj_RR %>% filter(Y%in%binary_Y, sample_cat!="Sparse data") %>
   filter(!is.na(se)) %>% mutate(N=n()) %>%
   filter(N>=4) %>%  
   do(try(poolRR(.)))
+
+
+res_RR_unadj2 <- unadj_RR %>% filter(Y%in%binary_Y, sample_cat!="Sparse data") %>%
+  group_by(Y, sample, target) %>%
+  filter(!is.na(se)) %>% mutate(N=n()) %>%
+  filter(N>=4, Y=="stunt") %>%  
+  do(try(poolRR_alt(.)))
+res_RR_unadj %>% filter(Y=="stunt")
+res_RR_unadj2
 
 res_RR_adj <- adj_RR %>% filter(Y%in%binary_Y, sample_cat!="Sparse data") %>%
   group_by(Y, sample, target) %>%
@@ -121,7 +132,7 @@ saveRDS(emm_pool_PD, file=here("results/subgroup_PD_aim2_pooled.Rds"))
 
 #pool by urban/rural
 unique(adj_RR$study)
-adj_RR$urban <- ifelse(adj_RR$study%in% c("Holcomb 2021","Capone et al. 2021", " Capone 2022 in prep." ), "Urban", "Rural")
+adj_RR$urban <- ifelse(adj_RR$study %in% c("Holcomb 2021","Capone et al. 2021", " Capone 2022 in prep." ), "Urban", "Rural")
 res_urban <- adj_RR %>% group_by(Y, sample, target) %>% 
   filter(!is.na(se)) %>% mutate(N=n()) %>%
   filter(N>=4)%>% group_by(Y, sample, target, urban) %>%

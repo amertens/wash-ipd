@@ -98,11 +98,6 @@ colnames(d)
         
 saveRDS(d, file = paste0(dropboxDir, "Data/all-diar.RDS"))
 
-# #temp
-df <- d %>% filter(sample=="Fly", target=="Any pathogen", child_date>env_date & child_date-env_date <=31) %>% distinct()
-dim(df)
-
-
 
 Wvars = c("sex","age","hfiacat","momage","hhwealth", "Nhh","nrooms","walls", "roof", "floor","elec","dadagri","landacre","landown", "momedu", "tr")         
 
@@ -110,16 +105,10 @@ Wvars = c("sex","age","hfiacat","momage","hhwealth", "Nhh","nrooms","walls", "ro
 #all diarrhea measures
 fullres_adj <- NULL
 res_diar_adj <- d %>% group_by(study, sample, target) %>%
-  do(aim2_glm(., Ws = Wvars, forcedW=c("age", "hhwealth"), outcome="diar7d", exposure="pos", study=.$study[1], sample=.$sample[1], target=.$target[1], family="binomial")) 
+  do(aim2_glm(., Ws = Wvars,  outcome="diar7d", exposure="pos", study=.$study[1], sample=.$sample[1], target=.$target[1], family="binomial")) 
 res_diar_adj$sparse <- ifelse(is.na(res_diar_adj$RR), "yes", "no")
 res_diar_adj$RR[is.na(res_diar_adj$RR)] <- 1
 res_diar_adj <- res_diar_adj %>% mutate(time="All")
-
-
-
-
-
-
 
 
 #--------------------------------------------------------------------------
@@ -135,7 +124,7 @@ table(d$diar7d)
 
 
 res_diar_adj_1mo <- df %>% group_by(study, sample, target) %>%
-  do(aim2_glm(., Ws = Wvars, forcedW=c("age", "hhwealth"), outcome="diar7d", exposure="pos", study=.$study[1], sample=.$sample[1], target=.$target[1], family="binomial")) 
+  do(aim2_glm(., Ws = Wvars,  outcome="diar7d", exposure="pos", study=.$study[1], sample=.$sample[1], target=.$target[1], family="binomial")) 
 res_diar_adj_1mo$sparse <- ifelse(is.na(res_diar_adj_1mo$RR), "yes", "no")
 res_diar_adj_1mo$RR[is.na(res_diar_adj_1mo$RR)] <- 1
 res_diar_adj_1mo <- res_diar_adj_1mo %>% mutate(time="1 month")
@@ -174,6 +163,3 @@ fullres_adj <- fullres_adj %>% filter(RR!=1)
 saveRDS(fullres_adj, file=here("results/aim2_sens_diar_time_res.Rds"))
 
 
-#TEMP
-res_diar_adj_1mo %>% filter(sample=="Fly", target=="Any pathogen")
-adj_RR %>% filter(sample=="Fly", target=="Any pathogen")

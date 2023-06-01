@@ -64,10 +64,6 @@ saveRDS(fullres_unadj, file=here("results/unadjusted_aim2_tr_res.Rds"))
 saveRDS(fullres_adj, file=here("results/adjusted_aim2_tr_res.Rds"))
 
 
-#-NOTE! Check WBK main trial results
-#Note that the WBK data was from the S and WSH arms
-# We collected 2107 soil samples from February 2015 to July 2016; 898 from the active control
-# arm, 613 from the sanitation arm, and 596 from the combined WSH arm of the WASH Benefits
-# trial (Fig 1).
+
 
 

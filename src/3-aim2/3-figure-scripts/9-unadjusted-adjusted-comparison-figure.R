@@ -95,7 +95,7 @@ p_logdiff <-  ggplot(df2, aes(x=N_W , y=diff)) +
   ylab("Difference between unadjusted and adjusted estimates") +
   geom_hline(yintercept = 0) + theme_ki() +
   scale_x_continuous(breaks = pretty(df$N_W, n = 10)) +
-  geom_text(aes(x=6, y=-0.4, label=paste0("Average absolute log-transformed difference: ",ave_abs_logdiff))) 
+  geom_text(aes(x=10, y=-0.6, label=paste0("Average absolute log-transformed difference: ",ave_abs_logdiff))) 
 p_logdiff
 
 
@@ -112,7 +112,7 @@ p_diff <-  ggplot(df3, aes(x=N_W , y=diff)) +
   ylab("Difference between adjusted and unadjusted estimates") +
   geom_hline(yintercept = 0) + theme_ki() +
   scale_x_continuous(breaks = pretty(df$N_W, n = 10)) +
-  geom_text(aes(x=6, y=-0.6, label=paste0("Average absolute difference: ",p_ave_abs_diff))) 
+  geom_text(aes(x=9, y=-0.6, label=paste0("Average absolute difference: ",p_ave_abs_diff))) 
 p_diff
 
 ggsave(p_diff, file = paste0(here::here(),"/figures/pngs/aim2_adjusted_unadjusted_differences.png"), width = 10, height = 6)
@@ -124,7 +124,7 @@ p_RR <-  ggplot(df2, aes(x=N_W , y=RR.ratio)) +
   ylab("Ratio between adjusted and unadjusted estimates") +
   geom_hline(yintercept = 1) + theme_ki() +
   scale_x_continuous(breaks = pretty(df$N_W, n = 10)) +
-  geom_text(aes(x=6, y=0.7, label=paste0("Average absolute ratio: ",p_ave_abs_ratio))) 
+  geom_text(aes(x=9, y=0.5, label=paste0("Average absolute ratio: ",p_ave_abs_ratio))) 
 p_RR
 
 ggsave(p_RR, file = paste0(here::here(),"/figures/pngs/aim2_adjusted_unadjusted_ratio.png"), width = 10, height = 6)

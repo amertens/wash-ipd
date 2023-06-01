@@ -56,38 +56,45 @@ aim2_glm_pathogens <- function(d, Ws=NULL, forcedW=NULL, outcome="pos", exposure
 
     if(!is.null(Ws) & minN>0){
       forcedW_n <- 0
-      if(!is.null(forcedW)){
-        Ws <- Ws[!(Ws %in% forcedW)]
-        forcedWdf <- df %>% ungroup() %>% select(any_of(forcedW)) %>% select_if(~sum(!is.na(.)) > 0)
-        if(length(nearZeroVar(forcedWdf))>0){
-          forcedWdf <- forcedWdf[,-nearZeroVar(forcedWdf)]
-        }
-        forcedW_n <- ncol(forcedWdf)
-      }
+      # if(!is.null(forcedW)){
+      #   Ws <- Ws[!(Ws %in% forcedW)]
+      #   forcedWdf <- df %>% ungroup() %>% select(any_of(forcedW)) %>% select_if(~sum(!is.na(.)) > 0)
+      #   if(length(nearZeroVar(forcedWdf))>0){
+      #     forcedWdf <- forcedWdf[,-nearZeroVar(forcedWdf)]
+      #   }
+      #   forcedW_n <- ncol(forcedWdf)
+      # }
 
       Wdf <- df %>% ungroup() %>% select(any_of(Ws)) %>% select_if(~sum(!is.na(.)) > 0)
 
       if(ncol(Wdf)>0){
         #drop covariates with near zero variance
         if(length(nearZeroVar(Wdf))>0){
-          Wdf <- Wdf[,-nearZeroVar(Wdf)]
-        }
-        if(family=="neg.binom"){
-          Wvars <- MICS_prescreen(Y=df$Y, W=Wdf, family="gaussian", print=F)
-        }else{
-          Wvars <- MICS_prescreen(Y=df$Y, W=Wdf, family=family, print=F)
-        }
-        if(family!="gaussian" & !is.null(Wvars)){
-          nY<-floor(min(table(df$Y))/10) -1 #minus one because 10 variables needed to estimate coef. of X
-          nY <- nY - forcedW_n
-          if(nY>=1){
-            if(length(Wvars)>nY){
-              Wvars<-Wvars[1:nY]
-            }
+          if(minN<10){
+            Wdf <- Wdf[,-nearZeroVar(Wdf, freqCut = 80/20)]
           }else{
-            Wvars=NULL
-          }
-        }
+            Wdf <- Wdf[,-nearZeroVar(Wdf)]
+          }        }
+        
+        # if(family=="neg.binom"){
+        #   Wvars <- MICS_prescreen(Y=df$Y, W=Wdf, family="gaussian", print=F)
+        # }else{
+        #   Wvars <- MICS_prescreen(Y=df$Y, W=Wdf, family=family, print=F)
+        # }
+        # if(family!="gaussian" & !is.null(Wvars)){
+        #   nY<-floor(min(table(df$Y))/10) -1 #minus one because 10 variables needed to estimate coef. of X
+        #   nY <- nY - forcedW_n
+        #   if(nY>=1){
+        #     if(length(Wvars)>nY){
+        #       Wvars<-Wvars[1:nY]
+        #     }
+        #   }else{
+        #     Wvars=NULL
+        #   }
+        # }
+        
+        Wvars <- colnames(Wdf)
+        
         if(identical(Wvars, character(0)) ){
           Wvars <- NULL
         }

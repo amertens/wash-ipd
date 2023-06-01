@@ -18,9 +18,6 @@ csl: nature.csl
 
 ```{r, include=F}
 
-#Note: Check out this package for integrating any edits from Ayse:
-#https://github.com/noamross/redoc
-
 #CSL styles by journal
 #https://github.com/citation-style-language/styles
 
@@ -696,12 +693,26 @@ __Figure S20.__ Comparison between associations estimated in the primary diarrho
 
 
 
+## Table S3. IRB approval numbers table
+
+XXXX ADD DESCRIPTION of special characters and the OR/AND logic between columns
+
+```{r, echo=F, warning=F, message=F,  results = 'asis'}
+
+st_tab <- read.csv("C:/Users/andre/Documents/wash-ipd/data/search_terms_tab_data.csv")
+colnames(st_tab)
+#st_tab <- st_tab[1:6, 1:5]
+colnames(st_tab) <- c("Database","Study design","WASH","Environmental markers", "Child fecal markers","Diarrhoea","Child growth")     
+
+st_tab <- flextable(st_tab)
+FitFlextableToPage_landscape(st_tab, pgwidth=10)
 
 
-## Table S1. PRISMA Checklist
-(See separate attachment)
 
-#ADD
+```
+
+
+
 
 ## Table S2. Risk of bias based on modified Newcastle-Ottawa scale
 Stars are given for low risk of bias in each category, up to a total of nine stars. Scoring details are in the footnotes.
@@ -737,3 +748,23 @@ FitFlextableToPage_landscape(bias_tab, pgwidth=10)
 ^f^ If outcome measurement staff were not blinded to intervention status, 0 stars.
  
 ^g^ Scoring is based on losing stars (max. 2). Individual RCTs with baseline balance on covariates are unlikely to require adjustment (=2 stars). Cluster-RCTs and non-randomised trials may require adjustment for clustering (-1 star if not done). RCTs or cRCTs may require adjustment for covariates, with justification (-1 star if not done). Non-randomised studies require adjustment for covariates (-1 star if not done), but also adequate justification for covariate selection (-1 star if not included), and there can be too few or too many covariates.
+
+
+
+
+
+## Table S4. IRB approval numbers table
+
+```{r, echo=F, warning=F, message=F,  results = 'asis'}
+
+irb_tab <- read.csv("C:/Users/andre/Documents/wash-ipd/Data/trial_irb_tab_data.csv")
+irb_tab <- irb_tab[1:6, 1:5]
+colnames(irb_tab) <- c("Study",	"IRB ProtocolNumber 1",	"IRB Protocol Number 2",	"IRB Protocol Number 3",	"Clinical trial registration")
+
+irb_tab <- flextable(irb_tab)
+FitFlextableToPage_landscape(irb_tab, pgwidth=10)
+
+
+
+```
+

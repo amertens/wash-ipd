@@ -150,7 +150,8 @@ base_plot <- function(mydf, legend_labels=sample_cats, drop_full_sparse=F, facet
     geom_errorbar(aes(ymin=ci.lb, ymax=ci.ub), position = position_dodge(0.5),
                   width = 0.3, size = 1) +
     geom_point(size=3, position = position_dodge(0.5), alpha=0.75) +
-    geom_text(aes(y=RR, label=est), color="black", vjust = -0.8, hjust = -0.1, size=1.5) +
+    #geom_text(aes(y=RR, label=est), color="black", vjust = -0.8, hjust = -0.1, size=1.5) +
+    geom_text(aes(y=RR, label=est), color="black", vjust = -0.8, hjust = -0.1, size=2.5) +
     geom_text(aes(y=ci.ub, label=sig_cat), color="black", position = position_dodge(0.5), hjust = -0.5, size=4) +
     scale_color_manual(breaks = legend_labels,
                        values = colours, drop = FALSE) +
@@ -199,7 +200,7 @@ base_plot_diff <- function(mydf, legend_labels=sample_cats, drop_full_sparse=F, 
     geom_point(size=3, position = position_dodge(0.5), alpha=0.75) +
     #geom_text(aes(label=N_W), color="black", position = position_dodge(0.5)) +
     geom_text(aes(y=ci.ub, label=sig_cat), color="black", position = position_dodge(0.5), vjust =0.75, hjust = -0.5, size=4) +
-    geom_text(aes(y=coef, label=est_diff), color="black", vjust = -1.1, hjust = -0.1, size=1.5) +
+    geom_text(aes(y=coef, label=est_diff), color="black", vjust = -1.1, hjust = -0.1, size=2.5) +
     scale_color_manual(breaks = legend_labels,
                        values = colours, drop = FALSE) +
     scale_shape_manual(values=c(16, 13,18), guide = "none") + 
@@ -233,6 +234,15 @@ p_diar_1_adj <- adj_RR %>%
 p_diar_1_adj
 ggsave(p_diar_1_adj, file = paste0(here::here(),"/figures/pngs/aim2_p_diar_1_adj.png"), width = 10, height = 6)
 
+ggsave(filename=here("C:/Users/andre/Dropbox/IPD WASH/Aim2 revision/figures/aim2-fig-3.pdf"), plot = p_diar_1_adj, device='pdf',width=10,height=6)
+
+
+#get I2 for figure captions
+adj_RR %>% 
+  filter(target %in% c("Any pathogen","Any MST"), Y=="diar7d", study=="Pooled", !is.na(Q)) %>% 
+  select(Y, sample, target, I2, Q)
+
+
 p_haz_1 <- unadj_RR %>% 
   filter(target %in% c("Any pathogen","Any MST"), Y=="haz") %>%
   base_plot_diff(drop_full_sparse=T)
@@ -242,6 +252,12 @@ p_haz_1_adj <- adj_RR %>%
   filter(target %in% c("Any pathogen","Any MST"), Y=="haz") %>%
   base_plot_diff(drop_full_sparse=T)
 ggsave(p_haz_1_adj, file = paste0(here::here(),"/figures/pngs/aim2_p_haz_1_adj.png"), width = 10, height = 6)
+
+#get I2 for figure captions
+adj_RR %>% 
+  filter(target %in% c("Any pathogen","Any MST"), Y=="haz", study=="Pooled", !is.na(I2)) %>% 
+  select(Y, sample, target, I2, Q)
+
 
 
 

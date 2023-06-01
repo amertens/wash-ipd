@@ -156,7 +156,7 @@ res_full_unadj <- NULL
 
 for(i in 1:nrow(paired_pathogens)){
   res_unadj=NULL
-  try(res_unadj <- d %>% group_by(study, sample) %>% do(aim2_glm_pathogens(., Ws = NULL, forcedW=NULL, outcome=paired_pathogens$outcome[i], exposure="pos", study=.$study[1], sample=.$sample[1], target=paired_pathogens$exposure[i], family="binomial", minN_thres=minN))) 
+  try(res_unadj <- d %>% group_by(study, sample) %>% do(aim2_glm_pathogens(., Ws = NULL,  outcome=paired_pathogens$outcome[i], exposure="pos", study=.$study[1], sample=.$sample[1], target=paired_pathogens$exposure[i], family="binomial", minN_thres=minN))) 
   res_full_unadj <- bind_rows(res_full_unadj, res_unadj)
 }
 res_full_unadj <- res_full_unadj %>% filter(!is.na(RR))
@@ -169,52 +169,10 @@ res_full <- NULL
 
 for(i in 1:nrow(paired_pathogens)){
   res_adj=NULL
-  try(res_adj <- d %>% group_by(study, sample) %>% do(aim2_glm_pathogens(., Ws = Wvars, forcedW=c("age", "hhwealth"), outcome=paired_pathogens$outcome[i], exposure="pos", study=.$study[1], sample=.$sample[1], target=paired_pathogens$exposure[i], family="binomial", minN_thres=minN))) 
+  try(res_adj <- d %>% group_by(study, sample) %>% do(aim2_glm_pathogens(., Ws = Wvars,  outcome=paired_pathogens$outcome[i], exposure="pos", study=.$study[1], sample=.$sample[1], target=paired_pathogens$exposure[i], family="binomial", minN_thres=minN))) 
   res_full <- bind_rows(res_full, res_adj)
 }
 res_full <- res_full %>% filter(!is.na(RR))
-
-
-
-
-# #LS pathogenic E-coli failed to converge. Rerun here
-# res_adj2 <- d %>% group_by(study, sample) %>%
-#   do(aim2_glm(., Ws = Wvars[Wvars!="nrooms"], forcedW=NULL, outcome="ch_pos_path_ecoli", exposure="pos", study="Capone 2021", sample=.$sample[1], target="Pathogenic E. coli", family="binomial", minN_thres=minN))
-# res_adj2 <- res_adj2 %>% filter(!is.na(RR),sample=="LS")
-# 
-# #LS Trichuris failed to converge. Rerun here
-# res_adj3 <- d %>% group_by(study, sample) %>%
-#   do(aim2_glm(., Ws = Wvars, forcedW=c("sex","hhwealth"), outcome="ch_pos_trichuris", exposure="pos", study="Capone 2021", sample=.$sample[1], target="Trichuris", family="binomial", minN_thres=minN))
-# res_adj3 <- res_adj3 %>% filter(!is.na(RR),sample=="LS")
-# res_adj3
-# 
-# #FLY pathogenic E-coli failed to converge. Rerun here
-# res_adj4 <- d %>% group_by(study, sample) %>%
-#   do(aim2_glm(., Ws = Wvars[Wvars!="sex"], forcedW=NULL, outcome="ch_pos_path_ecoli", exposure="pos", study="Capone 2022 in prep", sample=.$sample[1], target="Pathogenic E. coli", family="binomial", minN_thres=minN))
-# res_adj4 <- res_adj4 %>% filter(!is.na(RR),sample=="Fly")
-# 
-# 
-# 
-# #Giardia failed to converge. Rerun here
-# res_adj5 <- d %>% group_by(study, sample) %>%
-#   do(aim2_glm(., Ws = Wvars, forcedW=c("age", "hhwealth"), outcome="ch_pos_giardia", exposure="pos", study="Capone 2022 in prep", sample=.$sample[1], target="Giardia", family="binomial", minN_thres=minN))
-# res_adj5 <- res_adj5 %>% filter(!is.na(RR),sample=="LS")
-# res_adj5
-# 
-# 
-# df <- d %>% filter(study=="Capone 2022 in prep")
-# df
-# table(df$age)
-#NOTE! Should be able to get specific age of children in Capone
-
-# res_full <- res_full %>%
-#   filter(!(Y=="ch_pos_path_ecoli" & sample=="LS")) %>%
-#   filter(!(Y=="ch_pos_path_ecoli" & sample=="Fly")) %>%
-#   filter(!(Y=="ch_pos_trichuris" & sample=="LS"))
-# res_full <- bind_rows(res_full, res_adj2, res_adj3, res_adj4)
-
-# df <- res_full %>% filter(minN>2) %>% arrange(target)
-# df <- res_full  %>% arrange(target)
 
 
 

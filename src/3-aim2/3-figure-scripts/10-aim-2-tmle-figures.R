@@ -60,11 +60,11 @@ base_plot <- function(mydf, legend_labels=sample_cats, drop_full_sparse=F){
   mydf <- mydf %>% droplevels(.)
   #ggplot(data = mydf, (aes(x=study, y=RR, group=intersect(sample_cat, analysis), color=sample_cat, shape=factor(sparse, levels=c("no","yes","pooled"))))) + 
   ggplot(data = mydf, (aes(x=study, y=RR, group=analysis, color=sample_cat_f, shape=analysis))) + 
-  geom_point(size=3, position = position_dodge(0.5), alpha=0.75) +
+    geom_point(size=3, position = position_dodge(0.5), alpha=0.75) +
     geom_errorbar(aes(ymin=ci.lb, ymax=ci.ub), position = position_dodge(0.5),
                   width = 0.3, size = 1) +
     scale_color_manual(breaks = legend_labels,
-      values = colours, drop = FALSE, guide=FALSE) +
+                       values = colours, drop = FALSE, guide=FALSE) +
     scale_shape_manual(values=c(16, 17)) + 
     geom_hline(yintercept = 1, linetype="dashed") +
     facet_grid(target_f~sample_cat,  scales="free_y", space = "free_x", labeller = label_wrap_gen(width = 10, multi_line = TRUE)) +
@@ -125,7 +125,8 @@ base_plot_diff <- function(mydf, legend_labels=sample_cats, drop_full_sparse=F){
           legend.position = "bottom",
           strip.placement = "outside",
           strip.text.x = element_text(size=10, face = "bold"),
-          strip.text.y = element_text(size=10, angle = 270, face = "bold"),          plot.title = element_text(hjust = 0.5, face = "plain", size=9),
+          strip.text.y = element_text(size=10, angle = 270, face = "bold"),          
+          plot.title = element_text(hjust = 0.5, face = "plain", size=9),
           panel.spacing = unit(0, "lines")) 
 }
 
@@ -152,6 +153,3 @@ p_haz_1_adj_tmle <- adj_RR %>%
 #save figures
 save(list=ls(pattern="p_"), file=here("figures/aim2_tmle_figures.Rdata"))
 ls(pattern="p_")
-
-
-
