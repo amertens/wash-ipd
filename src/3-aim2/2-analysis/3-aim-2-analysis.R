@@ -5,34 +5,28 @@ source(here::here("0-config.R"))
 
 d <- readRDS(paste0(dropboxDir,"Data/merged_env_CH_data_clean.rds")) %>% filter(sample!="FP") %>% droplevels()
 
+table(d$study)
+df1 <- d %>% filter(study=="Holcomb 2021") %>% filter(!is.na(diar7d),!is.na(pos)) %>% distinct(dataid, hhid,childid,childNo)
+df2 <- d %>% filter(study=="Holcomb 2021") %>% filter(!is.na(haz),!is.na(pos)) %>% distinct(dataid, hhid,childid,childNo)
+# df <- d %>% filter(study=="Kwong 2021") %>% filter(!is.na(haz),!is.na(pos)) 
+# df %>% select(child_date_anthro,env_date)
+
 Wvars = c("sex","age","hfiacat","momage","hhwealth", "Nhh","nrooms","walls", "roof", "floor","elec","dadagri","landacre","landown", "momedu", "tr")         
 Wvars_anthro = c("sex","age_anthro","hfiacat","momage","hhwealth", "Nhh","nrooms","walls", "roof", "floor","elec","dadagri","landacre","landown", "momedu", "tr")         
 
 
-# df <- d %>% filter(!is.na(pos), !is.na(diar7d), target=="Trichuris", study=="Capone 2021")
-# 
-# res <- aim2_glm(df, Ws = Wvars,  outcome="diar7d", exposure="pos", study=df$study[1], sample=df$sample[1], target=df$target[1], family="binomial")
-# res
-# 
-# res <- aim2_glm(df, Ws = Wvars,  outcome="diar7d", exposure="pos", study=df$study[1], sample=df$sample[1], target=df$target[1], family="binomial", nzv_cutoff=80/20)
-# res
-# 
-# df <- d %>% filter(!is.na(pos), !is.na(diar7d), target=="Rotavirus", study=="Boehm 2016", sample=="CH")
-# 
-# table(df$sample)
-# 
-# res <- aim2_glm(df, Ws = Wvars,  outcome="diar7d", exposure="pos", study=df$study[1], sample=df$sample[1], target=df$target[1], family="binomial")
-# res
-# 
-# res <- aim2_glm(df, Ws = Wvars,  outcome="diar7d", exposure="pos", study=df$study[1], sample=df$sample[1], target=df$target[1], family="binomial", nzv_cutoff=80/20)
-# res
 
-# res_diar_adj <- d %>% group_by(study, sample, target) %>%
-#   do(aim2_glm(., Ws = Wvars,  outcome="diar7d", exposure="pos", study=.$study[1], sample=.$sample[1], target=.$target[1], family="binomial")) 
-# res_diar_adj$sparse <- ifelse(is.na(res_diar_adj$RR), "yes", "no")
-# res_diar_adj$RR[is.na(res_diar_adj$RR)] <- 1
-# fullres_adj <- bind_rows(fullres_adj, res_diar_adj)
-# temp <- res_diar_adj %>% filter(target=="V. cholerae")
+df <- d %>% filter(!is.na(pos), !is.na(diar7d), target=="Avian (GFD)", sample=="any sample type", study=="Holcomb 2021")
+colnames(df)
+df2 <- df %>% select(sampleid, dataid, hhid,env_date, childid, child_date, agedays, pos, diar7d) %>% arrange(childid)
+df3 <- df2 %>% distinct(dataid, hhid,env_date, childid, child_date, agedays, pos, diar7d)
+
+res <- aim2_glm(df, Ws = Wvars,  outcome="diar7d", exposure="pos", study=df$study[1], sample=df$sample[1], target=df$target[1], family="binomial")
+res
+
+df <- d %>% filter(!is.na(pos), !is.na(haz), target=="Any MST", sample=="any sample type", study=="Holcomb 2021")
+res2 <- aim2_glm(df, Ws = Wvars,  outcome="haz", exposure="pos", study=df$study[1], sample=df$sample[1], target=df$target[1], family="gaussian")
+res2
 
 
 #-----------------------------------
@@ -80,7 +74,7 @@ res_haz <- d %>% group_by(study, sample, target) %>% filter(!is.na(haz)) %>%
    do(aim2_glm(., outcome="haz", exposure="pos", study=.$study[1], sample=.$sample[1], target=.$target[1], family="gaussian")) 
 res_haz$sparse <- ifelse(is.na(res_haz$coef), "yes", "no")
 res_haz$coef[is.na(res_haz$coef)] <- 0
-res_haz
+res_haz %>% filter(study=="Kwong 2021")
 fullres <- bind_rows(fullres, res_haz)
 
 res_whz <- d %>% group_by(study, sample, target) %>%
@@ -132,7 +126,10 @@ res_haz_adj <- d %>% group_by(study, sample, target) %>%
   do(aim2_glm(., Ws = Wvars_anthro,  outcome="haz", exposure="pos", study=.$study[1], sample=.$sample[1], target=.$target[1], family="gaussian")) 
 res_haz_adj$sparse <- ifelse(is.na(res_haz_adj$coef), "yes", "no")
 res_haz_adj$coef[is.na(res_haz_adj$coef)] <- 0
-res_haz_adj %>% filter(sample=="any sample type", target=="Any pathogen")
+
+temp<- res_haz_adj %>% filter(study=="Kwong 2021")
+summary(temp$nX)
+
 res_haz_adj  %>% filter(target=="Any pathogen") %>%
   group_by(Y, sample, target) %>%
   filter(!is.na(se)) %>% mutate(N=n()) %>%
@@ -178,6 +175,17 @@ fullres_adj <- bind_rows(fullres_adj, res_whz_adj)
 saveRDS(fullres, file=here("results/unadjusted_aim2_res.Rds"))
 saveRDS(fullres_adj, file=here("results/adjusted_aim2_res.Rds"))
 
+#examine N's by study and outcome
+tab <- fullres_adj %>% group_by(study, Y) %>% 
+  filter(study!="Pooled") %>%
+  summarise(
+    medianN=median(N, na.rm=T), 
+    maxN=max(N, na.rm=T),
+    median_case=median(a+c, na.rm=T), 
+    max_case=max(a+c, na.rm=T)) %>% 
+  filter(maxN!=0) %>%
+  as.data.frame()
+tab
 
 
 

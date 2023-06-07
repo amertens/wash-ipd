@@ -71,11 +71,6 @@ table(df_sex$study, df_sex$sex)
 round(prop.table(table(df_sex$study, df_sex$sex),1) *100,1)
 
 
-#table1
-tab1 <- table1(~target+sample |study, format_number = TRUE, data=d)
-
-
-
 
 #covariate table
 Wvars = c("hhwealth", "Nhh","nrooms","walls", "floor","roof","elec","dadagri","landown","landacre", "momedu", "momage")         
@@ -191,10 +186,26 @@ dY_path_Holcomb <- dY_path %>% filter(study=="Holcomb 2021")
 table(dY_path_Holcomb$path_infections)
 
 
-dY_diar <- d %>% distinct(study, trial, dataid, hhid, clusterid, env_date, child_date, agedays, sex, childid, diar7d) %>% filter(!is.na(diar7d))
-dY_haz <- d %>% distinct(study, trial, dataid, hhid, clusterid, env_date,  child_date_anthro, agedays, sex, childid, haz) %>% filter(!is.na(haz))
-dY_waz <- d %>% distinct(study, trial, dataid, hhid, clusterid, env_date,  child_date_anthro, agedays, sex, childid, waz) %>% filter(!is.na(waz))
-dY_whz <- d %>% distinct(study, trial, dataid, hhid, clusterid, env_date,  child_date_anthro, agedays, sex, childid, whz) %>% filter(!is.na(whz))
+# dY_diar <- d %>% distinct(study, trial, dataid, hhid, clusterid, env_date, child_date, agedays, sex, childid, diar7d) %>% filter(!is.na(diar7d))
+# dY_haz <- d %>% distinct(study, trial, dataid, hhid, clusterid, env_date,  child_date_anthro, agedays, sex, childid, haz) %>% filter(!is.na(haz))
+# dY_waz <- d %>% distinct(study, trial, dataid, hhid, clusterid, env_date,  child_date_anthro, agedays, sex, childid, waz) %>% filter(!is.na(waz))
+# dY_whz <- d %>% distinct(study, trial, dataid, hhid, clusterid, env_date,  child_date_anthro, agedays, sex, childid, whz) %>% filter(!is.na(whz))
+
+#ensure time ordering of diarrhea (anthro has been set in individual studies)
+d_diar <- d
+d_diar$diar7d[d_diar$child_date <= d_diar$env_date | d_diar$child_date > d_diar$env_date+124] <- NA
+dY_diar <- d_diar %>% distinct(study, trial, dataid, hhid, clusterid, child_date, agedays, sex, childid, diar7d) %>% filter(!is.na(diar7d))
+
+# dY_diar <- d_diar %>% filter(study=="Holcomb 2021") %>%
+#   distinct(study, trial, dataid, hhid, clusterid, child_date, agedays, sex, childid, diar7d) %>% filter(!is.na(diar7d))
+# dim(dY_diar)
+
+#distinct growth issues
+dY_haz <- d %>% distinct(study, trial, dataid, hhid, clusterid,  child_date_anthro, agedays_anthro, sex, childid, haz) %>% filter(!is.na(haz))
+dY_waz <- d %>% distinct(study, trial, dataid, hhid, clusterid,  child_date_anthro, agedays_anthro, sex, childid, waz) %>% filter(!is.na(waz))
+dY_whz <- d %>% distinct(study, trial, dataid, hhid, clusterid,  child_date_anthro, agedays_anthro, sex, childid, whz) %>% filter(!is.na(whz))
+
+
 dim(dY_diar)
 dim(dY_haz)
 
@@ -207,16 +218,19 @@ tab_diar <- dY_diar %>% group_by(trial, study) %>%
   summarise(N_diar_obs=n(), N_diar_cases=sum(diar7d, na.rm=T), prev_diar=round(mean(diar7d, na.rm=T)*100, 1))
 
 tab_haz <- dY_haz %>% group_by(trial, study) %>% 
-  summarise(N_haz=n(), mean_haz=round(mean(haz, na.rm=T), 2), prev_stunting=round(mean(haz < (-2), na.rm=T)*100, 1))
+  summarise(N_haz=n(), mean_haz=round(mean(haz, na.rm=T), 2), sd_haz=round(sd(haz, na.rm=T), 2), prev_stunting=round(mean(haz < (-2), na.rm=T)*100, 1), n_stunting=sum(haz < (-2), na.rm=T))
 tab_waz <- dY_waz %>% group_by(trial, study) %>% 
-  summarise(N_waz=n(), mean_waz=round(mean(waz, na.rm=T), 2), prev_underwt=round(mean(waz < (-2), na.rm=T)*100, 1))
+  summarise(N_waz=n(), mean_waz=round(mean(waz, na.rm=T), 2), sd_waz=round(sd(waz, na.rm=T), 2), prev_underwt=round(mean(waz < (-2), na.rm=T)*100, 1), n_underwt=sum(waz < (-2), na.rm=T))
 tab_whz <- dY_whz %>% group_by(trial, study) %>% 
-  summarise(N_whz=n(), mean_whz=round(mean(whz, na.rm=T), 2), prev_wasting=round(mean(whz < (-2), na.rm=T)*100, 1))
+  summarise(N_whz=n(), mean_whz=round(mean(whz, na.rm=T), 2), sd_whz=round(sd(whz, na.rm=T), 2), prev_wasting=round(mean(whz < (-2), na.rm=T)*100, 1), n_wasting=sum(whz < (-2), na.rm=T))
 
 tab_Y <- left_join(tab_diar, tab_haz, by =c("trial","study")) 
 tab_Y <- left_join(tab_Y, tab_waz, by =c("trial","study")) 
 tab_Y <- left_join(tab_Y, tab_whz, by =c("trial","study")) 
 tab_Y <- left_join(tab_Y, tab_path, by =c("study")) 
+
+#Save for transposed format
+tab_Y_transpose <- tab_Y
 
 colnames(tab_Y)
 N_cols <- ncol(tab_Y)
@@ -228,10 +242,52 @@ colnames(tab_Y) <- c( "Study","Trial","Distinct pathogens measured","# children 
 save(tab_Y,
      file=here("figures/aim2_all_tables.Rdata"))
 
-tab_Y
+
+
+#
+tab_Y_transpose
+
+#paste0 columns
+colnames(tab_Y_transpose)
+tab_Y_transpose <- tab_Y_transpose %>% 
+  mutate(`# children with pathogens measured` = N_path_children,
+         `Pathogen prevalence (n/N)` = paste0(prev_path," (",N_path_cases,")"),
+         `Diarrhea prevalence (n/N)` = paste0(prev_diar," (",N_diar_cases,"/",N_diar_obs,")"),
+         `Mean HAZ` = paste0(mean_haz," (",sd_haz,")"),
+         `Stunting prevalence (n/N)` = paste0(prev_stunting," (",n_stunting,"/",N_haz,")"),
+         `Mean WHZ` = paste0(mean_whz," (",sd_whz,")"),
+         `Wasting prevalence (n/N)` = paste0(prev_wasting," (",n_wasting,"/",N_whz,")"),
+         `Mean WAZ` = paste0(mean_waz," (",sd_waz,")"),
+         `Underweight prevalence (n/N)` = paste0(prev_underwt," (",n_underwt,"/",N_waz,")")
+         ) %>%
+  select("trial", "study", 
+         "Diarrhea prevalence (n/N)",
+         "Mean HAZ" ,
+         "Stunting prevalence (n/N)",
+         "Mean WHZ",
+         "Wasting prevalence (n/N)",
+         "Mean WAZ",
+         "Underweight prevalence (n/N)") %>%
+  rename(Trial=trial, Study=study)
+
+colnames <- tab_Y_transpose$Trial
+rownames <- colnames(tab_Y_transpose)
 
 
 
+#transpose table
+tab_Y_transpose <- as.data.frame(t(as.matrix(tab_Y_transpose)))
+colnames(tab_Y_transpose) <- colnames
+tab_Y_transpose$variables <- rownames
+for(i in 1:ncol(tab_Y_transpose)){
+  tab_Y_transpose[,i] <- as.character(tab_Y_transpose[,i])
+  tab_Y_transpose[grepl("NA",tab_Y_transpose[,i]),i] <- ""
+  tab_Y_transpose[grepl("<NA>",tab_Y_transpose[,i]),i] <- ""
+}
+
+
+#save as csv
+write.csv(tab_Y_transpose,here("figures/aim2_table1.csv"))
 
 
 

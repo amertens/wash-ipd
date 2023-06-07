@@ -15,6 +15,12 @@ env <- env %>% mutate(
                     study=="Reese 2017" ~ "Gram Vikas",
                     study=="Odagiri 2016" ~ "Odisha")) 
 
+df <- env %>% filter(study=="Holcomb 2021", sample=="any sample type", target=="Avian (GFD)",
+                     dataid==2037)
+
+ hhid==203751
+
+
 
 
 env <- env %>% filter(trial == "MapSan") %>% droplevels(.) %>%
@@ -166,8 +172,6 @@ dim(cp_path_el)
 
 pathogens <- bind_rows(cp_path_bl, cp_path_ml, cp_path_el) 
 
-
-
 hol_anthro_bl <- merge_ch(hol_bl, ch_bl %>% select(-c(diar7d, round, Kkasc, KKtrc, starts_with("gpp_")))) %>% mutate(round="bl", anthro_round="bl") %>% filter(!is.na(haz)|!is.na(waz)|!is.na(whz),!is.na(pos))%>% filter(child_date > env_date) 
 hol_anthro_ml <- merge_ch(hol_ml, ch_ml %>% select(-c(diar7d, round, Kkasc, KKtrc, starts_with("gpp_")))) %>% mutate(round="ml", anthro_round="ml") %>% filter(!is.na(haz)|!is.na(waz)|!is.na(whz),!is.na(pos))%>% filter(child_date > env_date) 
 hol_anthro_bl_ml <- merge_ch(hol_bl, ch_ml %>% select(-c(diar7d, round, Kkasc, KKtrc, starts_with("gpp_")))) %>% mutate(round="bl", anthro_round="ml") %>% filter(!is.na(haz)|!is.na(waz)|!is.na(whz),!is.na(pos))%>% filter(child_date > env_date) 
@@ -185,6 +189,12 @@ dim(cp_anthro)
 summary(cp_anthro$date_diff)
 
 cp_df <- bind_rows(cp_anthro, cp_diar_bl, cp_diar_ml, cp_diar_el, cp_path_bl, cp_path_ml, cp_path_el)
+
+
+hol_bl
+table(hol_bl$target, hol_bl$sample)
+table(hol_anthro_bl$target, hol_anthro_bl$sample)
+table(hol_anthro_bl_ml$target, hol_anthro_bl_ml$sample)
 
 hol_anthro <- bind_rows(hol_anthro_bl_ml, hol_anthro_ml_el,hol_anthro_bl,hol_anthro_ml)
 hol_anthro <- hol_anthro %>% mutate(date_diff = as.numeric(child_date-env_date)) %>% group_by(study, sampleid, target, sample, sex,dataid, round, hhid, childid) %>% filter(date_diff==min(date_diff))

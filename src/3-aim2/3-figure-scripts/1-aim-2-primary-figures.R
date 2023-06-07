@@ -6,10 +6,27 @@ unadj_RR <- readRDS(file=here("results/unadjusted_aim2_pooled.Rds"))
 adj_RR <- readRDS(file=here("results/adjusted_aim2_pooled.Rds")) 
 d <- readRDS(paste0(dropboxDir,"Data/merged_env_CH_data.rds"))
 
-temp<-adj_RR%>%filter(Y=="diar7d", target=="Any MST")
+#TEMP save
+#write.csv(res_haz_adj, file="C:/Users/andre/Downloads/temp_res.csv")
+
+temp<-adj_RR%>%filter(study=="Holcomb 2021")
 table(temp$sample_cat)
 
 unique(adj_RR$target)
+
+
+#examine N's by study and outcome
+tab <- adj_RR %>% group_by(study, Y) %>% 
+  filter(study!="Pooled") %>%
+  summarise(
+    medianN=median(N, na.rm=T), 
+    maxN=max(N, na.rm=T),
+    median_case=median(a+c, na.rm=T), 
+    max_case=max(a+c, na.rm=T)) %>% 
+  filter(maxN!=0) %>%
+  as.data.frame()
+tab
+
 
 #count number of covariates
 unadj_RR$N_W <- ""
@@ -49,16 +66,17 @@ unadj_RR <- unadj_RR %>% mutate(
     pval>=0.05 ~""
   )
 )
-# adj_RR$sparse[adj_RR$Y=="diar7d" & adj_RR$n < 20] <- "yes"
-# adj_RR$RR[adj_RR$Y=="diar7d" & adj_RR$n < 20] <- NA
-# adj_RR$ci.lb[adj_RR$Y=="diar7d" & adj_RR$n < 20] <- NA
-# adj_RR$ci.ub[adj_RR$Y=="diar7d" & adj_RR$n < 20] <- NA
+
 
 res <- adj_RR %>% filter(target %in% c("Any MST"), 
                   Y=="diar7d", study=="Holcomb 2020",
                   sample=="any sample type")
-res$N_W
-res$W
+
+res <- adj_RR %>% filter(target %in% c("Any MST"), 
+                         Y=="haz", study=="Boehm 2016"#,
+                         #sample=="any sample type"
+                         )
+res
 
 #---------------------------------------------------------------
 # Print pooled estimates
@@ -151,7 +169,7 @@ base_plot <- function(mydf, legend_labels=sample_cats, drop_full_sparse=F, facet
                   width = 0.3, size = 1) +
     geom_point(size=3, position = position_dodge(0.5), alpha=0.75) +
     #geom_text(aes(y=RR, label=est), color="black", vjust = -0.8, hjust = -0.1, size=1.5) +
-    geom_text(aes(y=RR, label=est), color="black", vjust = -0.8, hjust = -0.1, size=2.5) +
+    geom_text(aes(y=RR, label=est), color="black", vjust = -0.8, hjust = -0.1, size=2.25) +
     geom_text(aes(y=ci.ub, label=sig_cat), color="black", position = position_dodge(0.5), hjust = -0.5, size=4) +
     scale_color_manual(breaks = legend_labels,
                        values = colours, drop = FALSE) +
@@ -200,7 +218,7 @@ base_plot_diff <- function(mydf, legend_labels=sample_cats, drop_full_sparse=F, 
     geom_point(size=3, position = position_dodge(0.5), alpha=0.75) +
     #geom_text(aes(label=N_W), color="black", position = position_dodge(0.5)) +
     geom_text(aes(y=ci.ub, label=sig_cat), color="black", position = position_dodge(0.5), vjust =0.75, hjust = -0.5, size=4) +
-    geom_text(aes(y=coef, label=est_diff), color="black", vjust = -1.1, hjust = -0.1, size=2.5) +
+    geom_text(aes(y=coef, label=est_diff), color="black", vjust = -1.1, hjust = -0.1, size=2.25) +
     scale_color_manual(breaks = legend_labels,
                        values = colours, drop = FALSE) +
     scale_shape_manual(values=c(16, 13,18), guide = "none") + 
@@ -252,6 +270,7 @@ p_haz_1_adj <- adj_RR %>%
   filter(target %in% c("Any pathogen","Any MST"), Y=="haz") %>%
   base_plot_diff(drop_full_sparse=T)
 ggsave(p_haz_1_adj, file = paste0(here::here(),"/figures/pngs/aim2_p_haz_1_adj.png"), width = 10, height = 6)
+ggsave(filename=here("C:/Users/andre/Dropbox/IPD WASH/Aim2 revision/figures/aim2-fig-4.pdf"), plot = p_haz_1_adj, device='pdf',width=10,height=6)
 
 #get I2 for figure captions
 adj_RR %>% 

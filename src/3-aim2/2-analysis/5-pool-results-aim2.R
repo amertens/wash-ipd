@@ -49,6 +49,8 @@ res_RR_adj <- adj_RR %>% filter(Y%in%binary_Y, sample_cat!="Sparse data") %>%
   filter(!is.na(se)) %>% mutate(N=n()) %>%
   filter(N>=4) %>% 
   do(poolRR(.)) 
+res_RR_adj %>% filter(target=="Any pathogen")
+
 
 # res_RR_adj_animal_MST <- adj_RR %>% filter(Y%in%binary_Y, sample_cat!="Sparse data", target=="Any animal MST") %>%
 #   group_by(Y, sample, target) %>%
@@ -69,6 +71,7 @@ res_cont_adj <- adj_RR %>% filter(Y%in%cont_Y, sample_cat!="Sparse data") %>%
   filter(N>=4) %>% 
   do(try(pool.cont(.))) 
 res_cont_adj %>% filter(target=="Any pathogen")
+res_cont_adj %>% filter(grepl("MST",target), Y=="haz")
 
 
 res_emm_bin_adj <- adj_emm %>% filter(Y%in%binary_Y, sample_cat!="Sparse data") %>%
@@ -77,19 +80,22 @@ res_emm_bin_adj <- adj_emm %>% filter(Y%in%binary_Y, sample_cat!="Sparse data") 
   filter(N>=4)%>% group_by(Y, sample, target, V, Vlevel) %>%
   do(poolRR(.)) %>% mutate(coef=log(RR)) 
 
-res_emm_bin_adj %>% filter(target=="Any pathogen")
 
 res_emm_cont_adj <- adj_emm %>% filter(Y%in%cont_Y, sample_cat!="Sparse data") %>%
   group_by(Y, sample, target, V, Vlevel) %>% 
   filter(!is.na(se)) %>% mutate(N=n()) %>%
   filter(N>=4)%>% group_by(Y, sample, target, V, Vlevel) %>%
   do(try(pool.cont(.))) 
+res_emm_cont_adj %>% filter(target=="Any pathogen", V=="sex", sample=="any sample type", Y=="haz")
+
 
 res_emm_PD_adj <- adj_emm_PD %>% filter(sample_cat!="Sparse data") %>%
   group_by(Y, sample, target, V, Vlevel) %>% 
   filter(!is.na(se)) %>% mutate(N=n()) %>%
   filter(N>=4)%>% group_by(Y, sample, target, V, Vlevel) %>%
   do(try(pool.cont(.))) 
+res_emm_PD_adj %>% filter(target=="Any pathogen", V=="wet", sample=="any sample type", study=="Pooled")
+
 
 #add blank rows for subgroups without paired pooled estimates
 res_emm_bin_adj_blank <- res_emm_bin_adj %>% group_by(sample,target,V) %>% mutate(N=n()) %>% filter(N==1) %>%
@@ -106,8 +112,6 @@ res_PD_emm_adj <- bind_rows(res_emm_PD_adj, res_emm_PD_adj_blank)
 
 res_bin_emm_adj%>%filter(V=="wet_CH", sample=="any sample type", target=="Any pathogen")
 res_emm_PD_adj%>%filter(V=="wet_CH", sample=="any sample type", target=="Any pathogen")
-temp<-adj_emm_PD%>%filter(V=="wet_CH", sample=="any sample type", target=="Any pathogen", !is.na(int.p))
-temp
 
 unadj_pool <- bind_rows(unadj_RR, res_cont_unadj, res_RR_unadj)
 unadj_pool$study <- factor(unadj_pool$study, levels = rev(c(levels(unadj_RR$study),"Pooled")))

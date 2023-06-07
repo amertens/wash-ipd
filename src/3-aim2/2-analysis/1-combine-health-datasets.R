@@ -12,7 +12,6 @@ odisha <- readRDS(paste0(dropboxDir,"Data/odisha_env_CH_data.rds"))
 
 
 
-
 #Clean pathogen-specific infections
 
 wbk <- wbk %>%  subset(., select = -c(ch_sth, 
@@ -92,4 +91,6 @@ table(d$study[!is.na(d$haz)], is.na(d$age_anthro[!is.na(d$haz)]))
 # Save
 #-----------------------------------------------------------
 saveRDS(d, file=paste0(dropboxDir,"Data/merged_env_CH_data.rds"))
+
+
 

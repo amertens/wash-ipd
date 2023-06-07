@@ -1773,11 +1773,11 @@ poolRR_alt<-function(d, method="REML"){
     #confint(fit)
     
     est<-data.frame(fit$b, fit$se, fit$I2, fit$QE, fit$pval)
-    colnames(est)<-c("logRR.psi","logSE", "I2", "Q", "pval")
+    colnames(est)<-c("logRR.psi","se", "I2", "Q", "pval")
     
     est$RR<-exp(est$logRR)
-    est$ci.lb<-exp(est$logRR - 1.96 * est$logSE)
-    est$ci.ub<-exp(est$logRR + 1.96 * est$logSE)
+    est$ci.lb<-exp(est$logRR - 1.96 * est$se)
+    est$ci.ub<-exp(est$logRR + 1.96 * est$se)
     est$N <- d$N[1]
     est <- est %>% mutate(Y=d$Y[1],study="Pooled", sparse="pooled", sample_type=d$sample_type[1], sample_cat=d$sample_cat[1], target_f=d$target_f[1])
     
@@ -1798,9 +1798,11 @@ pool.cont<-function(d, method="REML"){
     if(is.null(fit)){try(fit<-rma(yi=coef, sei=se, data=d, method="DL", measure="GEN"))}
     if(is.null(fit)){try(fit<-rma(yi=coef, sei=se, data=d, method="HE", measure="GEN"))}
   }
-  est<-data.frame(fit$b, fit$ci.lb, fit$ci.ub, fit$I2, fit$pval)
-  colnames(est)<-c("coef","ci.lb","ci.ub", "I2", "pval")
+  est<-data.frame(fit$b, fit$se, fit$I2, fit$QE, fit$pval)
+  colnames(est)<-c("coef","se", "I2", "Q", "pval")
 
+  est$ci.lb<-(est$coef - 1.96 * est$se)
+  est$ci.ub<-(est$coef + 1.96 * est$se)
   
   est$N <- d$N[1]
   est <- est %>% mutate(Y=d$Y[1],study="Pooled", sparse="pooled", sample_type=d$sample_type[1], sample_cat=d$sample_cat[1], target_f=d$target_f[1])

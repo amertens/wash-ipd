@@ -1,0 +1,21 @@
+Study,Reese et al. 201731,Holcomb et al. 202138,Capone et al. 202136,Capone et al. 202274 ,Odagiri et al. 201663,Fuhrmeisteret al. 202037,Boehm et al. 201634,Kwong et al. 202135,Steinbaum et al. 201975
+Trial,Gram Vikas,MapSan,MapSan,MapSan,Odisha TSC,Wash Benefits Bangladesh,Wash Benefits Bangladesh,Wash Benefits Bangladesh,Wash Benefits Kenya
+# girls,553,86,107,103,887,553,208,628,1177
+# boys,557,95,89,117,970,557,204,610,1102
+Distinct pathogens measured,,,15,10,,1,,2,2
+# children with pathogens measured,,,96,68,,261,,500,"1,609"
+# pathogen infections,,,230,154,,61,,200,338
+Pathogen prev.,,,86.7,83.9,,17.3,,23.4,20.6
+# diarrhoea obs.,"1,044",79,111,96,"1,961","1,598",412,"1,063","2,248"
+# diarrhoea cases,46,5,13,10,181,189,99,140,577
+Diarrhoea prev.,4.4,6.3,11.7,10.4,9.2,11.8,24,13.2,25.7
+# HAZ obs.,578,254,227,262,,859,411,103,"1,800"
+Mean HAZ,-1.78,-1.73,-1.55,-1.73,,-1.82,-1.35,-1.58,-1.54
+Stunting prev.,42.2,48,43.2,41.6,,41,26.3,30.1,31.6
+# WAZ obs.,,251,228,263,"4,006",873,412,103,"1,852"
+Mean WAZ,,-0.61,-0.68,-0.71,-1.38,-1.54,-1.35,-1.55,-0.73
+Underweight prev.,,10,11.4,12.2,28.9,30.6,24.3,29.1,9.7
+# WHZ obs.,576,243,221,248,,861,412,103,"1,797"
+Mean WHZ,-0.87,0.31,0.09,0.13,,-0.85,-0.74,-0.97,0.1
+Wasting prev.,13.4,6.2,8.1,7.3,,10,9.5,8.7,1.5
+,,,,,,,,,

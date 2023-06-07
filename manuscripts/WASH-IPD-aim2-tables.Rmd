@@ -1,0 +1,441 @@
+---
+title: "Figures and Tables"
+author: "Associations between detection of enteropathogens and microbial source tracking markers in the environment and child enteric infections and growth: an individual participant data meta-analysis"
+#output: redoc::redoc
+output: 
+  word_document:
+    reference_docx: "tables_format.docx"
+header-includes:
+  - \setlength{\parindent}{4em}
+  - \setlength{\parskip}{0em}
+indent: true
+bibliography: WASH-IPD.bib
+bib-humanities: FALSE
+csl: nature.csl
+
+---
+
+
+```{r, include=F}
+
+#CSL styles by journal
+#https://github.com/citation-style-language/styles
+
+
+knitr::opts_chunk$set(echo = FALSE, dpi=300,fig.width=7)
+
+options(warn = -1) 
+library(tidyverse)
+library(RColorBrewer)
+library(officedown)
+library(janitor)
+library(knitr)
+library(here)
+# library(table1)
+# library(rvest)
+library(officer)
+library(flextable)
+library(bibtex)
+library(citr)
+library(redoc)
+
+textcol = "grey20"
+cols = (brewer.pal(n = 9, name = "Spectral"))
+# colours <- c(`<0.01 increase risk` = cols[1], `<0.05 increase risk` = cols[2], 
+#              `0.05-0.2 increase risk` = cols[3],
+#              `0.2-1` = cols[5],  
+#              `0.05-0.2 decrease risk` = cols[7], `<0.05 decrease risk` = cols[8], 
+#              `<0.01 decrease risk` = cols[9], `Not estimated` = "gray80")
+
+colours <- c(`<0.01 (increased risk)` = cols[1], `<0.05 (increased risk)` = cols[2], 
+             `0.05-0.2 (increased risk)` = cols[3],
+             `0.2-1` = cols[5],  
+             `0.05-0.2 (decreased risk)` = cols[7], `<0.05 (decreased risk)` = cols[8], 
+             `<0.01 (decreased risk)` = cols[9], `Not estimated` = "gray80")
+
+panel_spacing = 0.65
+
+source(here("0-config.R"))
+#citr:::insert_citation(bib_file ="WASH-IPD.bib", use_betterbiblatex =F)
+# 
+# tidy_bib_file(
+#   rmd_file = "Aim1_manuscript.Rmd"
+#   , messy_bibliography = "WASH-IPD.bib"
+#   , file = "tidy_references.bib"
+# )
+
+
+op = function(x, d=2) sprintf(paste0("%1.",d,"f"), x) 
+
+Print <- function(x){
+  prettyNum(round(x,2), big.mark = ",", scientific = FALSE)
+}
+
+ library(pander)
+panderOptions('digits', 2)
+panderOptions('round', 2)
+panderOptions('keep.trailing.zeros', TRUE)
+panderOptions('graph.fontsize', 8)
+
+
+
+
+
+
+panderOptions('table.alignment.default', function(df)
+    ifelse(sapply(df, is.numeric), 'right', 'left'))
+panderOptions('table.split.table', Inf)
+panderOptions('big.mark', ",")
+
+set_flextable_defaults(big.mark = ",", 
+  font.size = 8, theme_fun = theme_vanilla,
+  padding.bottom = 5, 
+  padding.top = 5,
+  padding.left = 5,
+  padding.right = 5)
+
+
+#Clean results function
+clean_est <- function(res, outcome="binomial"){
+  if(outcome=="binomial"){
+    
+    est = format(round(res$RR, 2), nsmall = 2)
+    ci.lb = format(round(res$ci.lb, 2), nsmall = 2) 
+    ci.ub = format(round(res$ci.ub, 2), nsmall = 2)
+    est.ci = paste0(est," (95% CI: ",ci.lb,", ",ci.ub,")")
+  }else{
+    est = format(round(res$coef, 2), nsmall = 2)
+    ci.lb = format(round(res$ci.lb, 2), nsmall = 2) 
+    ci.ub = format(round(res$ci.ub, 2), nsmall = 2)
+    est.ci = paste0(est," (95% CI: ",ci.lb,", ",ci.ub,")")
+  }
+  return(est.ci)
+}
+
+clean_res  <- function(res, outcome="binomial"){
+  if(outcome=="binomial"){
+    res$est.ci = paste0("RR=",round(as.numeric(res$RR),1)," (95% CI: ",round(res$ci.lb,1),", ",round(res$ci.ub,1),")")
+    res <- res %>% ungroup() %>%
+      select(study, sample_type, target_f, est.ci, pval, a, b, c, d, N) 
+    res$est.ci <- gsub("RR\\=1 \\(95\\% CI\\: NA, NA\\)","Not estimated",res$est.ci)
+    
+    res$pval <- as.character(round(res$pval,3))
+    res$pval[is.na(res$pval)] <- ""
+    res <- res %>% 
+      rename(Study=study,
+             Sample=sample_type,
+             Target=target_f,
+             Estimate=est.ci,
+             `p-value`=pval, 
+             `Positive,\nIntervention`=a,
+             `Negative,\nIntervention`=b,
+             `Positive,\nControl`=c,
+             `Negative,\nControl`=d,
+             `Total\nobservations`=N)
+  }else{
+    res$est.ci = paste0(round(as.numeric(res$coef),1),"Difference= (95% CI: ",round(res$ci.lb,1),", ",round(res$ci.ub,1),")")
+    res <- res %>% ungroup() %>%
+      select(sample_type, target_f, est.ci, pval, a, b, c, d, N) 
+    res$est.ci <- gsub("Difference\\=0 \\(95\\% CI\\: NA, NA\\)","Not estimated",res$est.ci)
+    res$pval <- as.character(round(res$pval,3))
+    res$pval[is.na(res$pval)] <- ""
+    res <- res %>% 
+      rename(Study=study,
+             Sample=sample_type,
+             Target=target_f,
+             Estimate=est.ci,
+             `p-value`=pval, 
+             `Positive,\nIntervention`=a,
+             `Negative,\nIntervention`=b,
+             `Positive,\nControl`=c,
+             `Negative,\nControl`=d,
+             `Total\nobservations`=N)
+  }
+  
+  return(res)
+}
+
+clean_res_tab <- function(unadj_RR, adj_RR){
+  unadj<-clean_res(unadj_RR) %>% select(Study,Sample,Target,Estimate, `p-value`) %>% 
+    rename(`Unadjusted\nEstimate`=Estimate, `Unadjusted\np-value`=`p-value`) 
+  adj<-clean_res(adj_RR)%>% rename(`Adjusted\nEstimate`=Estimate, `Adjusted\np-value`=`p-value`)
+  
+  res <- left_join(unadj, adj, by=c("Study", "Sample", "Target"))
+  res <- res %>% arrange(Study,  Sample,  Target) %>% filter(Study!="Pooled")
+  res$`Adjusted\nEstimate`[res$Study=="Odagiri 2016"] <- ""
+  res$`Adjusted\np-value`[res$Study=="Odagiri 2016"] <- ""
+  return(res)
+}
+
+FitFlextableToPage <- function(ft, pgwidth = 10){
+
+  ft_out <- ft %>% autofit()
+
+  ft_out <- width(ft_out, width = dim(ft_out)$widths*pgwidth /(flextable_dim(ft_out)$widths))
+  return(ft_out)
+}
+
+
+add_footnote_with_rlang <- function(df, col, pattern, symbol){
+  form_ <- sprintf("~ %s == '%s'", col, pattern)
+  colname <- enquo(col)
+  flextable::compose(
+    x = df, j = col, i = as.formula(form_), 
+    value = as_paragraph(
+      as_chunk(!!colname), 
+      as_chunk(symbol, props = fp_text(vertical.align = 'superscript')))
+  ) 
+}
+
+add_footnote <- function(df, col, pattern, symbol){
+  form_ <- sprintf("~ %s == '%s'", col, pattern)
+  flextable::compose(
+    x = df, j = col, i = as.formula(form_), 
+    value = as_paragraph(pattern,
+      as_chunk(symbol, props = fp_text(vertical.align = 'superscript')))
+    ) 
+}
+
+
+
+heatmap_plot2 <- function(d, colours, textcol= "grey20"){
+  
+  my_colors = c("grey20",carto_pal(12, "Prism"))
+  
+  # levels(dfull$X)
+  # d<-dfull
+  d$sample_cat[is.na(d$sample_cat)] <- "Any sample"
+  
+  
+  d <- d %>% #filter(!is.na(X)) %>%
+    arrange(desc(X)) %>%
+    mutate(
+    X = case_when(
+      X=="Any sample: POOLED" ~ paste0("<span style='color:",my_colors[1],"'>**", X, "**</span>"),
+      sample_cat=="Any sample" ~ paste0("<span style='color:",my_colors[1],"'>", X, "</span>"),
+      sample_cat=="Source water" ~ paste0("<span style='color:",my_colors[3],"'>", X, "</span>"),
+      sample_cat=="Stored water" ~ paste0("<span style='color:",my_colors[4],"'>", X, "</span>"),
+      sample_cat=="Child hand rinse" ~ paste0("<span style='color:",my_colors[7],"'>", X, "</span>"),
+      sample_cat=="Mother hand rinse" ~ paste0("<span style='color:",my_colors[8],"'>", X, "</span>"),
+      sample_cat=="Latrine soil" ~ paste0("<span style='color:",my_colors[5],"'>", X, "</span>"),
+      sample_cat=="House soil" ~ paste0("<span style='color:",my_colors[6],"'>", X, "</span>"),
+      sample_cat=="Flies" ~ paste0("<span style='color:",my_colors[9],"'>", X, "</span>")
+    )
+  )
+  
+  d$X=factor(d$X, levels = rev(unique(d$X)))
+  
+
+ 
+
+  p <- ggplot(d, aes(x = Y, y = X, fill = pval_cat )) + 
+    geom_tile(colour = "grey80", size = 0.25) + scale_x_discrete(expand = c(0, 0)) + 
+    scale_y_discrete(expand = c(0, 0)) +
+    # scale_y_discrete(expand = c(0, 0),
+    #                  breaks=levels(d$X2),
+    #                  labels=lab_f) +
+    theme_minimal(base_size = 8) +
+    facet_grid(target~., scales = "free", space="free") +
+    scale_fill_manual(values = colours, drop = FALSE, na.value = 'grey80') +
+    scale_color_manual(values = c("grey30", "black"), drop = FALSE, guide = FALSE) +
+    geom_text(aes(label = est, color=factor(pooled)), size=2.25) +
+    theme(legend.title = element_text(color = textcol,
+          size = 8), legend.margin = margin(grid::unit(0.1, "cm")), legend.text = element_text(colour = textcol,
+          size = 7, face = "bold"), legend.key.height = grid::unit(0.2,   "cm"), legend.key.width = grid::unit(1, "cm"),
+          legend.position = "bottom", axis.text.x = element_text(size = 8,  colour = textcol), 
+          #axis.text.y = element_text(size = 8, vjust = 0.2, colour = rev(df$sample_cols)), 
+          #axis.ticks = element_line(size = 0.4),
+          #axis.text.y = element_markdown(size = 8, vjust = 0.2),  
+          axis.text.y = element_markdown(size = 8),  
+          plot.title = element_text(colour = textcol, hjust = 0, size = 12, face = "bold"), strip.text.x = element_text(size = 10),
+          strip.text.y = element_text(angle = 0, size = 10),
+          plot.background = element_blank(), panel.border = element_blank(),
+          strip.background = element_blank(), panel.background = element_rect(fill = "grey80", colour = "grey80"), panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(), 
+          panel.spacing = unit(panel_spacing, "lines")) +
+    guides(fill = guide_legend("P-value strength\n(estimate direction)", nrow = 2)) + labs(x = "", y = "", title = "")
+  
+  
+  
+  return(p)
+}
+
+
+
+bias_tab <- readxl::read_excel(here("manuscripts/WASH_IPD_bias_assessment.xlsx"), sheet = "aim2")
+
+
+
+unadj_RR <- readRDS(file=here("results/unadjusted_aim2_pooled.Rds")) 
+adj_RR <- readRDS(file=here("results/adjusted_aim2_pooled.Rds")) 
+adj_emm <- readRDS(file=here("results/subgroup_aim2_pooled.Rds")) 
+
+adj_RR_bin <- adj_RR %>% filter(Y %in% c("diar7d"), !is.na(pval))
+adj_RR_cont <- adj_RR %>% filter(Y %in% c("haz"), !is.na(pval)) 
+
+
+#Get percents significant
+
+
+#Merge full env. with child health to see percent dropped 
+env <- readRDS(paste0(dropboxDir,"Data/cleaned_ipd_env_data.rds"))
+d <- readRDS(file=paste0(dropboxDir,"Data/merged_env_CH_data.rds"))
+
+tab <- d %>% group_by(study, sample, target) %>%
+  summarize(N=n(), N_pos=sum(pos), N_diar=sum(!is.na(diar7d)), N_pos_diar=sum(diar7d==1, na.rm=T), N_pos_env_diar=sum(pos==1 & diar7d==1, na.rm=T), N_haz=sum(!is.na(haz)))
+
+colnames(tab)[4:9] <- c("N samples","N pos. samples","N diar. meas.", "N diar. pos.","N sample. and diar. pos.", "N haz")
+
+tab1 <- tab %>% filter(sample=="any sample type", target=="Any pathogen")
+tab2 <- tab %>% filter(sample=="any sample type", target=="Any MST")
+
+load(here("figures/aim2_figures.Rdata"))
+load(here("figures/aim2_pathogen_specific_figures.Rdata"))
+load(here("figures/aim2_abund_figures.Rdata"))
+load(here("figures/aim2_covar_sig_figures.Rdata"))
+load(here("figures/aim2_tmle_figures.Rdata"))
+load(here("figures/aim2_pathogen_figures.Rdata"))
+load(here("figures/aim2_diar_time_figures.Rdata"))
+load(here("figures/aim2_adjusted_unadjusted_comp_figures.Rdata"))
+load(here("figures/aim2_subgroup_figures.Rdata"))
+load(here("figures/aim2_subgroup_figures_age.Rdata"))
+load(here("figures/aim2_path_heatmap.Rdata"))
+load(here("figures/aim2_abund_heatmap.Rdata"))
+load(here("figures/aim2_all_tables.Rdata"))
+
+load(here("figures/aim2_tr_figures.Rdata"))
+
+
+
+
+gv_res <- readRDS(file=paste0(here(),"/results/gv_merge_Ns.rds"))
+mapsan_res <- readRDS(file=paste0(here(),"/results/mapsan_merge_Ns.rds"))
+wbk_res <- readRDS(file=paste0(here(),"/results/wbk_merge_Ns.rds"))
+wbb_res <- readRDS(file=paste0(here(),"/results/wbb_merge_Ns.rds"))
+odisha_res <- readRDS(file=paste0(here(),"/results/odisha_merge_Ns.rds"))
+merge_Ns <- bind_rows(
+  gv_res, mapsan_res, wbb_res, wbk_res, odisha_res
+)
+
+
+FitFlextableToPage_landscape <- function(ft, pgwidth = 10){
+
+  ft_out <- ft %>% autofit()
+
+  ft_out <- width(ft_out, width = dim(ft_out)$widths*pgwidth /(flextable_dim(ft_out)$widths))
+  return(ft_out)
+}
+
+
+
+```
+
+```{css, echo=FALSE}
+span.comment-start{
+    background: #e0f3db;
+}
+span.comment-end{
+    background: #e0f3db;
+}
+span.comment-start::after{
+    content: " (" attr(author) ", " attr(date) ") [";
+}
+span.comment-end::before{
+    content: "]"
+}
+span.comment-text{
+    background: #fdbb84;
+}
+
+
+```
+
+```{r, echo=FALSE}
+commentN <- 0
+cmt <- function(txt, cm, author, date = "2021-01-01", comN = commentN){
+  cmt_str <- paste0('<span class="comment-text">[',cm,']{.comment-start id="', comN, '" author="', author, '" date="', date, '"}', txt, '[]{.comment-end id="',commentN,'"}</span>')
+  assign("commentN", commentN + 1, envir = .GlobalEnv)
+  return(cmt_str)
+}
+```
+
+# Supplementary Tables
+
+
+
+
+## Table S3. IRB approval numbers table
+
+XXXX ADD DESCRIPTION of special characters and the OR/AND logic between columns
+
+```{r, echo=F, warning=F, message=F,  results = 'asis'}
+
+st_tab <- read.csv("C:/Users/andre/Documents/wash-ipd/data/search_terms_tab_data.csv")
+colnames(st_tab)
+#st_tab <- st_tab[1:6, 1:5]
+colnames(st_tab) <- c("Database","Study design","WASH","Environmental markers", "Child fecal markers","Diarrhoea","Child growth")     
+
+st_tab <- flextable(st_tab)
+FitFlextableToPage_landscape(st_tab, pgwidth=10)
+
+
+
+```
+
+
+
+
+## Table S2. Risk of bias based on modified Newcastle-Ottawa scale
+Stars are given for low risk of bias in each category, up to a total of nine stars. Scoring details are in the footnotes.
+
+```{r, echo=F, warning=F, message=F,  results = 'asis'}
+# autofit(flextable(target_presence_long_P))
+# 
+bias_tab_char <- bias_tab
+bias_tab <- flextable(bias_tab)
+bias_tab <- compose(bias_tab, part = "body", i = 1, j = 2, value = as_paragraph(as.character(bias_tab_char[1,2]), as_sup("a")))
+bias_tab <- compose(bias_tab, part = "body", i = 1, j = 3, value = as_paragraph(as.character(bias_tab_char[1,3]), as_sup("b")))
+bias_tab <- compose(bias_tab, part = "body", i = 1, j = 4, value = as_paragraph(as.character(bias_tab_char[1,4]), as_sup("c")))
+bias_tab <- compose(bias_tab, part = "body", i = 1, j = 5, value = as_paragraph(as.character(bias_tab_char[1,5]), as_sup("d")))
+bias_tab <- compose(bias_tab, part = "body", i = 1, j = 6, value = as_paragraph(as.character(bias_tab_char[1,6]), as_sup("e")))
+bias_tab <- compose(bias_tab, part = "body", i = 1, j = 7, value = as_paragraph(as.character(bias_tab_char[1,7]), as_sup("f")))
+bias_tab <- compose(bias_tab, part = "body", i = 1, j = 8, value = as_paragraph(as.character(bias_tab_char[1,8]), as_sup("g")))
+
+FitFlextableToPage_landscape(bias_tab, pgwidth=10)
+
+```
+
+
+^a^ RCTs receive 1 star, unless evidence of selection bias (e.g. randomisation procedures not followed). Meaningful differences between groups at baseline in RCTs receive 0 stars. Rates of declining to participate >10% receive 0 stars. Non- or quasi-randomised studies receive 0 stars. 
+
+^b^ If intervention recipient was not blinded to intervention status, 0 stars. 
+ 
+^c^ <10% receives 1 star, greater than or equal to 10% receives 0 stars.
+ 
+^d^ Interventions delivered at the household/individual level receive 1 star. Interventions delivered at the community level that missed a substantial, i.e. greater than or equal to 10%,  proportion of the target population receive 0 stars, including when there is insufficient information to verify whether this is the case. Interventions with substantial risk of contamination (control households receiving intervention) receive 0 stars.
+ 
+^e^ Parent / person recall (=0 stars). Fieldworker assessed (=1 star). Physician/microbiologically assessed (=2 stars)
+ 
+^f^ If outcome measurement staff were not blinded to intervention status, 0 stars.
+ 
+^g^ Scoring is based on losing stars (max. 2). Individual RCTs with baseline balance on covariates are unlikely to require adjustment (=2 stars). Cluster-RCTs and non-randomised trials may require adjustment for clustering (-1 star if not done). RCTs or cRCTs may require adjustment for covariates, with justification (-1 star if not done). Non-randomised studies require adjustment for covariates (-1 star if not done), but also adequate justification for covariate selection (-1 star if not included), and there can be too few or too many covariates.
+
+
+
+
+
+## Table S4. IRB approval numbers table
+
+```{r, echo=F, warning=F, message=F,  results = 'asis'}
+
+irb_tab <- read.csv("C:/Users/andre/Documents/wash-ipd/Data/trial_irb_tab_data.csv")
+irb_tab <- irb_tab[1:6, 1:5]
+colnames(irb_tab) <- c("Study",	"IRB ProtocolNumber 1",	"IRB Protocol Number 2",	"IRB Protocol Number 3",	"Clinical trial registration")
+
+irb_tab <- flextable(irb_tab)
+FitFlextableToPage_landscape(irb_tab, pgwidth=10)
+
+
+
+```
+
