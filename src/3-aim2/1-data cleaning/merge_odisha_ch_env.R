@@ -86,6 +86,8 @@ d <- full_join(env, ch, by = c("trial","dataid","clusterid"))
 d <- d %>% filter(!is.na(sample), !is.na(ch_data))
 dim(d)
 
+
+
 saveRDS(d, file = paste0(dropboxDir, "Data/WBK/clean-odisha-diar.RDS"))
 unique(d$target)
 
@@ -118,11 +120,37 @@ summary(as.numeric(d$child_date- d$env_date))
 date_diff <- d %>% mutate(date_diff = child_date-env_date) %>% select(study, sampleid, target, dataid, round, hhid, date_diff, diar7d, waz) %>% distinct()
 
 d <- d %>% 
-  filter(child_date>env_date) %>%
+  mutate(date_diff = child_date-env_date) %>%
+  filter(date_diff>0) %>%
   mutate(
-    diar7d = ifelse(child_date-env_date > 124, NA, diar7d))
+    diar7d = ifelse(date_diff > 124, NA, diar7d))
 table(d$pos, d$diar7d)
 table(d$pos, !is.na(d$waz))
+
+
+#keep the single observation closest to each measurement if there are duplicates
+dim(d)
+summary(as.numeric(d$date_diff))
+df_diar <- d %>% group_by(sampleid, dataid, childid, clusterid,sample, env_date, target, round) %>% filter(!is.na(diar7d_full)) %>% filter(date_diff==min(date_diff)) %>% subset(., select = -c(waz))
+df_waz <- d %>% group_by(sampleid, dataid, childid, clusterid,sample, env_date, target, round) %>% filter(!is.na(waz)) %>% filter(date_diff==min(date_diff)) %>% subset(., select = -c(diar7d,diar7d_full))
+dim(df_diar)
+dim(df_waz)
+# dim(d %>% ungroup() %>% distinct(childid))
+# dim(df_waz %>% ungroup() %>% distinct(childid))
+# dim(df_waz %>% ungroup() %>% distinct(sampleid, dataid, childid, clusterid,sample, env_date, target, round))
+# dim(df_waz %>% ungroup() %>% distinct(sampleid, dataid, childid, clusterid,sample, env_date, target))
+# dim(df_waz %>% ungroup() %>% distinct(sampleid, dataid, childid, clusterid,sample, target))
+# dim(df_waz %>% ungroup() %>% distinct(sampleid, dataid, childid,sample, target))
+# dim(df_waz %>% ungroup() %>% distinct(sampleid, childid,sample, target))
+# dim(df_waz %>% ungroup() %>% distinct(sampleid, childid, target))
+# dim(df_waz %>% ungroup() %>% distinct(sampleid, childid))
+
+length(unique(d$childid))
+length(unique(df_waz$childid))
+
+d <- bind_rows(df_diar, df_waz)
+dim(d %>% ungroup() %>% filter(!is.na(waz)) %>% distinct(sampleid,childid,waz))
+
 
 odisha_res$diar_samples_date_dropped <- odisha_res$samples_with_diar_after_merge - nrow(d %>% filter(!is.na(diar7d)) %>% do(drop_agg(.)) %>% distinct(sampleid, dataid, clusterid,sample, round))
 odisha_res$haz_samples_date_dropped <- odisha_res$samples_with_haz_after_merge - nrow(d %>% filter(!is.na(waz)) %>% do(drop_agg(.)) %>% distinct(sampleid, dataid, clusterid,sample, round))

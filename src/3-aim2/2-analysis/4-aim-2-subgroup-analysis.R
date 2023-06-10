@@ -138,13 +138,7 @@ res_haz_sex_adj <- d_sex %>% group_by(study, sample, target) %>%
 res_diar_wet_CH_adj <- d_wet_ch %>% group_by(study, sample, target) %>%
   do(aim2_subgroup(., Ws = Wvars, Vvar="wet_CH",  outcome="diar7d", exposure="pos", study=.$study[1], sample=.$sample[1], target=.$target[1], family="binomial", minN_thres = minN))
 res_diar_wet_CH_adj_PD <- d_wet_ch %>% group_by(study, sample, target) %>%
-  do(aim2_subgroup(., Ws = Wvars, Vvar="wet_CH", 
-                    
-                   outcome="diar7d", exposure="pos", study=.$study[1], sample=.$sample[1], target=.$target[1], family="gaussian", minN_thres = minN))
-
-res_diar_wet_CH_adj%>%filter(V=="wet_CH", sample=="any sample type", target=="Any pathogen")
-res_diar_wet_CH_adj_PD%>%filter(V=="wet_CH", sample=="any sample type", target=="Any pathogen")
-
+  do(aim2_subgroup(., Ws = Wvars, Vvar="wet_CH", outcome="diar7d", exposure="pos", study=.$study[1], sample=.$sample[1], target=.$target[1], family="gaussian", minN_thres = minN))
 
 
 #pooled together
@@ -161,7 +155,7 @@ res_PD_adj <- bind_rows(res_diar_animals_adj_PD, res_diar_wet_adj_PD, res_diar_w
 res_PD_adj$sparse <- ifelse(is.na(res_PD_adj$coef), "yes", "no")
 res_PD_adj$coef[is.na(res_PD_adj$coef)] <- 0
 
-res_cont_adj <- bind_rows(res_haz_animals_adj, res_haz_wet_adj, res_haz_sex_adj, res_waz_sex_adj)
+res_cont_adj <- bind_rows(res_haz_animals_adj, res_haz_wet_adj, res_haz_sex_adj)
 res_cont_adj$sparse <- ifelse(is.na(res_cont_adj$coef), "yes", "no")
 res_cont_adj$coef[is.na(res_cont_adj$coef)] <- 0
 

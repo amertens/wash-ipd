@@ -384,13 +384,6 @@ p_haz_1_adj
 __Figure 3.__ Forest plots of associations between the prevalence of any enteropathogen or any MST markers in different types of environmental samples and heigh-for-age Z-scores (HAZ). The presented differences compare HAZ between children from compounds where any pathogen/MST marker was detected vs. not detected in environmental samples. Pooled estimates are presented when there are four or more study-specific estimates for a specific sample type and target combination and are denoted with diamond-shaped points. Grey crossed points denote data that were too sparse to estimate a mean difference. Samples of the same type from different locations (source vs. stored water, flies in kitchen vs. latrine, soil from courtyard vs. latrine) or different individuals (child vs. mother's hands) are plotted separately. Asterisks above estimates denote statistical significance (\*= P-value < 0.05, \*\*= P-value < 0.01, \*\*\*= P-value < 0.001). All estimates are adjusted for potential confounders.
 
 
-__Table 1.__ `r cmt("Descriptive", "Add reference to studies and trials, and use full names for trials", "Andrew", date = "2022-011-01")` statistics of child health outcomes by study. Pathogen-specific infection prevalence is the prevalence of at least one pathogen detected in child stool, and the number of pathogen infections is the total number of detected infections, where individual children can have infections from multiple pathogens.
-
-```{r tab_Y, fig.cap = "Descriptive statistics of child health outcomes by study.", echo=FALSE, warning=F, message=F}
-FitFlextableToPage(flextable(tab_Y))
-```
-
-HAZ: Height-for-age Z-score; WAZ: Weight-for-age Z-score; WHZ: Weight-for-height Z-score. 
 
 
 
@@ -687,84 +680,4 @@ __Figure S20.__ Comparison between associations estimated in the primary diarrho
 
 
 
-
-# Supplementary Tables
-
-
-
-
-## Table S3. IRB approval numbers table
-
-XXXX ADD DESCRIPTION of special characters and the OR/AND logic between columns
-
-```{r, echo=F, warning=F, message=F,  results = 'asis'}
-
-st_tab <- read.csv("C:/Users/andre/Documents/wash-ipd/data/search_terms_tab_data.csv")
-colnames(st_tab)
-#st_tab <- st_tab[1:6, 1:5]
-colnames(st_tab) <- c("Database","Study design","WASH","Environmental markers", "Child fecal markers","Diarrhoea","Child growth")     
-
-st_tab <- flextable(st_tab)
-FitFlextableToPage_landscape(st_tab, pgwidth=10)
-
-
-
-```
-
-
-
-
-## Table S2. Risk of bias based on modified Newcastle-Ottawa scale
-Stars are given for low risk of bias in each category, up to a total of nine stars. Scoring details are in the footnotes.
-
-```{r, echo=F, warning=F, message=F,  results = 'asis'}
-# autofit(flextable(target_presence_long_P))
-# 
-bias_tab_char <- bias_tab
-bias_tab <- flextable(bias_tab)
-bias_tab <- compose(bias_tab, part = "body", i = 1, j = 2, value = as_paragraph(as.character(bias_tab_char[1,2]), as_sup("a")))
-bias_tab <- compose(bias_tab, part = "body", i = 1, j = 3, value = as_paragraph(as.character(bias_tab_char[1,3]), as_sup("b")))
-bias_tab <- compose(bias_tab, part = "body", i = 1, j = 4, value = as_paragraph(as.character(bias_tab_char[1,4]), as_sup("c")))
-bias_tab <- compose(bias_tab, part = "body", i = 1, j = 5, value = as_paragraph(as.character(bias_tab_char[1,5]), as_sup("d")))
-bias_tab <- compose(bias_tab, part = "body", i = 1, j = 6, value = as_paragraph(as.character(bias_tab_char[1,6]), as_sup("e")))
-bias_tab <- compose(bias_tab, part = "body", i = 1, j = 7, value = as_paragraph(as.character(bias_tab_char[1,7]), as_sup("f")))
-bias_tab <- compose(bias_tab, part = "body", i = 1, j = 8, value = as_paragraph(as.character(bias_tab_char[1,8]), as_sup("g")))
-
-FitFlextableToPage_landscape(bias_tab, pgwidth=10)
-
-```
-
-
-^a^ RCTs receive 1 star, unless evidence of selection bias (e.g. randomisation procedures not followed). Meaningful differences between groups at baseline in RCTs receive 0 stars. Rates of declining to participate >10% receive 0 stars. Non- or quasi-randomised studies receive 0 stars. 
-
-^b^ If intervention recipient was not blinded to intervention status, 0 stars. 
- 
-^c^ <10% receives 1 star, greater than or equal to 10% receives 0 stars.
- 
-^d^ Interventions delivered at the household/individual level receive 1 star. Interventions delivered at the community level that missed a substantial, i.e. greater than or equal to 10%,  proportion of the target population receive 0 stars, including when there is insufficient information to verify whether this is the case. Interventions with substantial risk of contamination (control households receiving intervention) receive 0 stars.
- 
-^e^ Parent / person recall (=0 stars). Fieldworker assessed (=1 star). Physician/microbiologically assessed (=2 stars)
- 
-^f^ If outcome measurement staff were not blinded to intervention status, 0 stars.
- 
-^g^ Scoring is based on losing stars (max. 2). Individual RCTs with baseline balance on covariates are unlikely to require adjustment (=2 stars). Cluster-RCTs and non-randomised trials may require adjustment for clustering (-1 star if not done). RCTs or cRCTs may require adjustment for covariates, with justification (-1 star if not done). Non-randomised studies require adjustment for covariates (-1 star if not done), but also adequate justification for covariate selection (-1 star if not included), and there can be too few or too many covariates.
-
-
-
-
-
-## Table S4. IRB approval numbers table
-
-```{r, echo=F, warning=F, message=F,  results = 'asis'}
-
-irb_tab <- read.csv("C:/Users/andre/Documents/wash-ipd/Data/trial_irb_tab_data.csv")
-irb_tab <- irb_tab[1:6, 1:5]
-colnames(irb_tab) <- c("Study",	"IRB ProtocolNumber 1",	"IRB Protocol Number 2",	"IRB Protocol Number 3",	"Clinical trial registration")
-
-irb_tab <- flextable(irb_tab)
-FitFlextableToPage_landscape(irb_tab, pgwidth=10)
-
-
-
-```
 

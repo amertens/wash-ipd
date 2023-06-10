@@ -152,6 +152,11 @@ base_plot <- function(mydf, legend_labels=sample_cats, drop_full_sparse=F, ylimi
 }
 
 
+legend_labels=sample_cats
+drop_full_sparse=F
+ylimits=c(-1,1)
+p_hjust=-0.5
+ylab="Mean Z-score difference"
 
 base_plot_diff <- function(mydf, legend_labels=sample_cats, drop_full_sparse=F, ylimits=c(-1,1), p_hjust=-0.5, ylab="Mean Z-score difference"){
   
@@ -170,8 +175,9 @@ base_plot_diff <- function(mydf, legend_labels=sample_cats, drop_full_sparse=F, 
   
   if(drop_full_sparse){
     mydf <- mydf %>% group_by(sample_cat) %>% 
-      filter(n()!=sum(sparse=="yes")) %>% ungroup()
-  }
+      #filter(n()!=sum(sparse=="yes")) %>% ungroup()
+      filter(n()!=sum(is.na(se))) %>% ungroup()
+    }
   
   mydf <- mydf %>% droplevels(.)
   

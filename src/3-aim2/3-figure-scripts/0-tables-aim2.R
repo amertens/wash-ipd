@@ -24,7 +24,7 @@ clean_est <- function(res, outcome="binomial"){
 
 
 
-d <- readRDS(paste0(dropboxDir,"Data/merged_env_CH_data.rds"))
+d <- readRDS(paste0(dropboxDir,"Data/merged_env_CH_data_clean.rds"))
 path <- readRDS(paste0(dropboxDir,"Data/pathogen_analysis_data.rds"))
 
 d <- d %>% mutate(
@@ -46,8 +46,10 @@ d <- d %>% mutate(
             droplevels()
 
 
+
+
 #Add sex breakdown to table 1 per journal guidelines
-d <- d %>%
+d <- d %>% ungroup() %>%
   rename(sex_factor=sex) %>%
   mutate(
     sex = case_when(
@@ -62,14 +64,22 @@ d <- d %>%
   )
 
 head(d)
-df_sex <- d %>% 
-  filter(!is.na(haz)|!is.na(waz)|!is.na(diar7d)|
-        !is.na(child_date_pathogen)) %>%
-  distinct(study, dataid, childid, sex)
-table(df_sex$study)
-table(df_sex$study, df_sex$sex)
-round(prop.table(table(df_sex$study, df_sex$sex),1) *100,1)
 
+
+#df <- d %>% filter(!is.na(haz)|!is.na(waz)|!is.na(diar7d), !is.na(pos))
+#df <- d %>% filter(study=="Steinbaum 2019")
+
+#get breakdown by sex
+df_sex <- d %>% ungroup() %>%
+  filter(!is.na(age)|!is.na(age_anthro), !is.na(pos)) %>%
+  distinct(study, dataid, childid, childNo, sex) %>%
+  group_by(study) %>%
+  mutate(perc_male=mean(sex))  %>% 
+  group_by(study,sex) %>%
+  summarize(N=n(), perc_female=round((1-perc_male[1])*100,0), perc_male=round(perc_male[1]*100),0) %>%
+  mutate(sex_N_f = ifelse(sex==1, paste0(N," (",perc_male,"%)"), paste0(N," (",perc_female,"%)"))) %>%
+  select(study, sex, sex_N_f)
+df_sex
 
 
 #covariate table
@@ -181,38 +191,29 @@ tab_path
 
 dY_path_kwong <- dY_path %>% filter(study=="Kwong 2021")
 dY_path_Boehm <- dY_path %>% filter(study=="Boehm 2016")
-
 dY_path_Holcomb <- dY_path %>% filter(study=="Holcomb 2021")
 table(dY_path_Holcomb$path_infections)
 
 
-# dY_diar <- d %>% distinct(study, trial, dataid, hhid, clusterid, env_date, child_date, agedays, sex, childid, diar7d) %>% filter(!is.na(diar7d))
-# dY_haz <- d %>% distinct(study, trial, dataid, hhid, clusterid, env_date,  child_date_anthro, agedays, sex, childid, haz) %>% filter(!is.na(haz))
-# dY_waz <- d %>% distinct(study, trial, dataid, hhid, clusterid, env_date,  child_date_anthro, agedays, sex, childid, waz) %>% filter(!is.na(waz))
-# dY_whz <- d %>% distinct(study, trial, dataid, hhid, clusterid, env_date,  child_date_anthro, agedays, sex, childid, whz) %>% filter(!is.na(whz))
 
 #ensure time ordering of diarrhea (anthro has been set in individual studies)
 d_diar <- d
 d_diar$diar7d[d_diar$child_date <= d_diar$env_date | d_diar$child_date > d_diar$env_date+124] <- NA
-dY_diar <- d_diar %>% distinct(study, trial, dataid, hhid, clusterid, child_date, agedays, sex, childid, diar7d) %>% filter(!is.na(diar7d))
+#dY_diar <- d_diar %>% distinct(study, trial, dataid, hhid, clusterid, child_date, age, sex, childid, diar7d) %>% filter(!is.na(diar7d) & !is.na(age))
+dY_diar <- d_diar %>% ungroup() %>% filter(!is.na(diar7d) & !is.na(age))%>% distinct(study, trial, dataid, hhid, clusterid, childid, diar7d) 
 
-# dY_diar <- d_diar %>% filter(study=="Holcomb 2021") %>%
-#   distinct(study, trial, dataid, hhid, clusterid, child_date, agedays, sex, childid, diar7d) %>% filter(!is.na(diar7d))
-# dim(dY_diar)
-
-#distinct growth issues
-dY_haz <- d %>% distinct(study, trial, dataid, hhid, clusterid,  child_date_anthro, agedays_anthro, sex, childid, haz) %>% filter(!is.na(haz))
-dY_waz <- d %>% distinct(study, trial, dataid, hhid, clusterid,  child_date_anthro, agedays_anthro, sex, childid, waz) %>% filter(!is.na(waz))
-dY_whz <- d %>% distinct(study, trial, dataid, hhid, clusterid,  child_date_anthro, agedays_anthro, sex, childid, whz) %>% filter(!is.na(whz))
+#distinct growth measures
+# dY_haz <- d %>% distinct(study, trial, dataid, hhid, clusterid,  child_date_anthro, age_anthro, sex, childid, haz) %>% filter(!is.na(haz) & !is.na(age_anthro))
+# dY_waz <- d %>% distinct(study, trial, dataid, hhid, clusterid,  child_date_anthro, age_anthro, sex, childid, waz) %>% filter(!is.na(waz) & !is.na(age_anthro))
+# dY_whz <- d %>% distinct(study, trial, dataid, hhid, clusterid,  child_date_anthro, age_anthro, sex, childid, whz) %>% filter(!is.na(whz) & !is.na(age_anthro))
+dY_haz <- d %>% ungroup() %>%filter(!is.na(haz) & !is.na(age_anthro)) %>% distinct(study, trial, dataid, hhid, clusterid,  childid, haz) 
+dY_waz <- d %>% ungroup() %>%filter(!is.na(waz) & !is.na(age_anthro)) %>% distinct(study, trial, dataid, hhid, clusterid,  childid, waz) 
+dY_whz <- d %>% ungroup() %>%filter(!is.na(whz) & !is.na(age_anthro)) %>% distinct(study, trial, dataid, hhid, clusterid,  childid, whz) 
 
 
 dim(dY_diar)
 dim(dY_haz)
-
-# tab_path <- dY_path %>% group_by(trial, study) %>%
-#   summarise(#N_paths=max(path_obs, na.rm=T), 
-#             N_path_obs=sum(!is.na(path_infections), na.rm=T), N_path_cases=sum(path_infections, na.rm=T), prev_path=round(mean(path_infections>0, na.rm=T)*100, 1))
-
+length(unique(paste0(dY_haz$study,"-",dY_haz$childid)))
 
 tab_diar <- dY_diar %>% group_by(trial, study) %>% 
   summarise(N_diar_obs=n(), N_diar_cases=sum(diar7d, na.rm=T), prev_diar=round(mean(diar7d, na.rm=T)*100, 1))

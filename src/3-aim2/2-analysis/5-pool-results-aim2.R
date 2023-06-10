@@ -182,4 +182,7 @@ saveRDS(list(urban=res_urban, urban_comp=res_urban_comp), file=here("results/sub
 
 
 
+emm_pool_PD %>% filter(study=="Pooled" & sample=="any sample type" & target=="Any pathogen",  V=="wet" & Y=="diar7d" )
+emm_pool %>% filter(study=="Pooled" & sample=="any sample type" & target=="Any pathogen", V=="sex" & Y=="haz" )
+
 

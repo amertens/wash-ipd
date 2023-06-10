@@ -16,17 +16,10 @@ Wvars_anthro = c("sex","age_anthro","hfiacat","momage","hhwealth", "Nhh","nrooms
 
 
 
-df <- d %>% filter(!is.na(pos), !is.na(diar7d), target=="Avian (GFD)", sample=="any sample type", study=="Holcomb 2021")
-colnames(df)
-df2 <- df %>% select(sampleid, dataid, hhid,env_date, childid, child_date, agedays, pos, diar7d) %>% arrange(childid)
-df3 <- df2 %>% distinct(dataid, hhid,env_date, childid, child_date, agedays, pos, diar7d)
+df <- d %>% filter(!is.na(pos), !is.na(waz), target=="Any pathogen", sample=="SW", study=="Odagiri 2016")
 
-res <- aim2_glm(df, Ws = Wvars,  outcome="diar7d", exposure="pos", study=df$study[1], sample=df$sample[1], target=df$target[1], family="binomial")
+res <- aim2_glm(df, Ws = Wvars,  outcome="waz", exposure="pos", study=df$study[1], sample=df$sample[1], target=df$target[1], family="gaussian")
 res
-
-df <- d %>% filter(!is.na(pos), !is.na(haz), target=="Any MST", sample=="any sample type", study=="Holcomb 2021")
-res2 <- aim2_glm(df, Ws = Wvars,  outcome="haz", exposure="pos", study=df$study[1], sample=df$sample[1], target=df$target[1], family="gaussian")
-res2
 
 
 #-----------------------------------
@@ -127,14 +120,14 @@ res_haz_adj <- d %>% group_by(study, sample, target) %>%
 res_haz_adj$sparse <- ifelse(is.na(res_haz_adj$coef), "yes", "no")
 res_haz_adj$coef[is.na(res_haz_adj$coef)] <- 0
 
-temp<- res_haz_adj %>% filter(study=="Kwong 2021")
-summary(temp$nX)
-
-res_haz_adj  %>% filter(target=="Any pathogen") %>%
+res_haz_adj  %>% filter(target=="Any pathogen", sample!="S") %>%
   group_by(Y, sample, target) %>%
-  filter(!is.na(se)) %>% mutate(N=n()) %>%
-  filter(N>=4) %>%
+  filter(!is.na(se)) %>% mutate(Nstudies=n()) %>%
+  filter(Nstudies>=4) %>%
   do(try(pool.cont(.)))
+
+# adj_RR <- readRDS(file=here("results/adjusted_aim2_pooled.Rds")) 
+# temp<-adj_RR%>%filter(target=="Any pathogen", sample=="any sample type", Y=="haz")
 
 fullres_adj <- bind_rows(fullres_adj, res_haz_adj)
 

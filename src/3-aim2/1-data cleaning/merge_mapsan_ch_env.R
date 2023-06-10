@@ -15,10 +15,9 @@ env <- env %>% mutate(
                     study=="Reese 2017" ~ "Gram Vikas",
                     study=="Odagiri 2016" ~ "Odisha")) 
 
-df <- env %>% filter(study=="Holcomb 2021", sample=="any sample type", target=="Avian (GFD)",
-                     dataid==2037)
+# df <- env %>% filter(study=="Holcomb 2021", sample=="any sample type", target=="Avian (GFD)",
+#                      dataid==2037)
 
- hhid==203751
 
 
 
@@ -129,11 +128,16 @@ table(hol_bl$env_date)
 table(ch_bl$child_date)
 
 
+env=hol_bl
+ch=ch_bl
 
 #Function to split data by hh versus compound samples
 merge_ch <- function(env, ch){
   ch$ch_data <- 1
-  env_compound <- env %>% filter(sample %in% c("LS","Fly","SW","any sample type")) %>% subset(., select = -c(hhid))
+  env_compound <- env %>% filter(sample %in% c("LS","Fly","SW","any sample type")) %>% subset(., select = -c(hhid)) %>% 
+    #new!!!!
+    distinct(study, dataid, clusterid, sample, env_date, target, pos, .keep_all = TRUE) 
+    
   env_hh <- env %>% filter(sample %in% c("S","MH", "CH", "W" ))
 
   d_compound <- left_join(env_compound, ch, by = c("trial","dataid","clusterid"))
@@ -250,7 +254,10 @@ d$hhwealth <- factor(d$hhwealth, labels=c("1","2","3","4"))
 d$hhwealth = fct_explicit_na(d$hhwealth, na_level = "Missing")
 
 
-d <- d %>% 
+saveRDS(d, file=paste0(here::here(),"/data/mapsan_env_CH_data_raw.rds"))
+try(d <- readRDS(file=paste0(here::here(),"/data/mapsan_env_CH_data_raw.rds")))
+
+d <- d %>%
   mutate(#hhwealth=factor(ntile(hhwealth,4), levels=c("1","2","3","4")),
     Nhh=factor(case_when(
       Nhh<5 ~ "<5",
@@ -282,7 +289,30 @@ d <- d %>%
   )
 
 
-
+# d <- d %>%
+#   mutate(
+#     Nhh=factor(case_when(
+#       Nhh<5 ~ "<5",
+#       Nhh>=5 & Nhh <=8 ~ "5-8",
+#       Nhh>8 ~ ">8"
+#     ), levels=c("5-8","<5",">8")),
+#     nrooms=as.numeric(nrooms),
+#     nrooms=factor(case_when(
+#       nrooms<3 ~ "1-2",
+#       nrooms>2  ~ ">3",
+#     ), levels=c("1-2",">3"))
+#     )
+    
+    
+    # ,
+    # Nhh=fct_explicit_na(Nhh, na_level = "Missing"),
+    # nrooms=as.numeric(nrooms),
+    # nrooms=factor(case_when(
+    #   nrooms<3 ~ "1-2",
+    #   nrooms>2  ~ ">3",
+    # ), levels=c("1-2",">3")),
+    # nrooms=fct_explicit_na(nrooms, na_level = "Missing"))
 
 saveRDS(d, file=paste0(dropboxDir,"Data/mapsan_env_CH_data.rds"))
+saveRDS(d, file=paste0(here::here(),"/data/mapsan_env_CH_data.rds"))
 

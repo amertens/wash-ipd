@@ -9,9 +9,9 @@ adj_PD <- readRDS(file=here("results/adjusted_aim2_res_subgroup_age_PD.Rds"))
 
 cbbPalette <- c("#000000", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
 
-adj_RR$agecat[is.na(adj_RR$agecat)] <- adj_RR$agecat_anthro [is.na(adj_RR$agecat)]
-adj_RR <- adj_RR %>% filter(!is.na(agecat)) %>%
-  rename(Vlevel = agecat)
+adj_RR$agecat_anthro[is.na(adj_RR$agecat_anthro )] <- adj_RR$agecat_anthro_anthro[is.na(adj_RR$agecat_anthro )]
+adj_RR <- adj_RR %>% filter(!is.na(agecat_anthro )) %>%
+  rename(Vlevel = agecat_anthro )
 
 table(adj_RR$Vlevel)
 
@@ -49,9 +49,9 @@ adj_PD$int.p[adj_PD$N_est < 2] <- 1
 #---------------------------------------------------------------
 # Clean results
 #---------------------------------------------------------------
-#adj_RR <- adj_RR %>% filter(!is.na(coef))
-# adj_RR$sparse <- ifelse(is.na(adj_RR$coef),"yes",adj_RR$coef)
-# adj_RR$RR[adj_RR$sparse=="yes"] <- 1
+
+V_levels = c("immobile", "crawling", "walking", "school-age", "sparse")
+
 adj_RR <- clean_res_subgroup(adj_RR)
 adj_PD <- clean_res_subgroup(adj_PD)
 
@@ -61,14 +61,15 @@ adj_RR <- adj_RR %>% mutate(
     int.p<0.001~"***",
     int.p<0.01~"**",
     int.p<0.05~"*",
-    int.p>=0.05~""))
+    int.p>=0.05~""),
+  Vlevel = factor(Vlevel, levels=V_levels)) %>% arrange(Vlevel)
 
-table(adj_RR$int.p)
-table(adj_RR$Vlevel, adj_RR$int.p)
-table(adj_RR$Vlevel)
+# table(adj_RR$int.p)
+# table(adj_RR$Vlevel, adj_RR$int.p)
+# table(adj_RR$Vlevel)
 
 #see if any levels are missing
-adj_RR$target[is.na(adj_RR$target_f)]
+#adj_RR$target[is.na(adj_RR$target_f)]
 sample_cats = levels(adj_RR$Vlevel)
 
 adj_PD <- adj_PD %>% mutate(
@@ -78,14 +79,19 @@ adj_PD <- adj_PD %>% mutate(
     int.p<0.01~"**",
     int.p<0.05~"*",
     int.p>=0.05~""
-  ))
+  ),
+  Vlevel = factor(Vlevel, levels=V_levels)) %>% arrange(Vlevel)
 
 
-adj_RR <- adj_RR %>% group_by(study, target, sample, Y) %>% arrange(Vlevel) %>% mutate(int.p=ifelse(Vlevel==last(Vlevel),int.p,NA))
+#One P-value per group
+adj_RR <- adj_RR %>% group_by(study, sample, target) %>% mutate(int.p = ifelse( row_number()==1, int.p, ""))
+adj_PD <- adj_PD %>% group_by(study, sample, target) %>% mutate(int.p = ifelse( row_number()==1, int.p, ""))
+
+
+#adj_RR <- adj_RR %>% group_by(study, target, sample, Y) %>% arrange(Vlevel) %>% mutate(int.p=ifelse(Vlevel==last(Vlevel),int.p,NA))
 adj_PD <- adj_PD %>% group_by(study, target, sample, Y) %>% arrange(Vlevel) %>% mutate(int.p=ifelse(Vlevel==last(Vlevel),int.p,NA))
 
-adj_RR %>% filter(target %in% c("Any pathogen"), sample=="any sample type", Y=="haz",
-                  study=="Capone 2022 in prep")
+
 
 #---------------------------------------------------------------
 #plot function
@@ -118,12 +124,12 @@ base_plot <- function(mydf, legend_labels=sample_cats, drop_full_sparse=F, ylimi
   Y_breaks=c(.25, .5,1, 2, 4, 8)
   Y_breaks2=c("1/4", "1/2","1", "2", "4", "8")
   
-  ggplot(data = mydf, (aes(x=study, y=RR, group=Vlevel, color=Vlevel, shape=Vlevel))) + 
-    geom_point(size=2, position = position_dodge(0.5)) +
-    geom_errorbar(aes(ymin=ci.lb, ymax=ci.ub), position = position_dodge(0.5),
+  ggplot(data = mydf, (aes(x=study, y=RR, color=Vlevel, shape=Vlevel))) + 
+    geom_point(aes(group=Vlevel), size=2, position = position_dodge(0.5)) +
+    geom_errorbar(aes(ymin=ci.lb, ymax=ci.ub, group=Vlevel), position = position_dodge(0.5),
                   width = 0.3, size = 1) +
     #Mark significant interactions
-    #geom_text(aes(y=ci.ub, label=int.p), color="black", position = position_dodge(0.5), hjust = -0.5, size=4) +
+    geom_text(aes(y=ci.ub, label=int.p), color="black", position = position_dodge(0.5), hjust = -0.5, size=4) +
     scale_color_manual(breaks = legend_labels,
       values = c(cbbPalette[2:5],"grey50"), drop = FALSE) +
     scale_shape_manual(values=c(16, 16, 16,18), guide=FALSE)+  
@@ -173,9 +179,9 @@ base_plot_diff <- function(mydf, legend_labels=sample_cats, drop_full_sparse=F, 
   mydf <- mydf %>% droplevels(.)
   
   
-  ggplot(data = mydf, (aes(x=study, y=coef, group=Vlevel, color=Vlevel, shape=Vlevel))) + 
-    geom_point(size=2, position = position_dodge(0.5)) +
-    geom_errorbar(aes(ymin=ci.lb, ymax=ci.ub), position = position_dodge(0.5),
+  ggplot(data = mydf, (aes(x=study, y=coef, color=Vlevel, shape=Vlevel))) + 
+    geom_point(aes(group=Vlevel), size=2, position = position_dodge(0.5)) +
+    geom_errorbar(aes(ymin=ci.lb, ymax=ci.ub, group=Vlevel), position = position_dodge(0.5),
                   width = 0.3, size = 1) +
     #Mark significant interactions
     geom_text(aes(y=coef, label=int.p), color="black", position = position_dodge(0.5), hjust = -0.5, size=4) +
@@ -204,12 +210,13 @@ table(adj_RR$Y)
 #---------------------------------------------------------------
 # Plot figures
 #---------------------------------------------------------------
-p_age_diar_1 <- adj_RR %>% 
-  filter(target %in% c("Any pathogen","Any MST"), Y=="diar7d") %>%
-  base_plot(drop_full_sparse=T, ylimits=c(0.125,8))
-p_age_diar_1
 
-ggsave(p_age_diar_1, file = paste0(here::here(),"/figures/pngs/subgroup_aim2_p_age_diar.png"), width = 10, height = 6)
+# p_age_diar_1 <- adj_RR %>% 
+#   filter(target %in% c("Any pathogen","Any MST"), Y=="diar7d") %>%
+#   base_plot(drop_full_sparse=T, ylimits=c(0.125,8))
+# p_age_diar_1
+# 
+# ggsave(p_age_diar_1, file = paste0(here::here(),"/figures/pngs/subgroup_aim2_p_age_diar.png"), width = 10, height = 6)
 
 
 p_age_haz_1 <- adj_RR %>% 

@@ -11,6 +11,8 @@ gv <- readRDS(paste0(dropboxDir,"Data/gv_env_CH_data.rds"))
 odisha <- readRDS(paste0(dropboxDir,"Data/odisha_env_CH_data.rds"))
 
 
+dim(odisha %>% ungroup() %>% filter(!is.na(waz)) %>% distinct(sampleid,childid,waz))
+
 
 #Clean pathogen-specific infections
 
@@ -47,6 +49,7 @@ mapsan <- mapsan %>% rename(
 wbk <- zap_labels(wbk)
 
 wbb <- wbb %>% subset(., select=-c(date_diff))
+odisha <- odisha %>% subset(., select=-c(date_diff))
 
 
 #d <- bind_rows(wbb, wbk, mapsan, gv, odisha)
