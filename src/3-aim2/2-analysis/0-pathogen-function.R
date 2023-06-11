@@ -70,11 +70,8 @@ aim2_glm_pathogens <- function(d, Ws=NULL, forcedW=NULL, outcome="pos", exposure
       if(ncol(Wdf)>0){
         #drop covariates with near zero variance
         if(length(nearZeroVar(Wdf))>0){
-          if(minN<10){
-            Wdf <- Wdf[,-nearZeroVar(Wdf, freqCut = 80/20)]
-          }else{
             Wdf <- Wdf[,-nearZeroVar(Wdf)]
-          }        }
+          }        
         
         # if(family=="neg.binom"){
         #   Wvars <- MICS_prescreen(Y=df$Y, W=Wdf, family="gaussian", print=F)

@@ -173,7 +173,7 @@ for(i in 1:nrow(paired_pathogens)){
   res_full <- bind_rows(res_full, res_adj)
 }
 res_full <- res_full %>% filter(!is.na(RR))
-
+res_full
 
 
 

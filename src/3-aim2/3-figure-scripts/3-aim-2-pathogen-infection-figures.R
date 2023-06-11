@@ -5,11 +5,6 @@ source(here::here("0-config.R"))
 unadj_RR <- readRDS(file=here("results/pathogen_specific_aim2_res_unadj.Rds")) 
 adj_RR <- readRDS(file=here("results/pathogen_specific_aim2_res.Rds")) %>% arrange(minN)
 
-#adj_RR_old <- readRDS(file="C:/Users/andre/Downloads/pathogen_specific_aim2_res.Rds") 
-
-#TEMP!
-adj_RR <- adj_RR %>% filter(RR<128 & RR > 1/128) %>% filter(n!=0, RR!=1)
-unadj_RR <- unadj_RR %>% filter(RR<128 & RR > 1/128) %>% filter(n!=0, RR!=1)
 
 adj_RR <- adj_RR %>% filter(minN>=5)
 unadj_RR <- unadj_RR %>% filter(minN>=5)

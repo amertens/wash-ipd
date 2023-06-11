@@ -271,5 +271,5 @@ ggsave(p_sex_haz_1, file = paste0(here::here(),"/figures/pngs/subgroup_aim2_p_se
 save(list=ls(pattern="p_"), file=here("figures/aim2_subgroup_figures.Rdata"))
 
 
-adj_RR %>% filter(target %in% c("Any pathogen"), Y=="haz", V=="sex", study=="Pooled")
+adj_RR %>% filter(target %in% c("Any pathogen"), sample=="any sample type", Y=="haz", V=="sex", study=="Pooled")
 adj_PD %>% filter(target %in% c("Any pathogen"), Y=="diar7d", V=="wet_CH", study=="Pooled")
