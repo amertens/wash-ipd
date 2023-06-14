@@ -186,6 +186,6 @@ emm_pool_PD %>% filter(study=="Pooled" & sample=="any sample type" & target=="An
 emm_pool %>% filter(study=="Pooled" & sample=="any sample type" & target=="Any pathogen", V=="sex" & Y=="haz" )
 
 
-res_RR_adj %>% filter(target=="Any pathogen")
-res_cont_adj %>% filter(target=="Any pathogen")
+res_RR_adj %>% filter(target=="Any pathogen", Y=="diar7d")
+res_cont_adj %>% filter(target=="Any pathogen", Y=="haz")
 res_cont_adj %>% filter(grepl("MST",target), Y=="haz")

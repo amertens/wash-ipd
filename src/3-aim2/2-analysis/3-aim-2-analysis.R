@@ -8,24 +8,9 @@ d <- readRDS(paste0(dropboxDir,"Data/merged_env_CH_data_clean.rds")) %>% filter(
 table(d$study)
 df1 <- d %>% filter(study=="Holcomb 2021") %>% filter(!is.na(diar7d),!is.na(pos)) %>% distinct(dataid, hhid,childid,childNo)
 df2 <- d %>% filter(study=="Holcomb 2021") %>% filter(!is.na(haz),!is.na(pos)) %>% distinct(dataid, hhid,childid,childNo)
-# df <- d %>% filter(study=="Kwong 2021") %>% filter(!is.na(haz),!is.na(pos)) 
-# df %>% select(child_date_anthro,env_date)
 
 Wvars = c("sex","age","hfiacat","momage","hhwealth", "Nhh","nrooms","walls", "roof", "floor","elec","dadagri","landacre","landown", "momedu", "tr")         
 Wvars_anthro = c("sex","age_anthro","hfiacat","momage","hhwealth", "Nhh","nrooms","walls", "roof", "floor","elec","dadagri","landacre","landown", "momedu", "tr")         
-
-
-
-df <- d %>% filter(!is.na(pos), !is.na(waz), target=="Any pathogen", sample=="SW", study=="Odagiri 2016")
-
-res <- aim2_glm(df, Ws = Wvars,  outcome="waz", exposure="pos", study=df$study[1], sample=df$sample[1], target=df$target[1], family="gaussian")
-res
-
-
-#-----------------------------------
-# Unadjusted RR
-#-----------------------------------
-
 
 
 #ensure time ordering of diarrhea (anthro has been set in individual studies)
@@ -33,6 +18,22 @@ table(d$diar7d)
 d$diar7d[d$child_date <= d$env_date | d$child_date > d$env_date+124] <- NA
 table(d$diar7d)
 
+
+res_diar_adj <- d %>% group_by(study, sample, target) %>% filter(target=="Human (HumM2)"|target=="Avian (GFD)") %>%
+  do(aim2_glm(., Ws = Wvars,  outcome="diar7d", exposure="pos", study=.$study[1], sample=.$sample[1], target=.$target[1], family="binomial")) %>% filter(!is.na(coef), Y=="diar7d")
+res_diar_adj
+
+res_diar_adj <- d %>% group_by(study, sample, target) %>% filter(target=="Any virus") %>%
+  do(aim2_glm(., Ws = Wvars,  outcome="diar7d", exposure="pos", study=.$study[1], sample=.$sample[1], target=.$target[1], family="binomial")) %>% filter(!is.na(coef), Y=="diar7d")
+res_diar_adj
+
+ 
+
+
+
+#-----------------------------------
+# Unadjusted RR
+#-----------------------------------
 
 
 fullres <- NULL
@@ -94,7 +95,6 @@ res_diar_adj <- d %>% group_by(study, sample, target) %>%
 res_diar_adj$sparse <- ifelse(is.na(res_diar_adj$RR), "yes", "no")
 res_diar_adj$RR[is.na(res_diar_adj$RR)] <- 1
 fullres_adj <- bind_rows(fullres_adj, res_diar_adj)
-temp <- res_diar_adj %>% filter(target=="V. cholerae")
 
 res_stunt_adj <- d %>% group_by(study, sample, target) %>%
   do(aim2_glm(., Ws = Wvars_anthro,  outcome="stunt", exposure="pos", study=.$study[1], sample=.$sample[1], target=.$target[1], family="binomial")) 
@@ -120,11 +120,11 @@ res_haz_adj <- d %>% group_by(study, sample, target) %>%
 res_haz_adj$sparse <- ifelse(is.na(res_haz_adj$coef), "yes", "no")
 res_haz_adj$coef[is.na(res_haz_adj$coef)] <- 0
 
-res_haz_adj  %>% filter(target=="Any pathogen", sample!="S") %>%
-  group_by(Y, sample, target) %>%
-  filter(!is.na(se)) %>% mutate(Nstudies=n()) %>%
-  filter(Nstudies>=4) %>%
-  do(try(pool.cont(.)))
+# res_haz_adj  %>% filter(target=="Any pathogen", sample!="S") %>%
+#   group_by(Y, sample, target) %>%
+#   filter(!is.na(se)) %>% mutate(Nstudies=n()) %>%
+#   filter(Nstudies>=4) %>%
+#   do(try(pool.cont(.)))
 
 # adj_RR <- readRDS(file=here("results/adjusted_aim2_pooled.Rds")) 
 # temp<-adj_RR%>%filter(target=="Any pathogen", sample=="any sample type", Y=="haz")

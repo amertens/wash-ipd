@@ -96,15 +96,15 @@ adj_diff$sign <- ifelse(adj_diff$Y %in% c("Diarrhea","Stunting","Wasting","Under
 table(adj_diff$sign)
 
 
-adj_diff$pval_cat <- cut(adj_diff$pval, breaks = c(-1, 0.01, 0.05, 0.2, 2), 
-                  labels = c("<0.01", "<0.05", "0.05-0.2", "0.2-1"))
+adj_diff$pval_cat <- cut(adj_diff$pval, breaks = c(-1, 0.01, 0.05, 0.1, 2), 
+                  labels = c("<0.01", "<0.05", "0.05-0.1", "0.1-1"))
 adj_diff$pval_cat <- ifelse(adj_diff$sign == -1, paste0(adj_diff$pval_cat, " (increased risk)"), 
                      paste0(adj_diff$pval_cat, " (decreased risk)"))
-adj_diff$pval_cat[adj_diff$pval_cat %in% c("0.2-1 (decreased risk)", "0.2-1 (increased risk)")] <- "0.2-1"
+adj_diff$pval_cat[adj_diff$pval_cat %in% c("0.1-1 (decreased risk)", "0.1-1 (increased risk)")] <- "0.1-1"
 table(adj_diff$pval_cat)
 adj_diff$pval_cat <- factor(adj_diff$pval_cat, levels = c("<0.01 (decreased risk)", 
-                                            "<0.05 (decreased risk)", "0.05-0.2 (decreased risk)", 
-                                            "0.2-1", "0.05-0.2 (increased risk)", 
+                                            "<0.05 (decreased risk)", "0.05-0.1 (decreased risk)", 
+                                            "0.1-1", "0.05-0.1 (increased risk)", 
                                             "<0.05 (increased risk)", "<0.01 (increased risk)"))
 
 adj_diff$pval_cat <- addNA(adj_diff$pval_cat)
@@ -129,9 +129,9 @@ adj_diff$est = gsub("NA \\(NA, NA\\)", "", adj_diff$est)
 textcol = "grey20"
 cols = (brewer.pal(n = 9, name = "Spectral"))
 colours <- c(`<0.01 (increased risk)` = cols[1], `<0.05 (increased risk)` = cols[2], 
-             `0.05-0.2 (increased risk)` = cols[3],
-             `0.2-1` = cols[5],  
-             `0.05-0.2 (decreased risk)` = cols[7], `<0.05 (decreased risk)` = cols[8], 
+             `0.05-0.1 (increased risk)` = cols[3],
+             `0.1-1` = cols[5],  
+             `0.05-0.1 (decreased risk)` = cols[7], `<0.05 (decreased risk)` = cols[8], 
              `<0.01 (decreased risk)` = cols[9], `Not estimated` = "gray80")
 
 panel_spacing = 0.75

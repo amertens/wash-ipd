@@ -68,15 +68,10 @@ unadj_RR <- unadj_RR %>% mutate(
 )
 
 
-res <- adj_RR %>% filter(target %in% c("Any MST"), 
-                  Y=="diar7d", study=="Holcomb 2020",
-                  sample=="any sample type")
 
-res <- adj_RR %>% filter(target %in% c("Any MST"), 
-                         Y=="haz", study=="Boehm 2016"#,
-                         #sample=="any sample type"
-                         )
-res
+
+res2 <- adj_RR %>% filter(target %in% c("Avian (GFD)"), )
+res2
 
 #---------------------------------------------------------------
 # Print pooled estimates

@@ -70,7 +70,7 @@ levels(adj_RR$X)
 
 adj_RR$Y <- factor(adj_RR$Y, levels=c("diar7d", "haz","waz","whz",  "underwt","stunt","wast"))
 adj_RR$Y <- recode_factor(adj_RR$Y, 
-                     "diar7d"="Diarrhea", 
+                     "diar7d"="Diarrhoea", 
                      "haz"="HAZ",
                      "waz"="WAZ",
                      "whz"="WHZ",  
@@ -80,21 +80,21 @@ adj_RR$Y <- recode_factor(adj_RR$Y,
 
 adj_RR$sign <- NA
 unique(adj_RR$Y)
-adj_RR$point.diff <- ifelse(adj_RR$Y %in% c("Diarrhea","Stunting","Wasting","Underweight"), adj_RR$RR, adj_RR$coef)
-adj_RR$point.diff[adj_RR$Y %in% c("Diarrhea","Stunting","Wasting","Underweight")]
+adj_RR$point.diff <- ifelse(adj_RR$Y %in% c("Diarrhoea","Stunting","Wasting","Underweight"), adj_RR$RR, adj_RR$coef)
+adj_RR$point.diff[adj_RR$Y %in% c("Diarrhoea","Stunting","Wasting","Underweight")]
 
-adj_RR$sign <- ifelse(adj_RR$Y %in% c("Diarrhea","Stunting","Wasting","Underweight"),ifelse(adj_RR$point.diff > 1, -1, 1), sign(adj_RR$point.diff))
+adj_RR$sign <- ifelse(adj_RR$Y %in% c("Diarrhoea","Stunting","Wasting","Underweight"),ifelse(adj_RR$point.diff > 1, -1, 1), sign(adj_RR$point.diff))
 table(adj_RR$sign)
 
-adj_RR$pval_cat <- cut(adj_RR$pval, breaks = c(-1, 0.01, 0.05, 0.2, 2), 
-                  labels = c("<0.01", "<0.05", "0.05-0.2", "0.2-1"))
+adj_RR$pval_cat <- cut(adj_RR$pval, breaks = c(-1, 0.01, 0.05, 0.1, 2), 
+                  labels = c("<0.01", "<0.05", "0.05-0.1", "0.1-1"))
 adj_RR$pval_cat <- ifelse(adj_RR$sign == -1, paste0(adj_RR$pval_cat, " (increased risk)"), 
                      paste0(adj_RR$pval_cat, " (decreased risk)"))
-adj_RR$pval_cat[adj_RR$pval_cat %in% c("0.2-1 (decreased risk)", "0.2-1 (increased risk)")] <- "0.2-1"
+adj_RR$pval_cat[adj_RR$pval_cat %in% c("0.1-1 (decreased risk)", "0.1-1 (increased risk)")] <- "0.1-1"
 table(adj_RR$pval_cat)
 adj_RR$pval_cat <- factor(adj_RR$pval_cat, levels = c("<0.01 (decreased risk)", 
-                                            "<0.05 (decreased risk)", "0.05-0.2 (decreased risk)", 
-                                            "0.2-1", "0.05-0.2 (increased risk)", 
+                                            "<0.05 (decreased risk)", "0.05-0.1 (decreased risk)", 
+                                            "0.1-1", "0.05-0.1 (increased risk)", 
                                             "<0.05 (increased risk)", "<0.01 (increased risk)"))
 adj_RR$pval_cat <- addNA(adj_RR$pval_cat)
 levels(adj_RR$pval_cat) = c(levels(adj_RR$pval_cat), "Sparse")
@@ -116,9 +116,9 @@ panel_spacing = 0.75
 textcol = "grey20"
 cols = (brewer.pal(n = 9, name = "Spectral"))
 colours <- c(`<0.01 (increased risk)` = cols[1], `<0.05 (increased risk)` = cols[2], 
-             `0.05-0.2 (increased risk)` = cols[3],
-             `0.2-1` = cols[5],  
-             `0.05-0.2 (decreased risk)` = cols[7], `<0.05 (decreased risk)` = cols[8], 
+             `0.05-0.1 (increased risk)` = cols[3],
+             `0.1-1` = cols[5],  
+             `0.05-0.1 (decreased risk)` = cols[7], `<0.05 (decreased risk)` = cols[8], 
              `<0.01 (decreased risk)` = cols[9], `Not estimated` = "grey80")
 
 
@@ -268,6 +268,8 @@ d$est = gsub("NA \\(NA, NA\\)", "", d$est)
 d <- d %>% filter(!is.na(target)) %>% droplevels()
 hm_df_mst <- d
 
+df <- hm_df_mst %>% filter(target=="Human (HumM2)"|target=="Avian (GFD)", Y=="Diarrhoea")
+df
 
 #Drop empty "any sample: POOLED"
 hm_df_mst <- hm_df_mst %>%  group_by(X,target) %>% filter(!(X=="Any sample: POOLED"& n()==sum(is.na(pval))))
