@@ -16,7 +16,7 @@ library(washb)
 library(gtools)
 library(tmle)
 library(ggtext)
-library(ck37r)
+#library(ck37r)
 
 
 #set data directories
@@ -82,16 +82,9 @@ target_levels = unique(c(
 
 
 
-
-
-
-
-
-
-
-
-
 clean_res <- function(d, target_lev=target_levels){
+  
+  levels(d$study)[levels(d$study) == "Capone 2022 in prep"] <- "Capone 2022"
   
   target_lev <- gsub("Any STH ","Any Helminth",target_lev)
   d$target_f <- gsub("Any STH ","Any Helminth",d$target)  
@@ -173,8 +166,9 @@ clean_res <- function(d, target_lev=target_levels){
 
 
 
-
 clean_res_subgroup <- function(d, target_lev=target_levels){
+  
+  levels(d$study)[levels(d$study) == "Capone 2022 in prep"] <- "Capone 2022"
   
   target_lev <- gsub("Any STH ","Any Helminth",target_lev)
   d$target_f <- gsub("Any STH ","Any Helminth",d$target)  

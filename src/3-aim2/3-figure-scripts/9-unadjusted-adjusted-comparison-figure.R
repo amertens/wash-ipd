@@ -22,6 +22,9 @@ table(df$Y)
 
 df <- df %>% mutate(diff=round(adj.diff-unadj.diff,6), abs_diff=abs(diff), RR.ratio = adj.RR/unadj.RR, abs_ratio = ifelse(RR.ratio>1,RR.ratio, 1/RR.ratio))
 
+ggplot(df %>% filter(Y=="haz"), aes(x=unadj.diff, y=adj.diff)) + geom_point() + geom_abline() + geom_smooth()
+ggplot(df %>% filter(Y=="diar7d"), aes(x=unadj.RR, y=adj.RR)) + geom_point() + geom_abline() + geom_smooth() +     
+  scale_y_continuous(trans='log10') + scale_x_continuous(trans='log10')
 
 
 #Drop non-distinct repeats of any virus, etc.
@@ -91,7 +94,7 @@ df2 %>% group_by(N_W) %>%
 ave_abs_logdiff = round(mean(df2$abs_diff, na.rm=T),2)
 p_logdiff <-  ggplot(df2, aes(x=N_W , y=diff)) + 
   geom_point(size = 4, alpha=0.25) + geom_smooth(se=F) +
-  xlab("Number of covariates selected in the adjusted analysis") + 
+  xlab("Number of covariates used in the adjusted analysis") + 
   ylab("Difference between unadjusted and adjusted estimates") +
   geom_hline(yintercept = 0) + theme_ki() +
   scale_x_continuous(breaks = pretty(df$N_W, n = 10)) +
@@ -108,7 +111,7 @@ ave_ratio = round(mean(df2$RR.ratio, na.rm=T),2)
 
 p_diff <-  ggplot(df3, aes(x=N_W , y=diff)) + 
   geom_point(size = 4, alpha=0.25) + geom_smooth(se=F) +
-  xlab("Number of covariates selected in the adjusted analysis") + 
+  xlab("Number of covariates used in the adjusted analysis") + 
   ylab("Difference between adjusted and unadjusted estimates") +
   geom_hline(yintercept = 0) + theme_ki() +
   scale_x_continuous(breaks = pretty(df$N_W, n = 10)) +
@@ -120,7 +123,7 @@ ggsave(p_diff, file = paste0(here::here(),"/figures/pngs/aim2_adjusted_unadjuste
 
 p_RR <-  ggplot(df2, aes(x=N_W , y=RR.ratio)) + 
   geom_point(size = 4, alpha=0.25) + geom_smooth(se=F) +
-  xlab("Number of covariates selected in the adjusted analysis") + 
+  xlab("Number of covariates used in the adjusted analysis") + 
   ylab("Ratio between adjusted and unadjusted estimates") +
   geom_hline(yintercept = 1) + theme_ki() +
   scale_x_continuous(breaks = pretty(df$N_W, n = 10)) +

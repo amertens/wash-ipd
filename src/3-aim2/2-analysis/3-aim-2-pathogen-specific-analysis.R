@@ -49,23 +49,12 @@ d$ch_pos_cdiff[d$study=="Capone 2022 in prep" & d$date_diff > 124 |  d$study=="C
 d$ch_pos_path_ecoli[d$study=="Capone 2022 in prep" & d$date_diff > 124 |  d$study=="Capone 2022 in prep" &  d$date_diff<=0 ] <- NA
 table(d$ch_pos_shigella[d$study=="Capone 2022 in prep"])
 
-#Maybe get extra giardia from EE study
-table(d$ch_pos_giardia[d$study=="Fuhrmeister 2020"])
-
-#d <- d %>% filter( date_diff>0)
-table(as.numeric(d$date_diff[d$study=="Fuhrmeister 2020"]))
-#d <- d %>% filter(study=="Fuhrmeister 2020")
-table(d$ch_pos_giardia)
-table(d$ch_pos_giardia_EE)
-table(d$ch_pos_giardia,d$ch_pos_giardia_EE)
-table(1*is.na(d$ch_pos_giardia),is.na(d$ch_pos_giardia_EE))
-table(1*is.na(d$ch_pos_giardia),is.na(d$ch_pos_giardia_EE), d$pos)
+#Combine EE study giardia
 d$ch_pos_giardia[is.na(d$ch_pos_giardia)] <- d$ch_pos_giardia_EE[is.na(d$ch_pos_giardia)]
-
 d$ch_pos_giardia[d$study=="Fuhrmeister 2020" & d$date_diff > 124 |  d$study=="Fuhrmeister 2020" &  d$date_diff<=0 ] <- NA
 d$ch_pos_path_ecoli[d$study=="Fuhrmeister 2020" & d$date_diff > 124 |  d$study=="Fuhrmeister 2020" &  d$date_diff<=0 ] <- NA
 d$ch_pos_norovirus[d$study=="Fuhrmeister 2020" & d$date_diff > 124 |  d$study=="Fuhrmeister 2020" &  d$date_diff<=0 ] <- NA
-table(d$ch_pos_giardia[d$study=="Fuhrmeister 2020"])
+
 
 
 d$ch_qpcr_pos_ascaris[d$study=="Kwong 2021" & d$date_diff > 124 | d$study=="Kwong 2021" &  d$date_diff < 0] <- NA
@@ -80,16 +69,18 @@ d <- distinct(d)
 dim(d)
 saveRDS(d, file=paste0(dropboxDir,"Data/pathogen_analysis_data.rds"))
 
-# #check count for table
-# df <- d %>% filter(study=="Fuhrmeister 2020", !is.na(ch_pos_giardia) & target=="Giardia" |!is.na(ch_pos_path_ecoli) & target=="Pathogenic E. coli") #%>% distinct(sampleid, dataid , childid , sample, target, .keep_all = T   )
-# head(df)
-# length(unique(paste0(df$dataid, "__", df$childid)))
-# df2 <- df %>% filter(target=="Giardia", !is.na(ch_pos_giardia))
-# table(df2$ch_pos_giardia)
-# df3 <- d %>% filter(study=="Fuhrmeister 2020",target=="Pathogenic E. coli", !is.na(ch_pos_path_ecoli))
-# df3 <- d %>% filter(study=="Fuhrmeister 2020", !is.na(ch_pos_path_ecoli))
-# table(df3$ch_pos_path_ecoli)
-# table(df3$target)
+#check count for table
+df <- d %>% filter(study=="Fuhrmeister 2020", !is.na(ch_pos_giardia) & target=="Giardia" |!is.na(ch_pos_path_ecoli) & target=="Pathogenic E. coli") #%>% distinct(sampleid, dataid , childid , sample, target, .keep_all = T   )
+head(df)
+length(unique(paste0(df$dataid, "__", df$childid)))
+df2 <- df %>% filter(target=="Giardia", !is.na(ch_pos_giardia))
+table(df2$ch_pos_giardia)
+df3 <- d %>% filter(study=="Fuhrmeister 2020",target=="Pathogenic E. coli", !is.na(ch_pos_path_ecoli))
+table(df3$ch_pos_path_ecoli)
+df4 <- d %>% filter(study=="Fuhrmeister 2020",target=="Norovirus", !is.na(ch_pos_norovirus))
+table(df4$ch_pos_norovirus)
+
+df <- d %>% filter(study=="Fuhrmeister 2020")
 
 #make list of pairs - binary
 paired_pathogens <- as.data.frame(t(data.frame(

@@ -7,7 +7,6 @@ source(here::here("0-config.R"))
 adj_diff <- readRDS(here("results/adjusted_aim2_abund_res.Rds"))
 adj_diff_roq <- readRDS(here("results/adjusted_aim2_abund_ROQ_res.Rds"))
 
-
 sample_cats = levels(adj_diff$sample_cat)[levels(adj_diff$sample_cat)!="Any sample"]
 
 adj_diff <- clean_res(adj_diff) 

@@ -4,7 +4,7 @@ source(here::here("0-config.R"))
 library(RColorBrewer)
 
 adj_diff <- readRDS(here("results/adjusted_aim2_abund_res.Rds"))
-
+levels(adj_diff$study)[levels(adj_diff$study) == "Capone 2022 in prep"] <- "Capone 2022"
 
 
 unique(adj_diff$target)
@@ -78,7 +78,7 @@ adj_diff$X <- paste0(adj_diff$sample_cat,": ", adj_diff$study)
 adj_diff$X <- factor(adj_diff$X, levels=unique(adj_diff$X))
 adj_diff$Y <- factor(adj_diff$Y, levels=c("diar7d", "haz","waz","whz",  "underwt","stunt","wast"))
 adj_diff$Y <- recode_factor(adj_diff$Y, 
-                     "diar7d"="Diarrhea", 
+                     "diar7d"="Diarrhoea", 
                      "haz"="HAZ",
                      "waz"="WAZ",
                      "whz"="WHZ",  
@@ -89,10 +89,10 @@ adj_diff$Y <- recode_factor(adj_diff$Y,
 
 adj_diff$sign <- NA
 unique(adj_diff$Y)
-adj_diff$point.diff <- ifelse(adj_diff$Y %in% c("Diarrhea","Stunting","Wasting","Underweight"), adj_diff$RR, adj_diff$coef)
-adj_diff$point.diff[adj_diff$Y %in% c("Diarrhea","Stunting","Wasting","Underweight")]
+adj_diff$point.diff <- ifelse(adj_diff$Y %in% c("Diarrhoea","Stunting","Wasting","Underweight"), adj_diff$RR, adj_diff$coef)
+adj_diff$point.diff[adj_diff$Y %in% c("Diarrhoea","Stunting","Wasting","Underweight")]
 
-adj_diff$sign <- ifelse(adj_diff$Y %in% c("Diarrhea","Stunting","Wasting","Underweight"),ifelse(adj_diff$point.diff > 1, -1, 1), sign(adj_diff$point.diff))
+adj_diff$sign <- ifelse(adj_diff$Y %in% c("Diarrhoea","Stunting","Wasting","Underweight"),ifelse(adj_diff$point.diff > 1, -1, 1), sign(adj_diff$point.diff))
 table(adj_diff$sign)
 
 

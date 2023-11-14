@@ -130,7 +130,7 @@ p_pathogen <- adj_RR %>%
 p_pathogen
 
 ggsave(p_pathogen, file = paste0(here::here(),"/figures/pngs/aim2_p_pathogen.png"), width = 10, height = 6)
-ggsave(filename=here("C:/Users/andre/Dropbox/IPD WASH/Aim2 revision/figures/aim2-fig-2.pdf"), plot = p_pathogen, device='pdf',width=7.2,height=5.6)
+ggsave(filename=here("C:/Users/andre/Dropbox/IPD WASH/Aim 2/figures/aim2-fig-2.pdf"), plot = p_pathogen, device='pdf',width=7.2,height=5.6)
 
 
 

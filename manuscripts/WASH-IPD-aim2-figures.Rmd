@@ -36,7 +36,7 @@ library(here)
 library(officer)
 library(flextable)
 library(bibtex)
-library(citr)
+#library(citr)
 library(redoc)
 
 textcol = "grey20"

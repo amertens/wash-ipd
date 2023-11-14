@@ -6,6 +6,9 @@ library(RColorBrewer)
 unadj_RR <- readRDS(file=here("results/unadjusted_aim2_pooled.Rds")) 
 adj_RR <- readRDS(file=here("results/adjusted_aim2_pooled.Rds")) 
 
+unadj_RR$study[unadj_RR$study=="Capone 2022 in prep"] <- "Capone 2022"
+adj_RR$study[adj_RR$study=="Capone 2022 in prep"] <- "Capone 2022"
+
 table(adj_RR$target)
 adj_RR %>% filter(target=="Pathogenic E. coli", Y=="diar7d", sample=="any sample type")
 
@@ -61,7 +64,7 @@ sample_cats = levels(unadj_RR$sample_cat)[levels(unadj_RR$sample_cat)!="Any samp
 
 levels(adj_RR$sample_cat)
 unique(adj_RR$study)
-adj_RR <- adj_RR %>% mutate(study = factor(study, levels = c("POOLED","Boehm 2016","Capone 2021","Capone 2022 in prep", "Fuhrmeister 2020",
+adj_RR <- adj_RR %>% mutate(study = factor(study, levels = c("POOLED","Boehm 2016","Capone 2021","Capone 2022", "Fuhrmeister 2020",
                                                              "Holcomb 2021","Kwong 2021","Odagiri 2016","Reese 2017","Steinbaum 2019"  )))
 adj_RR <- adj_RR %>% arrange(sample_cat, study)
 adj_RR$X <- paste0(adj_RR$sample_cat,": ", adj_RR$study)

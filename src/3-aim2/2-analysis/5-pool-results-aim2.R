@@ -146,11 +146,11 @@ res_urban
 
 
 #Compare if estimates are different
-rma_format <- function(d, subgroup){
+rma_format <- function(d, subgroup, Method="FE"){
   
   d$subgroup <- factor(d[[subgroup]])
   if(length(levels(d$subgroup))>1){
-    fit <- rma(logRR.psi, sei=logSE, mods = ~ subgroup, method="FE", data=d)
+    fit <- rma(logRR.psi, sei=logSE, mods = ~ subgroup, method=Method, data=d)
     est<-data.frame(fit$b, fit$se, fit$I2)
     colnames(est)<-c("logRR.psi","logSE", "I2")
     
@@ -166,6 +166,32 @@ rma_format <- function(d, subgroup){
   }else{
     est <- data.frame(
       logRR.psi=NA, logSE=NA, I2=NA, RR=NA,  ci.lb=NA,  ci.ub=NA,    pval=NA, N=NA,  subgroup=NA,  ref=NA, 
+      study=NA,  sparse=NA,  sample_type=NA,  sample_cat=NA,  target_f=NA
+    )
+  }
+  
+  return(est)
+}
+
+rma_format_diff <- function(d, subgroup, Method="FE"){
+  
+  d$subgroup <- factor(d[[subgroup]])
+  if(length(levels(d$subgroup))>1){
+    fit <- rma(coef, sei=se, mods = ~ subgroup, method="HS", data=d)
+    est<-data.frame(fit$b, fit$se, fit$I2)
+    colnames(est)<-c("coef","se", "I2")
+    
+    est$ci.lb<-(est$coef - 1.96 * est$se)
+    est$ci.ub<-(est$coef + 1.96 * est$se)
+    est$pval <- fit$pval
+    est$N <- d$N[1]
+    est$subgroup=subgroup
+    est$ref=levels(d$subgroup)[1]
+    est <- est %>% mutate(study="Pooled", sparse="pooled", sample_type=d$sample_type[1], sample_cat=d$sample_cat[1], target_f=d$target_f[1])
+    est <- est[2,]
+  }else{
+    est <- data.frame(
+      coef=NA, se=NA, I2=NA,  ci.lb=NA,  ci.ub=NA,    pval=NA, N=NA,  subgroup=NA,  ref=NA, 
       study=NA,  sparse=NA,  sample_type=NA,  sample_cat=NA,  target_f=NA
     )
   }
@@ -189,3 +215,33 @@ emm_pool %>% filter(study=="Pooled" & sample=="any sample type" & target=="Any p
 res_RR_adj %>% filter(target=="Any pathogen", Y=="diar7d")
 res_cont_adj %>% filter(target=="Any pathogen", Y=="haz")
 res_cont_adj %>% filter(grepl("MST",target), Y=="haz")
+
+
+
+#check for interactions
+# res_sex_comp <- res_emm_PD_adj %>% group_by(Y, sample, target) %>% 
+#   filter(target=="Any pathogen", sample=="any sample type", V=="sex") %>%
+#   rename(logRR.psi=coef, logSE=se) %>%
+#   do(rma_format(., subgroup="Vlevel")) %>% filter(!is.na(pval))
+# res_sex_comp 
+
+
+res_wet_comp <- adj_emm_PD %>% group_by(Y, sample, target) %>% 
+  filter(target=="Any pathogen", sample=="any sample type", V=="wet_CH") %>%
+  rename(logRR.psi=coef, logSE=se) %>%
+  do(rma_format(., subgroup="Vlevel")) %>% filter(!is.na(pval))
+res_wet_comp 
+
+
+res_sex_comp <- adj_emm %>% group_by(Y, sample, target) %>% 
+  filter(target=="Any pathogen", sample=="any sample type", V=="sex", Y=="haz") %>%
+  do(rma_format_diff(., subgroup="Vlevel")) %>% filter(!is.na(pval))
+res_sex_comp 
+
+
+
+d <- adj_emm %>% group_by(Y, sample, target) %>% 
+  filter(target=="Any pathogen", sample=="any sample type", V=="sex", Y=="haz") 
+
+
+

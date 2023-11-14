@@ -3,6 +3,9 @@ rm(list=ls())
 source(here::here("0-config.R"))
 
 adj_RR_tmle <- readRDS(file=here("results/tmle_aim2_res.Rds")) %>% mutate(analysis="TMLE")
+adj_RR_tmle$study <- factor(adj_RR_tmle$study)
+levels(adj_RR_tmle$study)[levels(adj_RR_tmle$study) == "Capone 2022 in prep"] <- "Capone 2022"
+
 adj_RR <- readRDS(file=here("results/adjusted_aim2_pooled.Rds")) %>% mutate(analysis="GLM") 
 adj_RR$sample_cat_f[is.na(adj_RR$sample_cat_f)] <- "Any sample"
 
@@ -17,16 +20,18 @@ adj_RR <- adj_RR %>%
 adj_RR %>% filter(sample=="any sample type", study=="Odagiri 2016", target=="Any MST")
 
 
+unique(adj_RR_tmle$study)
 unique(adj_RR$study)
-adj_RR$study <- factor(adj_RR$study, levels = rev(c(
-  "Fuhrmeister 2020", "Boehm 2016","Kwong 2021" ,       
-  "Steinbaum 2019","Holcomb 2021","Capone 2021",
-  "Capone 2022 in prep", "Reese 2017","Odagiri 2016",
-  "Pooled")))
 
 
 class(adj_RR$sample_cat)
 adj_RR <- clean_res_subgroup(adj_RR)
+
+adj_RR$study <- factor(adj_RR$study, levels = rev(c(
+  "Fuhrmeister 2020", "Boehm 2016","Kwong 2021" ,       
+  "Steinbaum 2019","Holcomb 2021","Capone 2021",
+  "Capone 2022", "Reese 2017","Odagiri 2016",
+  "Pooled")))
 
 
 #---------------------------------------------------------------

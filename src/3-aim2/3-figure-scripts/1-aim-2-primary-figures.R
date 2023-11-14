@@ -6,14 +6,6 @@ unadj_RR <- readRDS(file=here("results/unadjusted_aim2_pooled.Rds"))
 adj_RR <- readRDS(file=here("results/adjusted_aim2_pooled.Rds")) 
 d <- readRDS(paste0(dropboxDir,"Data/merged_env_CH_data.rds"))
 
-#TEMP save
-#write.csv(res_haz_adj, file="C:/Users/andre/Downloads/temp_res.csv")
-
-temp<-adj_RR%>%filter(study=="Holcomb 2021")
-table(temp$sample_cat)
-
-unique(adj_RR$target)
-
 
 #examine N's by study and outcome
 tab <- adj_RR %>% group_by(study, Y) %>% 
@@ -247,7 +239,7 @@ p_diar_1_adj <- adj_RR %>%
 p_diar_1_adj
 ggsave(p_diar_1_adj, file = paste0(here::here(),"/figures/pngs/aim2_p_diar_1_adj.png"), width = 10, height = 6)
 
-ggsave(filename=here("C:/Users/andre/Dropbox/IPD WASH/Aim2 revision/figures/aim2-fig-3.pdf"), plot = p_diar_1_adj, device='pdf',width=10,height=6)
+ggsave(filename=here("C:/Users/andre/Dropbox/IPD WASH/Aim 2/figures/aim2-fig-3.pdf"), plot = p_diar_1_adj, device='pdf',width=10,height=6)
 
 
 #get I2 for figure captions
@@ -265,7 +257,7 @@ p_haz_1_adj <- adj_RR %>%
   filter(target %in% c("Any pathogen","Any MST"), Y=="haz") %>%
   base_plot_diff(drop_full_sparse=T)
 ggsave(p_haz_1_adj, file = paste0(here::here(),"/figures/pngs/aim2_p_haz_1_adj.png"), width = 10, height = 6)
-ggsave(filename=here("C:/Users/andre/Dropbox/IPD WASH/Aim2 revision/figures/aim2-fig-4.pdf"), plot = p_haz_1_adj, device='pdf',width=10,height=6)
+ggsave(filename=here("C:/Users/andre/Dropbox/IPD WASH/Aim 2/figures/aim2-fig-4.pdf"), plot = p_haz_1_adj, device='pdf',width=10,height=6)
 
 #get I2 for figure captions
 adj_RR %>% 

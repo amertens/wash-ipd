@@ -224,10 +224,16 @@ p_wet_diar_2 <- adj_RR %>%
   base_plot(drop_full_sparse=T, ylimits=c(0.125,8))
 ggsave(p_wet_diar_2, file = paste0(here::here(),"/figures/pngs/subgroup_aim2_p_wet_CH_diar.png"), width = 10, height = 6)
 
+
 #Prevalence difference:
 p_wet_diar_2_PD <- adj_PD %>% 
   filter(target %in% c("Any pathogen","Any MST"), Y=="diar7d", V=="wet_CH") %>%
   base_plot_diff(drop_full_sparse=T, ylimits=c(-.55,.3), ylab="Prevalence difference", p_hjust=-.75)
+
+adj_PD %>% 
+  filter(target %in% c("Any pathogen"), sample_cat=="Any sample", Y=="diar7d", V=="wet_CH") %>%
+  base_plot_diff(drop_full_sparse=T, ylimits=c(-.15,.2), ylab="Prevalence difference", p_hjust=-.75)
+
 
 p_animals_diar_1 <- adj_RR %>% 
   filter(target %in% c("Any pathogen","Any MST"), Y=="diar7d", V=="animals") %>%

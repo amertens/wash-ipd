@@ -2,14 +2,12 @@
 rm(list=ls())
 source(here::here("0-config.R"))
 
-
-
 #-----------------------------------
 #heatmap per study and sample by target combination and covariate p-value 
 #-----------------------------------
 
 res <- readRDS(here("results/covariate_associations.Rds"))
-
+levels(res$study)[levels(res$study) == "Capone 2022 in prep"] <- "Capone 2022"
 
 require(RColorBrewer)
 res$pval[res$pval==1] <- NA
@@ -23,21 +21,6 @@ colours <- c(`<0.01 increase risk` = cols[1], `<0.05 increase risk` = cols[2],
              `0.05-0.2 decrease risk` = cols[7], `<0.05 decrease risk` = cols[8], 
              `<0.01 decrease risk` = cols[9], `Not estimated` = "gray80")
 
-
-
-# res$pval_cat <- cut(res$pval, breaks = c(-1, 0.001, 0.01, 0.1, 0.05, 0.2, 
-#                                      0.5, 2), labels = c("<0.001","<0.01", "<0.05", "0.05-0.1", 
-#                                                          "0.1-0.2", "0.2-0.5", "0.5-1"))
-# 
-# table(res$pval_cat)
-# res$pval_cat <- factor(res$pval_cat, levels = c("<0.001","<0.01", "<0.05", "0.05-0.1", 
-#                                                 "0.1-0.2","0.2-0.5", "0.5-1"))
-# 
-# 
-# cols=rev(viridis::viridis(n=7))
-# colours <- c(`<0.001` = cols[1], `<0.01` = cols[2], `<0.05` = cols[3], 
-#              `0.05-0.1` = cols[4], `0.1-0.2` = cols[5], `0.2-0.5` = cols[6], 
-#              `0.5-1` = cols[7])
 
 res$pval_cat <- cut(res$pval, breaks = c(-1, 0.01, 0.05, 0.2, 
                                          0.5, 2), labels = c("<0.01", "<0.05", "0.05-0.2", 
@@ -106,7 +89,7 @@ p_kwong <- plot_heatmap_all(res, study="Kwong 2021")
 p_stein <- plot_heatmap_all(res, study="Steinbaum 2019")
 p_holc <- plot_heatmap_all(res, study="Holcomb 2020")
 p_cap1 <- plot_heatmap_all(res, study="Capone 2021")
-p_cap2 <- plot_heatmap_all(res, study="Capone 2022 in prep")
+p_cap2 <- plot_heatmap_all(res, study="Capone 2022")
 p_reese <- plot_heatmap_all(res, study="Reese 2017")
 p_odag <- plot_heatmap_all(res, study="Odagiri 2016")
 

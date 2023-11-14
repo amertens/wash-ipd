@@ -59,31 +59,6 @@ heatmap_plot <- function(d, colours, textcol= "grey20"){
   #rev(unique(d$X))
   
   d$X=factor(d$X, levels = rev(unique(d$X)))
-  
-  # lab_f = parse(text= ifelse(grepl("POOLED",levels(d$X2)),
-  #                            paste0("bold(\"", levels(d$X2), "\")"),
-  #                            paste0("\"", levels(d$X2), "\"")))
-  
-  
-  
-  # sample_cols <-c("Any sample" = my_colors[1],
-  #              "Source water" = my_colors[3],
-  #              "Stored water"  = my_colors[4],
-  #              "Child hands"  = my_colors[7],
-  #              "Mother's hands" = my_colors[8],
-  #              "Latrine soil" = my_colors[5],
-  #              "House soil" = my_colors[6],
-  #              # "Flies in kitchen" = my_colors[9],
-  #              # "Flies in latrine" = my_colors[10],
-  #              "Flies" = my_colors[9],
-  #              "Sparse data" = "grey50")
-  # sample_cols <-data.frame(sample_cat=names(sample_cols), sample_cols=sample_cols)
-  # d <- left_join(d, sample_cols, by=c("sample_cat"))
-  # 
-  # df <- d %>% ungroup() %>% distinct(target, sample_cat, X, sample_cols) %>%
-  #   arrange(target, sample_cat, desc(X))
-
-
  
 
   p <- ggplot(d, aes(x = Y, y = X, fill = pval_cat )) + 
