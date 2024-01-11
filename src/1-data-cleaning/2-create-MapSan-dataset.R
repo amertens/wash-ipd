@@ -5,7 +5,7 @@ rm(list=ls())
 source(here::here("0-config.R"))
 
 #Load env. data
-env <- read.csv(paste0(dropboxDir,"Data/MapSan/mapsan_child_envr_data_forIPD.csv")) %>% rename(samp_id=ï..samp_id, samp_date_coarse=samp_date)
+env <- read.csv(paste0(dropboxDir,"Data/MapSan/mapsan_child_envr_data_forIPD.csv")) %>% rename( samp_date_coarse=samp_date)
 dates <- read.csv(paste0(dropboxDir,"Data/MapSan/mapsan_child_envr_dates_full.csv"))
 head(dates)
 env <- left_join(env, dates, by=c("samp_id"))

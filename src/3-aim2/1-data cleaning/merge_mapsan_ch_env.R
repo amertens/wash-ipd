@@ -79,31 +79,6 @@ saveRDS(ch, file = paste0(dropboxDir, "Data/WBK/clean-mapsan-diar.RDS"))
 
 
 
-
-# hol_res <- data.frame(
-#   study = "holcomb",
-#   env_samples_before_merge = nrow(env %>% filter(study=="Holcomb 2021") %>% do(drop_agg(.)) %>% distinct(sampleid, dataid,  hhid, clusterid,sample, round)),
-#   env_HH_before_merge = nrow(env %>% filter(study=="Holcomb 2021")%>% do(drop_agg(.)) %>% distinct(dataid,  hhid, clusterid)),
-#   diar_samples_before_merge = nrow(ch %>% filter(round!="el",!is.na(diar7d)) %>% ungroup() %>% distinct(dataid, hhid, child_date, age,    sex, childid, diar7d)),
-#   haz_samples_before_merge = nrow(ch %>% filter(round!="el",!is.na(haz)) %>% ungroup() %>% distinct(dataid, hhid, child_date, age,    sex, childid, haz))
-# )
-# 
-# cp_res <- data.frame(
-#   study = "capone",
-#   env_samples_before_merge = nrow(env %>% filter(study %in% c("Capone 2021","Capone 2022 in prep") ) %>% do(drop_agg(.)) %>% distinct(sampleid, dataid,  hhid, clusterid,sample, round)),
-#   env_HH_before_merge = nrow(env %>% filter(study %in% c("Capone 2021","Capone 2022 in prep") )%>% do(drop_agg(.)) %>% distinct(dataid,  hhid, clusterid)),
-#   diar_samples_before_merge = nrow(ch %>% filter(!is.na(diar7d)) %>% ungroup() %>% distinct(dataid, hhid, child_date, age,    sex, childid, diar7d)),
-#   haz_samples_before_merge = nrow(ch %>% filter(!is.na(haz)) %>% ungroup() %>% distinct(dataid, hhid, child_date, age,    sex, childid, haz))
-# )
-# 
-# table(env$study, env$round)
-# 
-# env_samples_before_merge = env %>% filter(study %in% c("Capone 2021","Capone 2022 in prep") ) %>% do(drop_agg(.)) %>% distinct(sampleid, dataid,  hhid, clusterid,sample, round)
-# table(env_samples_before_merge$round)
-
-table(env$study, env$round)
-
-
 #Merge diarrhea and growth separately. Growth 1-year later
 # So merge holcomb BL to ML, and ML to EL
 # Merge capone BL to ML, and ML to EL
@@ -204,29 +179,6 @@ d <- bind_rows(cp_df, hol_df)
 
 d <-  d %>% mutate(date_diff = as.numeric(child_date-env_date)) %>% filter(date_diff>0)
 table(d$date_diff)
-
-
-
-
-
-# cp_res$env_samples_after_merge <- nrow(cp_df %>% do(drop_agg(.)) %>% distinct(sampleid, dataid,  hhid, clusterid,sample, round))
-# cp_res$env_HH_after_merge <- nrow(cp_df %>% do(drop_agg(.)) %>% distinct(dataid,  hhid, clusterid))
-# cp_res$diar_samples_after_merge <- nrow(cp_df %>% filter(!is.na(diar7d)) %>% do(drop_agg(.)) %>% distinct(dataid, hhid, age,    sex, diar7d))
-# cp_res$haz_samples_after_merge <- nrow(cp_df %>% filter(!is.na(haz)) %>% do(drop_agg(.)) %>% distinct(dataid, hhid, age,    sex, haz))
-# cp_res$samples_with_diar_after_merge <- nrow(cp_df %>% filter(!is.na(diar7d)) %>% do(drop_agg(.)) %>% distinct(sampleid, dataid, clusterid,sample, round))
-# cp_res$samples_with_haz_after_merge <- nrow(cp_df %>% filter(!is.na(haz)) %>% do(drop_agg(.)) %>% distinct(sampleid, dataid, clusterid,sample, round))
-# cp_res$samples_with_ch_after_merge <- nrow(cp_df %>% filter(!is.na(haz)|!is.na(diar7d)) %>% do(drop_agg(.)) %>% distinct(sampleid, dataid, clusterid,sample, round))
-# 
-# 
-# hol_res$env_samples_after_merge <- nrow(hol_df %>% do(drop_agg(.)) %>% distinct(sampleid, dataid,  hhid, clusterid,sample, round))
-# hol_res$env_HH_after_merge <- nrow(hol_df %>% do(drop_agg(.)) %>% distinct(dataid,  hhid, clusterid))
-# hol_res$diar_samples_after_merge <- nrow(hol_df %>% filter(!is.na(diar7d)) %>% do(drop_agg(.)) %>% distinct(dataid, hhid, age,    sex, diar7d))
-# hol_res$haz_samples_after_merge <- nrow(hol_df %>% filter(!is.na(haz)) %>% do(drop_agg(.)) %>% distinct(dataid, hhid, age,    sex, haz))
-# hol_res$samples_with_diar_after_merge <- nrow(hol_df %>% filter(!is.na(diar7d)) %>% do(drop_agg(.)) %>% distinct(sampleid, dataid,  hhid, clusterid,sample, round))
-# hol_res$samples_with_haz_after_merge <- nrow(hol_df %>% filter(!is.na(haz)) %>% do(drop_agg(.)) %>% distinct(sampleid, dataid,  hhid, clusterid,sample, round))
-# hol_res$samples_with_ch_after_merge <- nrow(hol_df %>% filter(!is.na(haz)|!is.na(diar7d)) %>% do(drop_agg(.)) %>% distinct(sampleid, dataid,  hhid, clusterid,sample, round))
-# 
-
 
 
 

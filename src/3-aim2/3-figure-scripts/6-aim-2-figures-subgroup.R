@@ -279,3 +279,50 @@ save(list=ls(pattern="p_"), file=here("figures/aim2_subgroup_figures.Rdata"))
 
 adj_RR %>% filter(target %in% c("Any pathogen"), sample=="any sample type", Y=="haz", V=="sex", study=="Pooled")
 adj_PD %>% filter(target %in% c("Any pathogen"), Y=="diar7d", V=="wet_CH", study=="Pooled")
+
+
+
+#presentation plot
+my_colors = c("grey20",carto_pal(12, "Prism"))
+
+colours <- c("Any sample" = my_colors[1],
+             "Source water" = my_colors[3],
+             "Stored water"  = my_colors[4],
+             "Child hands"  = my_colors[7],
+             "Mother's hands" = my_colors[8],
+             "Latrine soil" = my_colors[5],
+             "House soil" = my_colors[6],
+             "Flies in kitchen" = my_colors[9],
+             "Flies in latrine" = my_colors[10],
+             "Sparse data" = "grey50")
+
+legend_labels=sample_cats
+drop_full_sparse=T
+ylab="Prevalence difference"
+p_hjust=-.75
+
+mydf <- adj_PD %>% 
+  filter(target %in% c("Any pathogen"), sample=="any sample type", Y=="diar7d", V=="wet_CH") %>% droplevels() %>%
+  mutate(coef=coef*100,
+         ci.lb=ci.lb*100,
+         ci.ub=ci.ub*100)
+ggplot(data = mydf, (aes(x=study, y=coef, group=Vlevel, color=Vlevel, shape=Vlevel))) + 
+  geom_point(size=2, position = position_dodge(0.5)) +
+  geom_errorbar(aes(ymin=ci.lb, ymax=ci.ub), position = position_dodge(0.5),
+                width = 0.3, size = 1) +
+  #Mark significant interactions
+  geom_text(aes(y=coef, label=int.p), color="black", position = position_dodge(0.5), hjust = p_hjust, size=4) +
+  #geom_text(aes(y=coef, x=1, label="0.023, 0.00327  0.0918"), color="black", vjust = -0.8, hjust = -0.1, size=2.25) +
+  scale_color_manual(#breaks = legend_labels,
+    values = c(cbbPalette[2:3],"grey50"), drop = FALSE) +
+  scale_shape_manual(values=c(16, 16,18), guide=FALSE)+  
+  geom_hline(yintercept = 0, linetype="dashed") +
+  coord_flip(ylim=c(-15,20))+
+  labs(color="Subgroup") + xlab("") + ylab(ylab) + 
+  theme_ki() + 
+  theme(axis.ticks.x=element_blank(),
+        legend.position = "bottom",
+        strip.placement = "outside",
+        panel.spacing = unit(0, "lines")) 
+
+

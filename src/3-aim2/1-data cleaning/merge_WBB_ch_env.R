@@ -335,6 +335,7 @@ diar_boehm <- diar_boehm_full %>% rename(diar7d=loose7dprev,
 
 dim(diar_boehm)
 table(diar_boehm$childid)
+table(diar_boehm$diar7d)
 prop.table(table(diar_boehm$diar7d))
 #From https://pubs.acs.org/doi/pdf/10.1021/acs.est.8b00928
 # On the second household visit, 2200 (90%) of these children
@@ -374,6 +375,7 @@ unique(env$dataid[!(env$dataid %in% diar_boehm_full$pid)])
 
 
 table(is.na(diar_merge_boehm$diar7d))
+table(diar_merge_boehm$diar7d)
 prop.table(table((diar_merge_boehm$diar7d)))*100
 prop.table(table(is.na(diar_merge_boehm$diar7d)))*100
 

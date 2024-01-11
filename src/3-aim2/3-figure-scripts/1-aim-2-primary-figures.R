@@ -120,7 +120,7 @@ mydf <- unadj_RR %>%
   filter(study=="Odagiri 2016", target=="Any MST")
 
 
-base_plot <- function(mydf, legend_labels=sample_cats, drop_full_sparse=F, facet_lab_size=10){
+base_plot <- function(mydf, legend_labels=sample_cats, drop_full_sparse=F, facet_lab_size=10, facet=T){
   
   my_colors = c("grey20",carto_pal(12, "Prism"))
   
@@ -151,7 +151,7 @@ base_plot <- function(mydf, legend_labels=sample_cats, drop_full_sparse=F, facet
   axislabels =c("1/16","1/8","1/4", "1/2","1", "2", "4", "8", "16")[axisindex]
   
   mydf <- mydf %>% droplevels(.)
-  ggplot(data = mydf, (aes(x=study, y=RR, group=sample_cat, color=sample_cat, shape=factor(sparse, levels=c("no","yes","pooled"))))) + 
+  p <- ggplot(data = mydf, (aes(x=study, y=RR, group=sample_cat, color=sample_cat, shape=factor(sparse, levels=c("no","yes","pooled"))))) + 
     geom_errorbar(aes(ymin=ci.lb, ymax=ci.ub), position = position_dodge(0.5),
                   width = 0.3, size = 1) +
     geom_point(size=3, position = position_dodge(0.5), alpha=0.75) +
@@ -162,7 +162,6 @@ base_plot <- function(mydf, legend_labels=sample_cats, drop_full_sparse=F, facet
                        values = colours, drop = FALSE) +
     scale_shape_manual(values=c(16, 13,18), guide = "none") + 
     geom_hline(yintercept = 1, linetype="dashed") +
-    facet_grid(target_f~sample_type,  scales="free_y", space = "free_x") +
     scale_y_continuous(
       breaks=axisbreaks, 
       trans='log10', 
@@ -176,10 +175,15 @@ base_plot <- function(mydf, legend_labels=sample_cats, drop_full_sparse=F, facet
           strip.text.x = element_text(size=10, face = "bold"),
           strip.text.y = element_text(size=facet_lab_size, angle = 270, face = "bold"),          plot.title = element_text(hjust = 0.5, face = "plain", size=9),
           panel.spacing = unit(0, "lines")) 
+  
+  if(facet){
+    p <- p + facet_grid(target_f~sample_type,  scales="free_y", space = "free_x") 
+  }
+  return(p)
 }
 
 
-base_plot_diff <- function(mydf, legend_labels=sample_cats, drop_full_sparse=F, facet_lab_size = 10){
+base_plot_diff <- function(mydf, legend_labels=sample_cats, drop_full_sparse=F, facet_lab_size = 10, facet=T){
   
   my_colors = c("grey20",carto_pal(12, "Prism"))
   
@@ -199,7 +203,7 @@ base_plot_diff <- function(mydf, legend_labels=sample_cats, drop_full_sparse=F, 
   }
   mydf <- mydf %>% droplevels(.)
   
-  ggplot(data = mydf, (aes(x=study, y=coef, group=sample_cat, color=sample_cat, shape=factor(sparse, levels=c("no","yes","pooled"))))) + 
+  p <- ggplot(data = mydf, (aes(x=study, y=coef, group=sample_cat, color=sample_cat, shape=factor(sparse, levels=c("no","yes","pooled"))))) + 
     geom_errorbar(aes(ymin=ci.lb, ymax=ci.ub), position = position_dodge(0.5),
                   width = 0.3, size = 1) +
     geom_point(size=3, position = position_dodge(0.5), alpha=0.75) +
@@ -210,7 +214,6 @@ base_plot_diff <- function(mydf, legend_labels=sample_cats, drop_full_sparse=F, 
                        values = colours, drop = FALSE) +
     scale_shape_manual(values=c(16, 13,18), guide = "none") + 
     geom_hline(yintercept = 0, linetype="dashed") +
-    facet_grid(target_f~sample_type,  scales="free_y", space = "free_x") +
     coord_flip()+
     labs(color="Sample type") + xlab("") + ylab("Mean difference") + 
     theme_ki() + 
@@ -220,7 +223,25 @@ base_plot_diff <- function(mydf, legend_labels=sample_cats, drop_full_sparse=F, 
           strip.text.x = element_text(size=10, face = "bold"),
           strip.text.y = element_text(size=facet_lab_size, angle = 270, face = "bold"),          plot.title = element_text(hjust = 0.5, face = "plain", size=9),
           panel.spacing = unit(0, "lines")) 
+  
+  if(facet){
+    p <- p + facet_grid(target_f~sample_type,  scales="free_y", space = "free_x") 
+  }
+  return(p)
 }
+
+
+#---------------------------------------------------------------
+# Presentation figures
+#---------------------------------------------------------------
+
+adj_RR %>% 
+  filter(target %in% c("Any pathogen"), sample=="any sample type", Y=="haz") %>%
+  base_plot_diff(drop_full_sparse=T, facet=F) + ggtitle("Association between any pathogens\nin any sample type and HAZ")
+
+adj_RR %>% 
+  filter(target %in% c("Any pathogen"), sample=="any sample type", Y=="diar7d") %>%
+  base_plot(drop_full_sparse=T, facet=F) + ggtitle("Association between any pathogens\nin any sample type and diarrhea")
 
 
 #---------------------------------------------------------------

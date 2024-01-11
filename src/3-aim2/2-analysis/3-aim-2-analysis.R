@@ -19,16 +19,16 @@ d$diar7d[d$child_date <= d$env_date | d$child_date > d$env_date+124] <- NA
 table(d$diar7d)
 
 
-res_diar_adj <- d %>% group_by(study, sample, target) %>% filter(target=="Human (HumM2)"|target=="Avian (GFD)") %>%
+res_diar_adj <- d %>% group_by(study, sample, target) %>% filter(target=="Any pathogen", sample=="any sample type", study=="Fuhrmeister 2020") %>%
   do(aim2_glm(., Ws = Wvars,  outcome="diar7d", exposure="pos", study=.$study[1], sample=.$sample[1], target=.$target[1], family="binomial")) %>% filter(!is.na(coef), Y=="diar7d")
 res_diar_adj
 
-res_diar_adj <- d %>% group_by(study, sample, target) %>% filter(target=="Any virus") %>%
-  do(aim2_glm(., Ws = Wvars,  outcome="diar7d", exposure="pos", study=.$study[1], sample=.$sample[1], target=.$target[1], family="binomial")) %>% filter(!is.na(coef), Y=="diar7d")
-res_diar_adj
+res_haz_adj <- d %>% group_by(study, sample, target) %>% filter(target=="Any pathogen", sample=="any sample type", study=="Kwong 2021") %>%
+  do(aim2_glm(., Ws = Wvars,  outcome="haz", exposure="pos", study=.$study[1], sample=.$sample[1], target=.$target[1], family="gaussian")) %>% filter(!is.na(coef), Y=="diar7d")
+res_haz_adj
 
  
-
+df  <- d %>% group_by(study, sample, target) %>% filter(target=="Any pathogen", sample=="any sample type", study=="Kwong 2021", !is.na(haz))
 
 
 #-----------------------------------

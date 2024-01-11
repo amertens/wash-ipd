@@ -69,6 +69,17 @@ head(d)
 #df <- d %>% filter(!is.na(haz)|!is.na(waz)|!is.na(diar7d), !is.na(pos))
 #df <- d %>% filter(study=="Steinbaum 2019")
 
+#get breakdown by N child
+df_N <- d %>% ungroup() %>%
+  filter(!is.na(age)|!is.na(age_anthro), !is.na(pos)) %>%
+  distinct(study, dataid, childid, childNo, sex) %>%
+  group_by(study) %>%
+  summarize(N=n()) %>%
+  select(study, N)
+df_N
+
+temp <- d %>% filter(study=="Steinbaum 2019", sample=="any sample type", target=="Any pathogen") %>% arrange(dataid, childid, childNo, sex)
+
 #get breakdown by sex
 df_sex <- d %>% ungroup() %>%
   filter(!is.na(age)|!is.na(age_anthro), !is.na(pos)) %>%
@@ -76,8 +87,10 @@ df_sex <- d %>% ungroup() %>%
   group_by(study) %>%
   mutate(perc_male=mean(sex))  %>% 
   group_by(study,sex) %>%
-  summarize(N=n(), perc_female=round((1-perc_male[1])*100,0), perc_male=round(perc_male[1]*100),0) %>%
-  mutate(sex_N_f = ifelse(sex==1, paste0(N," (",perc_male,"%)"), paste0(N," (",perc_female,"%)"))) %>%
+  summarize(N=n(), perc_female=sprintf("%.1f", (1-perc_male[1])*100), perc_male=sprintf("%.1f", perc_male[1]*100)) %>%
+  mutate(sex_N_f = ifelse(sex==1, paste0(N," (",perc_male,"%)"), paste0(N," (",perc_female,"%)")),
+         sex=case_when(sex==1 ~"Male",
+                       sex==0 ~"Female")) %>%
   select(study, sex, sex_N_f)
 df_sex
 
@@ -176,7 +189,7 @@ dY_path <- path %>% filter(!is.na(pos)) %>%
 head(dY_path)
 
 tab_path <- dY_path %>% filter(study!="Boehm 2016") %>% #drop because 6 children
-  group_by(study,dataid, childid) %>% distinct(.) %>%
+  group_by(study,dataid, childid) %>% distinct(.) %>% 
   mutate(prev_path=1*(sum(ch_pos)>0)) %>%
   group_by(study) %>%
   summarise(
@@ -184,10 +197,8 @@ tab_path <- dY_path %>% filter(study!="Boehm 2016") %>% #drop because 6 children
     N_path_children=length(unique(paste0(dataid, "__", childid))), 
     N_path_cases=sum(ch_pos, na.rm=T), 
     prev_path=round(mean(prev_path, na.rm=T)*100, 1))
+tab_path <- left_join(tab_path, df_N, by="study") %>% mutate(perc_children=sprintf("%.1f", (N_path_children / N)*100))
 tab_path
-
-
-
 
 dY_path_kwong <- dY_path %>% filter(study=="Kwong 2021")
 dY_path_Boehm <- dY_path %>% filter(study=="Boehm 2016")
@@ -199,24 +210,23 @@ table(dY_path_Holcomb$path_infections)
 #ensure time ordering of diarrhea (anthro has been set in individual studies)
 d_diar <- d
 d_diar$diar7d[d_diar$child_date <= d_diar$env_date | d_diar$child_date > d_diar$env_date+124] <- NA
-#dY_diar <- d_diar %>% distinct(study, trial, dataid, hhid, clusterid, child_date, age, sex, childid, diar7d) %>% filter(!is.na(diar7d) & !is.na(age))
-dY_diar <- d_diar %>% ungroup() %>% filter(!is.na(diar7d) & !is.na(age))%>% distinct(study, trial, dataid, hhid, clusterid, childid, diar7d) 
+#dY_diar <- d_diar %>% ungroup() %>% filter(!is.na(diar7d) & !is.na(age))%>% distinct(study, trial, dataid, hhid, clusterid, childid, diar7d) 
+dY_diar <- d_diar %>% ungroup() %>% filter(!is.na(diar7d) & !is.na(age) & !is.na(pos), !is.na(env_date))%>% 
+distinct(study, trial, dataid, hhid, clusterid, childid, diar7d, child_date) %>%
+  arrange(study, trial, dataid, hhid, clusterid, childid, diar7d, child_date)
+
+tab_diar <- dY_diar %>% group_by(trial, study) %>% 
+  summarise(N_diar_obs=n(), N_diar_cases=sum(diar7d, na.rm=T), prev_diar=sprintf("%.1f",mean(diar7d, na.rm=T)*100))
+tab_diar
 
 #distinct growth measures
-# dY_haz <- d %>% distinct(study, trial, dataid, hhid, clusterid,  child_date_anthro, age_anthro, sex, childid, haz) %>% filter(!is.na(haz) & !is.na(age_anthro))
-# dY_waz <- d %>% distinct(study, trial, dataid, hhid, clusterid,  child_date_anthro, age_anthro, sex, childid, waz) %>% filter(!is.na(waz) & !is.na(age_anthro))
-# dY_whz <- d %>% distinct(study, trial, dataid, hhid, clusterid,  child_date_anthro, age_anthro, sex, childid, whz) %>% filter(!is.na(whz) & !is.na(age_anthro))
-dY_haz <- d %>% ungroup() %>%filter(!is.na(haz) & !is.na(age_anthro)) %>% distinct(study, trial, dataid, hhid, clusterid,  childid, haz) 
+dY_haz <- d %>% ungroup() %>%filter(!is.na(haz) & !is.na(age_anthro), !is.na(env_date)) %>% distinct(study, trial, dataid, hhid, clusterid,  childid, haz, child_date_anthro) %>%
+  arrange(study, trial, dataid, hhid, clusterid,  childid, haz, child_date_anthro)
 dY_waz <- d %>% ungroup() %>%filter(!is.na(waz) & !is.na(age_anthro)) %>% distinct(study, trial, dataid, hhid, clusterid,  childid, waz) 
 dY_whz <- d %>% ungroup() %>%filter(!is.na(whz) & !is.na(age_anthro)) %>% distinct(study, trial, dataid, hhid, clusterid,  childid, whz) 
 
 
-dim(dY_diar)
-dim(dY_haz)
-length(unique(paste0(dY_haz$study,"-",dY_haz$childid)))
 
-tab_diar <- dY_diar %>% group_by(trial, study) %>% 
-  summarise(N_diar_obs=n(), N_diar_cases=sum(diar7d, na.rm=T), prev_diar=round(mean(diar7d, na.rm=T)*100, 1))
 
 tab_haz <- dY_haz %>% group_by(trial, study) %>% 
   summarise(N_haz=n(), mean_haz=round(mean(haz, na.rm=T), 2), sd_haz=round(sd(haz, na.rm=T), 2), prev_stunting=round(mean(haz < (-2), na.rm=T)*100, 1), n_stunting=sum(haz < (-2), na.rm=T))

@@ -73,6 +73,7 @@ base_plot <- function(mydf, legend_labels=sample_cats, drop_full_sparse=F){
     scale_shape_manual(values=c(16, 17)) + 
     geom_hline(yintercept = 1, linetype="dashed") +
     facet_grid(target_f~sample_cat,  scales="free_y", space = "free_x", labeller = label_wrap_gen(width = 10, multi_line = TRUE)) +
+    facet_wrap(target_f~sample_cat,  scales="free_y", space = "free_x") +
     scale_y_continuous(
       # breaks=c(0.0625, 0.125,.25, .5,1, 2, 4, 8, 16), 
       # trans='log10', 
