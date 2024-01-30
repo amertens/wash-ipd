@@ -4,12 +4,6 @@ source(here::here("0-config.R"))
 source(paste0(here::here(),"/src/3-aim2/2-analysis/0-pathogen-function.R"))
 
 
-#notes on dates
-#Kwong measured STH after 2 years, KK sth after 2.5 years. But note the years are coming from the EE taq data so need to use child_date_STH
-#Steinbaum also good based on dates in data. Check manuscripts
-#Grembi measured after 14 months, but Furhmeister after 2 years
-#need to check or median-impute missing pathogen dates
-
 d <- readRDS(paste0(dropboxDir,"Data/merged_env_CH_data_clean.rds"))
 
 
@@ -174,3 +168,5 @@ saveRDS(res_full, file=here("results/pathogen_specific_aim2_res.Rds"))
 
 res_full
 res_full_unadj
+
+

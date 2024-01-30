@@ -75,7 +75,7 @@ facet=T
 #adj_RR <- adj_RR %>% mutate(target_f=factor(target_f, levels=c("Ascaris","Trichuris","Giardia","C. difficile","Campylo-\nbacter","Pathogenic\nE. coli","Shigella","Norovirus","Salmonella","Rotavirus")))
 adj_RR <- adj_RR %>% mutate(Y_cat= paste0(study,"-",sample,"-",target),
                             N_lab=N,
-                            prev_ratio=paste0(round(coef,2)," (",round(ci.lb,2),", ", round(ci.ub,2),")"))
+                            prev_ratio=paste0(sprintf("%.2f",coef)," (",sprintf("%.2f",ci.lb),", ", sprintf("%.2f",ci.ub),")"))
 #Drop N's for pooled
 adj_RR$N_lab[adj_RR$study=="Pooled"] <- ""
 
@@ -170,11 +170,11 @@ adj_RR <- adj_RR %>%
 
 # wrangle results into pre-plotting table form
 res_plot <- adj_RR |>
-  mutate(#across(c(coef, ci.lb, ci.ub), ~str_pad(round(.x, 2), width=4, pad="0", side="right")),
-         estimate_lab = paste0(round(coef,2) , " (", round(ci.lb,2), ", ", round(ci.ub,2),")")#,
+  mutate(#across(c(coef, ci.lb, ci.ub), ~str_pad(sprintf("%.2f",.x, 2), width=4, pad="0", side="right")),
+         estimate_lab = paste0(sprintf("%.2f",coef) , " (", sprintf("%.2f",ci.lb), ", ", sprintf("%.2f",ci.ub),")")#,
          #color = rep(c("gray","white"),5)
   ) |>
-  mutate(pval  = case_when(pval  < .0001 ~ "<0.0001", TRUE ~ str_pad(as.character(round(pval , 3)),width=4,pad="0",side="right"))) |>
+  mutate(pval  = case_when(pval  < .0001 ~ "<0.0001", TRUE ~ str_pad(as.character(sprintf("%.2f",pval , 3)),width=4,pad="0",side="right"))) |>
   bind_rows(data.frame(study = "Study",sample = "Sample", target="Target",  N_lab="N", 
                        estimate_lab = "MD (95% CI)", conf.low = "", conf.high="",pval ="p-value")) |>
   mutate(study = fct_rev(fct_relevel(study, "Study")),

@@ -9,14 +9,14 @@ library(rvest)
 #Clean results function
 clean_est <- function(res, outcome="binomial"){
   if(outcome=="binomial"){
-    est = round(res$RR, 2)
-    ci.lb = round(res$ci.lb, 2) 
-    ci.ub = round(res$ci.ub, 2)
+    est = sprintf("%.2f",res$RR)
+    ci.lb = sprintf("%.2f",res$ci.lb) 
+    ci.ub = sprintf("%.2f",res$ci.ub)
     est.ci = paste0(est," (",ci.lb,", ",ci.ub,")")
   }else{
-    est = round(res$coef, 2)
-    ci.lb = round(res$ci.lb, 2) 
-    ci.ub = round(res$ci.ub, 2)
+    est = sprintf("%.2f",res$coef)
+    ci.lb = sprintf("%.2f",res$ci.lb) 
+    ci.ub = sprintf("%.2f",res$ci.ub)
     est.ci = paste0("difference= ",est," (95% CI: ",ci.lb,", ",ci.ub,")")
   }
   return(est.ci)
@@ -229,11 +229,11 @@ dY_whz <- d %>% ungroup() %>%filter(!is.na(whz) & !is.na(age_anthro)) %>% distin
 
 
 tab_haz <- dY_haz %>% group_by(trial, study) %>% 
-  summarise(N_haz=n(), mean_haz=round(mean(haz, na.rm=T), 2), sd_haz=round(sd(haz, na.rm=T), 2), prev_stunting=round(mean(haz < (-2), na.rm=T)*100, 1), n_stunting=sum(haz < (-2), na.rm=T))
+  summarise(N_haz=n(), mean_haz=sprintf("%.2f",mean(haz, na.rm=T)), sd_haz=sprintf("%.2f",sd(haz, na.rm=T)), prev_stunting=sprintf("%.1f",mean(haz < (-2), na.rm=T)*100, 1), n_stunting=sum(haz < (-2), na.rm=T))
 tab_waz <- dY_waz %>% group_by(trial, study) %>% 
-  summarise(N_waz=n(), mean_waz=round(mean(waz, na.rm=T), 2), sd_waz=round(sd(waz, na.rm=T), 2), prev_underwt=round(mean(waz < (-2), na.rm=T)*100, 1), n_underwt=sum(waz < (-2), na.rm=T))
+  summarise(N_waz=n(), mean_waz=sprintf("%.2f",mean(waz, na.rm=T)), sd_waz=sprintf("%.2f",sd(waz, na.rm=T)), prev_underwt=sprintf("%.1f",mean(waz < (-2), na.rm=T)*100, 1), n_underwt=sum(waz < (-2), na.rm=T))
 tab_whz <- dY_whz %>% group_by(trial, study) %>% 
-  summarise(N_whz=n(), mean_whz=round(mean(whz, na.rm=T), 2), sd_whz=round(sd(whz, na.rm=T), 2), prev_wasting=round(mean(whz < (-2), na.rm=T)*100, 1), n_wasting=sum(whz < (-2), na.rm=T))
+  summarise(N_whz=n(), mean_whz=sprintf("%.2f",mean(whz, na.rm=T)), sd_whz=sprintf("%.2f",sd(whz, na.rm=T)), prev_wasting=sprintf("%.1f",mean(whz < (-2), na.rm=T)*100, 1), n_wasting=sum(whz < (-2), na.rm=T))
 
 tab_Y <- left_join(tab_diar, tab_haz, by =c("trial","study")) 
 tab_Y <- left_join(tab_Y, tab_waz, by =c("trial","study")) 
