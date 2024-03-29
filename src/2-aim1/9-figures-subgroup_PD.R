@@ -184,17 +184,6 @@ p_animals_s2_PD <- adj_RD %>%
   base_plot
 
 
-# # Supplimentary figure: zoonotic stratified
-# p_zoo <- adj_zoo %>% 
-#   filter(target %in% c("Any zoonotic","Any non-zoonotic"), 
-#          sample_cat!="Sparse data"
-#          ) %>% 
-#   group_by(study) %>% #mutate(N=n()) %>% filter(N==2) %>%
-#   mutate(Vlevel=target, target_f="Any pathogen", int.p="") %>%
-#   # group_by() %>% #drop when only one target
-#   # filter(N==2) %>%
-#   base_plot(.)
-# p_zoo
 
 adj_zoo <- adj_zoo %>%
   mutate(Vlevel = factor(Vlevel)) 
